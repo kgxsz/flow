@@ -1,6 +1,8 @@
+# Clojure and Clojurescript
 pom.xml
 pom.xml.asc
 *.jar
+*.zip
 *.class
 /lib/
 /classes/
@@ -12,3 +14,17 @@ pom.xml.asc
 .lein-failures
 .nrepl-port
 .cpcache/
+
+# Node
+node_modules/
+
+# MacOS
+*.DS_Store
+
+# Terraform
+.terraform*
+/terraform.*
+
+# Other
+/resources/public/css
+/resources/public/js
