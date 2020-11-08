@@ -9,7 +9,7 @@
 - The project will now be tracking the progress.
 
 ## Local development setup
-- Install Shadow CLJS with `npm install -g shadow-cljs`.
+- Start the Clojurescript repl in Emacs Cider with `cider-jack-in-cljs`.
 
 ## Deployment
 
