@@ -19,13 +19,12 @@
        (interpose " ")
        (apply str)))
 
-;; TODO - may need to use config here to decide the backend URL
+
 (defn make-url
   "Makes the API url by looking at the current host, and adding the path."
   [path]
-  (let [{:keys [protocol host port]} (url/url (.. js/window -location -href))]
+  (let [{:keys [protocol host]} (url/url (.. js/window -location -href))]
     (-> (url/url "")
         (assoc :protocol protocol)
         (assoc :host (str "api." host))
-        (assoc :port port)
         (str))))
