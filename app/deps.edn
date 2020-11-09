@@ -1,7 +1,6 @@
 {:paths ["src/main"]
  :deps {medley {:mvn/version "1.2.0"}
         org.clojure/core.match {:mvn/version "1.0.0"}
-        reagent {:mvn/version "1.0.0-alpha2"}
         re-frame {:mvn/version "0.10.7"}
         com.domkm/silk {:mvn/version "0.1.2"}
         cljs-ajax {:mvn/version "0.7.4"}
