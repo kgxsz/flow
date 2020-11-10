@@ -3,6 +3,7 @@
  :dev-http {8080 "public"}
  :source-paths ["src/main"]
  :builds {:app {:target :browser
+                :compiler-options {:optimizations :advanced}
                 :devtools {:repl-pprint true
                            :after-load flow.core/mount}
                 :modules {:index {:init-fn flow.core/initialise}}}}}
