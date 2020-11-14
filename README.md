@@ -9,10 +9,14 @@
 - The project will now be tracking the progress.
 
 ## Local development setup
-- Start the Clojurescript repl in Emacs Cider with `cider-jack-in-cljs`.
+- In `app/` start the auto JS compilation with `clj A:dev/js`.
+- In `app/` start the auto CSS compilation with `clj A:dev/css`.
+- Connect to the Clojure REPL, and start the Clojurescript REPL with `(repl)`.
+- Go to `localhost:8080` in the browser to see the app.
 
 ## Remote Deployment
-- In `app/` build an optimised index.js file with `shadow-cljs release :app`.
+- In `app/` build an optimised index.js file with `clj A:release/js`.
+- In `app/` build an optimised index.css file with `clj A:release/css`.
 - In `infrastructure/` update the remote assets with `terraform apply`.
 
 ## Tear down

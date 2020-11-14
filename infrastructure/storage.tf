@@ -26,6 +26,15 @@ resource "aws_s3_bucket_object" "js" {
   content_type = "application/javascript"
 }
 
+resource "aws_s3_bucket_object" "css" {
+  provider = aws.eu-west-1
+  bucket   = aws_s3_bucket.app.bucket
+  key      = "css/index.css"
+  source   = "${path.module}/../app/public/css/index.css"
+  etag     = filemd5("${path.module}/../app/public/css/index.css")
+  content_type = "text/css"
+}
+
 resource "aws_s3_bucket_object" "images" {
   provider = aws.eu-west-1
   for_each = fileset("${path.module}/../app/public/images", "*")
@@ -33,5 +42,15 @@ resource "aws_s3_bucket_object" "images" {
   key      = "images/${each.value}"
   source   = "${path.module}/../app/public/images/${each.value}"
   etag     = filemd5("${path.module}/../app/public/images/${each.value}")
+  content_type = "application/octet-stream"
+}
+
+resource "aws_s3_bucket_object" "fonts" {
+  provider = aws.eu-west-1
+  for_each = fileset("${path.module}/../app/public/fonts", "*")
+  bucket   = aws_s3_bucket.app.bucket
+  key      = "fonts/${each.value}"
+  source   = "${path.module}/../app/public/fonts/${each.value}"
+  etag     = filemd5("${path.module}/../app/public/fonts/${each.value}")
   content_type = "application/octet-stream"
 }

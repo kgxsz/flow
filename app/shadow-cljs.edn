@@ -1,5 +1,6 @@
-{:deps {:aliases [:dev]}
- :nrepl {:middleware [refactor-nrepl.middleware/wrap-refactor]}
+{:deps {:aliases [:dev/js]}
+ :nrepl {:middleware [refactor-nrepl.middleware/wrap-refactor]
+         :init-ns flow.dev}
  :dev-http {8080 "public"}
  :source-paths ["src/main"]
  :builds {:app {:target :browser
