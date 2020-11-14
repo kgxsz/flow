@@ -9,7 +9,10 @@
 - The project will now be tracking the progress.
 
 ## Local development setup
-- Start the Clojurescript repl in Emacs Cider with `cider-jack-in-cljs`.
+- Start the auto JS compilation with `clj A:dev/js`.
+- Start the auto CSS compilation with `clj A:dev/css`.
+- Connect to the Clojure REPL, and start the Clojurescript REPL with `(repl)`.
+- Go to `localhost:8080` in the browser to see the app.
 
 ## Remote Deployment
 - In `app/` build an optimised index.js file with `shadow-cljs release :app`.
