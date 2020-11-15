@@ -11,7 +11,9 @@
 ## Local development setup
 - In `app/` start the auto JS compilation with `clj A:dev/js`.
 - In `app/` start the auto CSS compilation with `clj A:dev/css`.
-- Connect to the Clojure REPL, and start the Clojurescript REPL with `(repl)`.
+- In `api/` start the REPL with `clj A:repl`.
+- Connect to the app's Clojure REPL, and start the Clojurescript REPL with `(repl)`.
+- Connect to the api's Clojure REPL, and load the `flow.dev` namespace to start the server.
 - Go to `localhost:8080` in the browser to see the app.
 
 ## Remote Deployment
