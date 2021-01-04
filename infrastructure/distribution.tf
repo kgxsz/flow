@@ -46,6 +46,19 @@ resource "aws_route53_record" "app" {
   }
 }
 
+resource "aws_route53_record" "api" {
+  provider = aws.us-east-1
+  zone_id  = data.aws_route53_zone.zone.zone_id
+  name     = "api.flow.keigo.io"
+  type     = "A"
+
+  alias {
+    evaluate_target_health = true
+    name                   = aws_api_gateway_domain_name.api.cloudfront_domain_name
+    zone_id                = aws_api_gateway_domain_name.api.cloudfront_zone_id
+  }
+}
+
 resource "aws_cloudfront_distribution" "distribution" {
   provider        = aws.us-east-1
   enabled         = true
