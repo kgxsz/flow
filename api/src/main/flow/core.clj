@@ -25,9 +25,9 @@
              (apply medley/deep-merge)
              (response/response)))
       (middleware/wrap-handle)
-      (middleware/wrap-exception)
       (middleware/wrap-content-type)
       (middleware/wrap-cors)
+      (middleware/wrap-exception)
       (middleware/wrap-adaptor)))
 
 
@@ -43,5 +43,5 @@
       (write-output-stream
        output-stream
        {:statusCode 500
-        :headers {"Content-Type"  "application/json; charset=utf-8"}
+        :headers {"Content-Type" "application/json; charset=utf-8"}
         :body "{\"error\": \"Uncaught exception.\"}"}))))
