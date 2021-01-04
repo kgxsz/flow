@@ -11,20 +11,20 @@
 ## Local api development setup
 - Setup the environment variables:
   - `export CORS_ORIGIN=http://localhost:8080`.
-- In `api/` start the REPL with `clj A:repl`.
+- In `api/` start the REPL with `clj -A:repl`.
 - Connect to the api's Clojure REPL, load `flow.dev`, and run `(server)`.
 - The api will be running at `api.localhost:80`.
 
 ## Local app development setup
-- In `app/` start the auto JS compilation with `clj A:dev/js`.
-- In `app/` start the auto CSS compilation with `clj A:dev/css`.
+- In `app/` start the auto JS compilation with `clj -A:dev/js`.
+- In `app/` start the auto CSS compilation with `clj -A:dev/css`.
 - Connect to the app's Clojure REPL, and start the Clojurescript REPL with `(repl)`.
 - The app will be running at `localhost:8080`.
 
 ## Remote deployment
-- In `app/` build an optimised index.js file with `clj A:release/js`.
-- In `app/` build an optimised index.css file with `clj A:release/css`.
-- In `api/` compile the API with `clj A:compile`.
+- In `app/` build an optimised index.js file with `clj -A:release/js`.
+- In `app/` build an optimised index.css file with `clj -A:release/css`.
+- In `api/` compile the API with `clj -A:compile`.
 - In `api/` zip the API with `clj -A:zip mach.pack.alpha.aws-lambda target/flow.zip -C:compile -R:compile`
 - In `infrastructure/` update the remote assets with `terraform apply`.
 
