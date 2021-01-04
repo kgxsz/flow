@@ -8,6 +8,11 @@ resource "aws_s3_bucket" "app" {
   }
 }
 
+resource "aws_s3_bucket" "api" {
+  provider = aws.eu-west-1
+  bucket   = "api.flow.keigo.io"
+}
+
 resource "aws_s3_bucket_object" "html" {
   provider = aws.eu-west-1
   bucket   = aws_s3_bucket.app.bucket
@@ -53,4 +58,12 @@ resource "aws_s3_bucket_object" "fonts" {
   source   = "${path.module}/../app/public/fonts/${each.value}"
   etag     = filemd5("${path.module}/../app/public/fonts/${each.value}")
   content_type = "application/octet-stream"
+}
+
+resource "aws_s3_bucket_object" "api" {
+  provider = aws.eu-west-1
+  bucket   = aws_s3_bucket.api.bucket
+  key      = "flow.zip"
+  source   = "${path.module}/../api/target/flow.zip"
+  etag     = filemd5("${path.module}/../api/target/flow.zip")
 }
