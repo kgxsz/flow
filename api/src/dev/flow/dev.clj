@@ -12,14 +12,11 @@
              (apply medley/deep-merge)
              (response/response)))
       (middleware/wrap-handle)
-      (middleware/wrap-exception)
       (middleware/wrap-content-type)
-      (middleware/wrap-cors)))
+      (middleware/wrap-cors)
+      (middleware/wrap-exception)))
 
 
-(defn start-server []
+(defn server []
   (let [options {:port 80 :join? false}]
     (jetty/run-jetty #'handler options)))
-
-
-(defonce server (start-server))
