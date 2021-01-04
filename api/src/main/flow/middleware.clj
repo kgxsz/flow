@@ -24,7 +24,12 @@
 (defn wrap-content-type
   "Formats the inbound request and outbound response based on the content type header."
   [handler]
-  (muuntaja.middleware/wrap-format handler))
+  (fn [{:keys [headers] :as request}]
+    (let [content-type (get-in request [:headers "content-type"])]
+      (if (or (= content-type "application/json")
+              (= content-type "application/transit+json"))
+        ((muuntaja.middleware/wrap-format handler) request)
+        (throw (IllegalArgumentException. "Unsupported Content-Type."))))))
 
 
 (defn wrap-cors
@@ -32,7 +37,7 @@
   [handler]
   (cors.middleware/wrap-cors
    handler
-   :access-control-allow-origin [(re-pattern "http://localhost:8080")]
+   :access-control-allow-origin [(re-pattern (System/getenv "CORS_ORIGIN"))]
    :access-control-allow-methods [:options :post]
    :access-control-allow-credentials "true"))
 
@@ -45,7 +50,9 @@
     (try
       (handler request)
       (catch IllegalArgumentException e
-        (response/bad-request {:error (.getMessage e)})))))
+        {:status 400
+         :headers {"Content-Type" "application/json; charset=utf-8"}
+         :body (str "{\"error\": \"" (.getMessage e) "\"}")}))))
 
 
 (defn wrap-adaptor
@@ -73,4 +80,4 @@
           {:keys [status headers body] :as response} (handler request)]
       {:statusCode status
        :headers headers
-       :body (slurp body)})))
+       :body (try (slurp body) (catch Exception e body))})))
