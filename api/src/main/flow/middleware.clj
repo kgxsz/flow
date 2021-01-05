@@ -43,8 +43,7 @@
 
 
 (defn wrap-exception
-  "Handles all uncaught exceptions, prints the stacktrace to the logs,
-   and then returns the appropriate error code."
+  "Handles all uncaught exceptions."
   [handler]
   (fn [request]
     (try
