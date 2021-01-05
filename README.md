@@ -24,7 +24,9 @@
 ## Remote deployment
 - In `app/` build an optimised index.js file with `clj -A:release/js`.
 - In `app/` build an optimised index.css file with `clj -A:release/css`.
+- In `api/` clear out previous compilations with `rm -rf classes && mkdir classes`.
 - In `api/` compile the API with `clj -A:compile`.
+- In `api/` clear out previous zips with `rm -rf target && mkdir target`.
 - In `api/` zip the API with `clj -A:zip mach.pack.alpha.aws-lambda target/flow.zip -C:compile -R:compile`
 - In `infrastructure/` update the remote assets with `terraform apply`.
 
