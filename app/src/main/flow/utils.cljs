@@ -27,4 +27,5 @@
     (-> (url/url "")
         (assoc :protocol protocol)
         (assoc :host (str "api." host))
+        (assoc :path (->> path name (str "/")))
         (str))))
