@@ -26,6 +26,7 @@
              (response/response)))
       (middleware/wrap-handle)
       (middleware/wrap-content-type)
+      (middleware/wrap-method)
       (middleware/wrap-cors)
       (middleware/wrap-exception)
       (middleware/wrap-adaptor)))
