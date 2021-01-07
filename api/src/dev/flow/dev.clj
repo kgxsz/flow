@@ -1,23 +1,19 @@
 (ns flow.dev
   (:require [flow.middleware :as middleware]
-            [medley.core :as medley]
-            [ring.util.response :as response]
-            [ring.adapter.jetty :as jetty]))
+            [ring.adapter.jetty :as jetty]
+            [flow.core :as core]))
 
 
-(def handler
-  (-> (fn [request]
-        (->> (:body-params request)
-             (map (:handle request))
-             (apply medley/deep-merge)
-             (response/response)))
-      (middleware/wrap-handle)
+(def wrapped-handler
+  (-> core/handler
+      (middleware/wrap-query-command-dispatch)
+      (middleware/wrap-content-validation)
       (middleware/wrap-content-type)
-      (middleware/wrap-method)
+      (middleware/wrap-request-method)
       (middleware/wrap-cors)
       (middleware/wrap-exception)))
 
 
 (defn server []
   (let [options {:port 80 :join? false}]
-    (jetty/run-jetty #'handler options)))
+    (jetty/run-jetty #'wrapped-handler options)))

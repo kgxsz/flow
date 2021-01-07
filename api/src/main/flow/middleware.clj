@@ -1,15 +1,14 @@
 (ns flow.middleware
   (:require [flow.query :as query]
             [flow.command :as command]
-            [ring.util.response :as response]
             [ring.middleware.cors :as cors.middleware]
             [muuntaja.middleware :as muuntaja.middleware]
             [medley.core :as medley]
             [clojure.java.io :as io]))
 
 
-(defn wrap-handle
-  "Determines whether to use the query/handle or command/handle function,
+(defn wrap-query-command-dispatch
+  "Determines whether to dispatch to query/handle or command/handle,
    and adds it to the request to be used by the handler."
   [handler]
   (fn [{:keys [uri] :as request}]
@@ -17,6 +16,15 @@
       "/query" (handler (assoc request :handle query/handle))
       "/command" (handler (assoc request :handle command/handle))
       (throw (IllegalArgumentException. "Unsupported uri.")))))
+
+
+(defn wrap-content-validation
+  "Determines the validity of the content provided by the client."
+  [handler]
+  (fn [{:keys [body-params] :as request}]
+    (if (and (map? body-params) (not (empty? body-params)))
+      (handler request)
+      (throw (IllegalArgumentException. "Unsupported content.")))))
 
 
 (defn wrap-content-type
@@ -35,13 +43,13 @@
         (throw (IllegalArgumentException. "Unsupported or missing Content-Type header."))))))
 
 
-(defn wrap-method
-  "Filters out any method other than POST."
+(defn wrap-request-method
+  "Filters out any request method other than POST."
   [handler]
   (fn [{:keys [request-method] :as request}]
     (if (= request-method :post)
       (handler request)
-      (throw (IllegalArgumentException. "Unsupported method.")))))
+      (throw (IllegalArgumentException. "Unsupported request method.")))))
 
 
 (defn wrap-cors
