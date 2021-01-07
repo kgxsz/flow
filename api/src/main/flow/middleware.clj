@@ -1,24 +1,30 @@
 (ns flow.middleware
   (:require [flow.query :as query]
             [flow.command :as command]
-            [ring.util.response :as response]
             [ring.middleware.cors :as cors.middleware]
             [muuntaja.middleware :as muuntaja.middleware]
             [medley.core :as medley]
-            [clojure.core.match :as match]
             [clojure.java.io :as io]))
 
 
-(defn wrap-handle
-  "Determines whether to use the query/handle or command/handle function,
+(defn wrap-query-command-dispatch
+  "Determines whether to dispatch to query/handle or command/handle,
    and adds it to the request to be used by the handler."
   [handler]
-  (fn [{:keys [request-method uri] :as request}]
-    (match/match
-     [request-method uri]
-     [:post "/query"] (handler (assoc request :handle query/handle))
-     [:post "/command"] (handler (assoc request :handle command/handle))
-     [_ _] (throw (IllegalArgumentException. "Unsupported method and/or uri.")))))
+  (fn [{:keys [uri] :as request}]
+    (case uri
+      "/query" (handler (assoc request :handle query/handle))
+      "/command" (handler (assoc request :handle command/handle))
+      (throw (IllegalArgumentException. "Unsupported uri.")))))
+
+
+(defn wrap-content-validation
+  "Determines the validity of the content provided by the client."
+  [handler]
+  (fn [{:keys [body-params] :as request}]
+    (if (and (map? body-params) (not (empty? body-params)))
+      (handler request)
+      (throw (IllegalArgumentException. "Unsupported content.")))))
 
 
 (defn wrap-content-type
@@ -28,12 +34,26 @@
     (let [content-type (get-in request [:headers "content-type"])]
       (if (or (= content-type "application/json")
               (= content-type "application/transit+json"))
-        ((muuntaja.middleware/wrap-format handler) request)
-        (throw (IllegalArgumentException. "Unsupported Content-Type."))))))
+        (try
+          ((muuntaja.middleware/wrap-format handler) request)
+          (catch clojure.lang.ExceptionInfo e
+            (let [{:keys [type format]} (ex-data e)]
+              (when (= :muuntaja/decode type)
+                (throw (IllegalArgumentException. (str "Malformed " format " content.")))))))
+        (throw (IllegalArgumentException. "Unsupported or missing Content-Type header."))))))
+
+
+(defn wrap-request-method
+  "Filters out any request method other than POST."
+  [handler]
+  (fn [{:keys [request-method] :as request}]
+    (if (= request-method :post)
+      (handler request)
+      (throw (IllegalArgumentException. "Unsupported request method.")))))
 
 
 (defn wrap-cors
-  "Handles all the cross origin resource sharing concerns."
+  "Handles the cross origin resource sharing concerns."
   [handler]
   (cors.middleware/wrap-cors
    handler
@@ -43,8 +63,7 @@
 
 
 (defn wrap-exception
-  "Handles all uncaught exceptions, prints the stacktrace to the logs,
-   and then returns the appropriate error code."
+  "Handles all uncaught exceptions."
   [handler]
   (fn [request]
     (try

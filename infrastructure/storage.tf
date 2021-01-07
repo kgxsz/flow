@@ -2,7 +2,7 @@ resource "aws_s3_bucket" "app" {
   provider = aws.eu-west-1
   bucket   = "app.flow.keigo.io"
   acl      = "public-read"
-  policy   = file("policies/bucket.json")
+  policy   = file("policies/storage/access.json")
   website {
     index_document = "index.html"
   }

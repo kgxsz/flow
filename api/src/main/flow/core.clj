@@ -18,14 +18,20 @@
     (.write output-stream (muuntaja/encode encoder "application/json" response))))
 
 
-(def handler
-  (-> (fn [request]
-        (->> (:body-params request)
-             (map (:handle request))
-             (apply medley/deep-merge)
-             (response/response)))
-      (middleware/wrap-handle)
+(defn handler
+  [request]
+  (->> (:body-params request)
+       (map (:handle request))
+       (apply medley/deep-merge)
+       (response/response)))
+
+
+(def wrapped-handler
+  (-> handler
+      (middleware/wrap-query-command-dispatch)
+      (middleware/wrap-content-validation)
       (middleware/wrap-content-type)
+      (middleware/wrap-request-method)
       (middleware/wrap-cors)
       (middleware/wrap-exception)
       (middleware/wrap-adaptor)))
@@ -36,7 +42,7 @@
   (try
     (->> input-stream
          (read-input-stream)
-         (handler)
+         (wrapped-handler)
          (write-output-stream output-stream))
     (catch Exception e
       (.printStackTrace e)
