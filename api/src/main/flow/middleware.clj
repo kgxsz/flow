@@ -2,9 +2,7 @@
   (:require [flow.query :as query]
             [flow.command :as command]
             [ring.middleware.cors :as cors.middleware]
-            [muuntaja.middleware :as muuntaja.middleware]
-            [medley.core :as medley]
-            [clojure.java.io :as io]))
+            [muuntaja.middleware :as muuntaja.middleware]))
 
 
 (defn wrap-query-command-dispatch
@@ -72,31 +70,3 @@
         {:status 400
          :headers {"Content-Type" "application/json; charset=utf-8"}
          :body (str "{\"error\": \"" (.getMessage e) "\"}")}))))
-
-
-(defn wrap-adaptor
-  "Handles the adaption between Ring and AWS Lambda."
-  [handler]
-  (fn [{:keys [headers path requestContext body] :as request}]
-    (let [{:keys [X-Forwarded-Port X-Forwarded-For X-Forwarded-Proto Host]} headers
-          request {:server-port (some-> X-Forwarded-Port
-                                        (Integer/parseInt))
-                   :server-name Host
-                   :remote-addr (some-> X-Forwarded-For
-                                        (clojure.string/split #", ")
-                                        (first))
-                   :uri path
-                   :scheme (keyword X-Forwarded-Proto)
-                   :protocol (:protocol requestContext)
-                   :headers (medley/map-keys
-                             (comp clojure.string/lower-case name)
-                             headers)
-                   :request-method (-> (:httpMethod request)
-                                       (clojure.string/lower-case)
-                                       (keyword))
-                   :body (some-> body (.getBytes) io/input-stream)
-                   :query-string (:queryStringParameters request)}
-          {:keys [status headers body] :as response} (handler request)]
-      {:statusCode status
-       :headers headers
-       :body (try (slurp body) (catch Exception e body))})))
