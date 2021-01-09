@@ -1,4 +1,7 @@
 variable "cors_origin" { default = "https://flow.keigo.io" }
+variable "cookie_store_key" {}
+variable "cookie_attribute_domain" { default = ".flow.keigo.io" }
+variable "cookie_attribute_secure" { default = "true" }
 
 resource "aws_api_gateway_rest_api" "api" {
   provider = aws.eu-west-1
@@ -130,6 +133,9 @@ resource "aws_lambda_function" "api" {
   environment {
     variables = {
       CORS_ORIGIN = var.cors_origin
+      COOKIE_STORE_KEY = var.cookie_store_key
+      COOKIE_ATTRIBUTE_DOMAIN = var.cookie_attribute_domain
+      COOKIE_ATTRIBUTE_SECURE = var.cookie_attribute_secure
     }
   }
 }

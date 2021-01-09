@@ -48,7 +48,8 @@
   "Adapts the ring compliant response into a Lambda compliant output."
   [{:keys [status headers body]}]
   {:statusCode status
-   :headers headers
+   :headers (medley/remove-vals coll? headers)
+   :multiValueHeaders (medley/filter-vals coll? headers)
    :body (try (slurp body) (catch Exception e body))})
 
 
@@ -59,6 +60,8 @@
              (apply medley/deep-merge)
              (response/response)))
       (middleware/wrap-query-command-dispatch)
+      (middleware/wrap-current-user-id)
+      (middleware/wrap-session)
       (middleware/wrap-content-validation)
       (middleware/wrap-content-type)
       (middleware/wrap-request-method)
