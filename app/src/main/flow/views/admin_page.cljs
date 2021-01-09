@@ -22,7 +22,7 @@
       [:div
        {:class (u/bem [:text :font-size-large :padding-left-tiny])
         :on-click authorise}
-       "authorise"]]
+       "Authorise"]]
      [:div
       {:class (u/bem [:cell :row :padding-top-tiny])}
       [:div
@@ -30,7 +30,7 @@
       [:div
        {:class (u/bem [:text :font-size-large :padding-left-tiny])
         :on-click deauthorise}
-       "deauthorise"]]
+       "Deauthorise"]]
      [:div
       {:class (u/bem [:cell :row :padding-top-tiny])}
       [:div
@@ -38,7 +38,7 @@
       [:div
        {:class (u/bem [:text :font-size-large :padding-left-tiny])
         :on-click find}
-       "find"]]]]
+       "Find"]]]]
    [:div
     {:class (u/bem [:page__footer])}]])
 

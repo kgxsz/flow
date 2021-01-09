@@ -1,6 +1,8 @@
 {:deps {:aliases [:dev/js]}
  :nrepl {:middleware [refactor-nrepl.middleware/wrap-refactor]
          :init-ns flow.dev}
+ :ssl {:keystore "ssl/keystore.jks"
+       :password "localhost"}
  :dev-http {8080 "public"}
  :source-paths ["src/main"]
  :builds {:app {:target :browser
