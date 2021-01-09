@@ -10,8 +10,8 @@
 
 ## Local api development setup
 - Create and trust a self signed certificate with common name, URI,
-  and DNS name, and password equal to `api.localhost`.
-- Export the `Certificates.p12` into `api/ssl/`.
+  DNS name, and password equal to `api.localhost`.
+- Export the certificate to `api/ssl/Certificates.p12`
 - In `api/ssl/` generate the `keystore.jks` with: 
   `keytool -importkeystore -destkeystore keystore.jks -srcstoretype PKCS12 -srckeystore Certificates.p1`.
 - In `api/` setup the environment variables:
@@ -24,7 +24,7 @@
 ## Local app development setup
 - Create and trust a self signed certificate with common name,
   URI, DNS name, and password equal to `localhost`.
-- Export the `Certificates.p12` into `app/ssl/`.
+- Export the certificate to `app/ssl/Certificates.p12`
 - In `app/ssl/` generate the `keystore.jks` with: 
   `keytool -importkeystore -destkeystore keystore.jks -srcstoretype PKCS12 -srckeystore Certificates.p1`.
 - In `app/` start the auto JS compilation with `clj -A:dev/js`.
@@ -39,7 +39,7 @@
 - In `api/` compile the API with `clj -A:compile`.
 - In `api/` zip the API with `clj -A:zip mach.pack.alpha.aws-lambda target/flow.zip -C:compile -R:compile`
 - In `infrastructure/` setup the environment variables:
-  - `TF_VAR_cookie_store_key` as a 16 byte secret key.
+  - `TF_VAR_cookie_store_key` as the 16 byte secret key set in production.
 - In `infrastructure/` update the remote assets with `terraform apply`.
 
 ## Tear down
