@@ -23,9 +23,7 @@
                 (assoc :query-params query-params))]
      (case route
        :home {:db db}
-       :admin {:db db
-               :query {:example {:example 1}}
-               :command {:example :example}}
+       :admin {:db db}
        :unknown {:db db}
        {:db db}))))
 
@@ -67,3 +65,27 @@
  [interceptors/schema]
  (fn [{:keys [db]} [_ command response]]
    {:db (assoc db :error? true)}))
+
+
+(re-frame/reg-event-fx
+ :authorise
+ [interceptors/schema]
+ (fn [{:keys [db]} [_ command response]]
+   {:command {:authorise {}}
+    :db db}))
+
+
+(re-frame/reg-event-fx
+ :deauthorise
+ [interceptors/schema]
+ (fn [{:keys [db]} [_ command response]]
+   {:command {:deauthorise {}}
+    :db db}))
+
+
+(re-frame/reg-event-fx
+ :find
+ [interceptors/schema]
+ (fn [{:keys [db]} [_ command response]]
+   {:query {:find {}}
+    :db db}))

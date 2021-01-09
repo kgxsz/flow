@@ -35,6 +35,7 @@
  (fn [query]
    (ajax/POST (utils/make-url :query)
               {:params query
+               :with-credentials true
                :handler (fn [response]
                           (re-frame/dispatch [:query-success query response]))
                :error-handler (fn [{:keys [response]}] (re-frame/dispatch [:query-failure query response]))})))
@@ -45,5 +46,6 @@
  (fn [command]
    (ajax/POST (utils/make-url :command)
               {:params command
+               :with-credentials true
                :handler (fn [response] (re-frame/dispatch [:command-success command response]))
                :error-handler (fn [{:keys [response]}] (re-frame/dispatch [:command-failure command response]))})))
