@@ -3,7 +3,7 @@
             [flow.utils :as u]))
 
 
-(defn view [_ {:keys [update-route]}]
+(defn view [_ _ {:keys [update-route]}]
   [:div
    {:class (u/bem [:page])}
    [:div
@@ -22,5 +22,6 @@
 
 (defn unknown-page []
   [view
+   {}
    {}
    {:update-route #(re-frame/dispatch [:update-route :home])}])

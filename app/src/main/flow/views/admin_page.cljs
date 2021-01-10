@@ -3,7 +3,9 @@
             [flow.utils :as u]))
 
 
-(defn view [_ {:keys [authorise deauthorise find]}]
+(defn view [{:keys [authorised?]}
+            _
+            {:keys [update-route]}]
   [:div
    {:class (u/bem [:page])}
    [:div
@@ -13,39 +15,17 @@
      [:div
       {:class (u/bem [:icon :construction :font-size-xx-huge :align-center])}]
      [:div
-      {:class (u/bem [:text :font-size-xx-huge :align-center])}
-      "Admin"]
-     [:div
-      {:class (u/bem [:cell :row :padding-top-large])}
-      [:div
-       {:class (u/bem [:icon :arrow-right-circle :font-size-small])}]
-      [:div
-       {:class (u/bem [:text :font-size-large :padding-left-tiny])
-        :on-click authorise}
-       "Authorise"]]
-     [:div
-      {:class (u/bem [:cell :row :padding-top-tiny])}
-      [:div
-       {:class (u/bem [:icon :arrow-right-circle :font-size-small])}]
-      [:div
-       {:class (u/bem [:text :font-size-large :padding-left-tiny])
-        :on-click deauthorise}
-       "Deauthorise"]]
-     [:div
-      {:class (u/bem [:cell :row :padding-top-tiny])}
-      [:div
-       {:class (u/bem [:icon :arrow-right-circle :font-size-small])}]
-      [:div
-       {:class (u/bem [:text :font-size-large :padding-left-tiny])
-        :on-click find}
-       "Find"]]]]
+      {:class (u/bem [:text :font-size-xx-huge :align-center])
+       :on-click update-route}
+      "Admin"]]]
    [:div
     {:class (u/bem [:page__footer])}]])
 
 
 (defn admin-page []
-  [view
-   {}
-   {:authorise #(re-frame/dispatch [:authorise])
-    :deauthorise #(re-frame/dispatch [:deauthorise])
-    :find #(re-frame/dispatch [:find])}])
+  (let [!authorised? (re-frame/subscribe [:authorised?])]
+    (fn []
+      [view
+       {:authorised? @!authorised?}
+       {}
+       {:update-route #(re-frame/dispatch [:update-route :home])}])))

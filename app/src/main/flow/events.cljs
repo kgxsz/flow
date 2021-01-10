@@ -10,7 +10,8 @@
  [interceptors/schema]
  (fn [{:keys [db]} event]
    {:db {}
-    :initialise-routing {}}))
+    :initialise-routing {}
+    :query {:user {}}}))
 
 
 (re-frame/reg-event-fx
@@ -37,32 +38,33 @@
 
 (re-frame/reg-event-fx
  :query-success
- [interceptors/schema]
+ [interceptors/schema interceptors/current-user-id]
  (fn [{:keys [db]} [_ query response]]
    (case (-> query keys first)
-     :admin {:db db}
+     :user {:db (update db :user merge (:user response))}
      {})))
 
 
 (re-frame/reg-event-fx
  :query-failure
- [interceptors/schema]
+ [interceptors/schema interceptors/current-user-id]
  (fn [{:keys [db]} [_ query response]]
    {:db (assoc db :error? true)}))
 
 
 (re-frame/reg-event-fx
  :command-success
- [interceptors/schema]
+ [interceptors/schema interceptors/current-user-id]
  (fn [{:keys [db]} [_ command response]]
    (case (-> command keys first)
-     :admin {:db db}
+     :authorise {:query {:user {}}}
+     :deauthorise {}
      {})))
 
 
 (re-frame/reg-event-fx
  :command-failure
- [interceptors/schema]
+ [interceptors/schema interceptors/current-user-id]
  (fn [{:keys [db]} [_ command response]]
    {:db (assoc db :error? true)}))
 
@@ -80,12 +82,4 @@
  [interceptors/schema]
  (fn [{:keys [db]} [_ command response]]
    {:command {:deauthorise {}}
-    :db db}))
-
-
-(re-frame/reg-event-fx
- :find
- [interceptors/schema]
- (fn [{:keys [db]} [_ command response]]
-   {:query {:find {}}
     :db db}))

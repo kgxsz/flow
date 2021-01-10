@@ -8,7 +8,8 @@
 
 
 (defn view [{:keys [initialising? route]}
-            {:keys [loading-page home-page admin-page unknown-page]}]
+            {:keys [loading-page home-page admin-page unknown-page]}
+            _]
   [:div
    {:class (u/bem [:core])}
    (if initialising?
@@ -29,4 +30,5 @@
        {:loading-page loading-page/loading-page
         :home-page home-page/home-page
         :admin-page admin-page/admin-page
-        :unknown-page unknown-page/unknown-page}])))
+        :unknown-page unknown-page/unknown-page}
+       {}])))

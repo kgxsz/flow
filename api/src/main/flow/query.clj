@@ -4,12 +4,13 @@
 (defmulti handle first)
 
 
-(defmethod handle :example [[_ {:keys [example]}]]
-  {:example example})
+(defmethod handle :user [[_ {:keys [current-user-id]}]]
+  (if current-user-id
+    {:user {current-user-id {:id 3719
+                             :name "Johnny McGee"
+                             :email "johhny@mcgee.com"}}}
+    {:user {}}))
 
-
-(defmethod handle :find [[_ _]]
-  {:find 1})
 
 (defmethod handle :default [query]
   (throw (IllegalArgumentException. "Unsupported query method.")))
