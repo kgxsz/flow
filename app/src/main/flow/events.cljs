@@ -82,4 +82,6 @@
  [interceptors/schema]
  (fn [{:keys [db]} [_ command response]]
    {:command {:deauthorise {}}
-    :db db}))
+    :db (-> db
+            (dissoc :current-user-id)
+            (update :user dissoc (:current-user-id db)))}))
