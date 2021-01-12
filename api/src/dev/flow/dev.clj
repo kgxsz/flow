@@ -10,5 +10,5 @@
                  :join? false
                  :ssl? true
                  :keystore "ssl/keystore.jks"
-                 :key-password "api.localhost"}]
+                 :key-password (System/getenv "KEYSTORE_PASSWORD")}]
    (jetty/run-jetty #'core/handler options)))
