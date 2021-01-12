@@ -3,7 +3,9 @@
             [flow.utils :as u]))
 
 
-(defn view [_ {:keys [update-route]}]
+(defn view [{:keys [authorised?]}
+            _
+            {:keys [authorise deauthorise update-route]}]
   [:div
    {:class (u/bem [:page])}
    [:div
@@ -15,12 +17,34 @@
      [:div
       {:class (u/bem [:text :font-size-xx-huge :align-center])
        :on-click update-route}
-      "Home"]]]
+      "Home"]
+     (if authorised?
+       [:div
+        {:class (u/bem [:cell :row :padding-top-large])}
+        [:div
+         {:class (u/bem [:icon :arrow-right-circle :font-size-small])}]
+        [:div
+         {:class (u/bem [:text :font-size-large :padding-left-tiny])
+          :on-click deauthorise}
+         "Deauthorise"]]
+       [:div
+        {:class (u/bem [:cell :row :padding-top-large])}
+        [:div
+         {:class (u/bem [:icon :arrow-right-circle :font-size-small])}]
+        [:div
+         {:class (u/bem [:text :font-size-large :padding-left-tiny])
+          :on-click authorise}
+         "Authorise"]])]]
    [:div
     {:class (u/bem [:page__footer])}]])
 
 
 (defn home-page []
-  [view
-   {}
-   {:update-route #(re-frame/dispatch [:update-route :admin])}])
+  (let [!authorised? (re-frame/subscribe [:authorised?])]
+    (fn []
+      [view
+       {:authorised? @!authorised?}
+       {}
+       {:authorise #(re-frame/dispatch [:authorise])
+        :deauthorise #(re-frame/dispatch [:deauthorise])
+        :update-route #(re-frame/dispatch [:update-route :admin])}])))

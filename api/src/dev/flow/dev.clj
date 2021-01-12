@@ -1,19 +1,14 @@
 (ns flow.dev
-  (:require [flow.middleware :as middleware]
-            [ring.adapter.jetty :as jetty]
+  (:require [ring.adapter.jetty :as jetty]
+            [flow.middleware :as middleware]
             [flow.core :as core]))
 
 
-(def wrapped-handler
-  (-> core/handler
-      (middleware/wrap-query-command-dispatch)
-      (middleware/wrap-content-validation)
-      (middleware/wrap-content-type)
-      (middleware/wrap-request-method)
-      (middleware/wrap-cors)
-      (middleware/wrap-exception)))
-
-
 (defn server []
-  (let [options {:port 80 :join? false}]
-    (jetty/run-jetty #'wrapped-handler options)))
+  (let [options {:port 80
+                 :ssl-port 443
+                 :join? false
+                 :ssl? true
+                 :keystore "ssl/keystore.jks"
+                 :key-password (System/getenv "KEYSTORE_PASSWORD")}]
+   (jetty/run-jetty #'core/handler options)))

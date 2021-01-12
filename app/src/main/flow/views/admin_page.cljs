@@ -3,7 +3,9 @@
             [flow.utils :as u]))
 
 
-(defn view []
+(defn view [{:keys [authorised?]}
+            _
+            {:keys [update-route]}]
   [:div
    {:class (u/bem [:page])}
    [:div
@@ -13,11 +15,17 @@
      [:div
       {:class (u/bem [:icon :construction :font-size-xx-huge :align-center])}]
      [:div
-      {:class (u/bem [:text :font-size-xx-huge :align-center])}
+      {:class (u/bem [:text :font-size-xx-huge :align-center])
+       :on-click update-route}
       "Admin"]]]
    [:div
     {:class (u/bem [:page__footer])}]])
 
 
 (defn admin-page []
-  [view])
+  (let [!authorised? (re-frame/subscribe [:authorised?])]
+    (fn []
+      [view
+       {:authorised? @!authorised?}
+       {}
+       {:update-route #(re-frame/dispatch [:update-route :home])}])))

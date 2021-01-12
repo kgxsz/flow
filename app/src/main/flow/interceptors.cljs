@@ -19,3 +19,17 @@
   (re-frame/after
    (fn [db]
      (js/console.info db))))
+
+
+(def current-user-id
+  (re-frame/->interceptor
+   :id :current-user-id
+   :before (fn [context]
+             (let [{:keys [current-user-id]} (get-in context [:coeffects :event 2])]
+               (-> context
+                   (update-in [:coeffects :event 2] dissoc :current-user-id)
+                   (assoc-in [:coeffects :db :current-user-id] current-user-id))))
+   :after (fn [context]
+            (if (some? (get-in context [:effects :db]))
+              context
+              (assoc-in context [:effects :db] (get-in context [:coeffects :db]))))))
