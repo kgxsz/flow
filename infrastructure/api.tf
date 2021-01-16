@@ -116,7 +116,9 @@ resource "aws_lambda_function" "api" {
     aws_s3_bucket.api,
     aws_s3_bucket_object.api,
     aws_iam_role.api,
-    aws_iam_policy.api_logs
+    aws_iam_policy.api_logs,
+    aws_iam_policy_attachment.api,
+    aws_route53_record.api,
   ]
   s3_bucket        = aws_s3_bucket.api.bucket
   s3_key           = "flow.zip"
