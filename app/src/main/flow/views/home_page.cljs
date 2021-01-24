@@ -5,7 +5,10 @@
 
 (defn view [{:keys [authorised?]}
             _
-            {:keys [authorise deauthorise update-route]}]
+            {:keys [initialise-authorisation
+                    finalise-authorisation
+                    deauthorise
+                    update-route]}]
   [:div
    {:class (u/bem [:page])}
    [:div
@@ -28,13 +31,22 @@
           :on-click deauthorise}
          "Deauthorise"]]
        [:div
-        {:class (u/bem [:cell :row :padding-top-large])}
         [:div
-         {:class (u/bem [:icon :arrow-right-circle :font-size-small])}]
+         {:class (u/bem [:cell :row :padding-top-large])}
+         [:div
+          {:class (u/bem [:icon :arrow-right-circle :font-size-small])}]
+         [:div
+          {:class (u/bem [:text :font-size-large :padding-left-tiny])
+           :on-click initialise-authorisation}
+          "Initialise authorisation"]]
         [:div
-         {:class (u/bem [:text :font-size-large :padding-left-tiny])
-          :on-click authorise}
-         "Authorise"]])]]
+         {:class (u/bem [:cell :row])}
+         [:div
+          {:class (u/bem [:icon :arrow-right-circle :font-size-small])}]
+         [:div
+          {:class (u/bem [:text :font-size-large :padding-left-tiny])
+           :on-click (partial finalise-authorisation {:authorisation-code 1234})}
+          "Finalise authorisation"]]])]]
    [:div
     {:class (u/bem [:page__footer])}]])
 
@@ -45,6 +57,7 @@
       [view
        {:authorised? @!authorised?}
        {}
-       {:authorise #(re-frame/dispatch [:authorise])
+       {:initialise-authorisation #(re-frame/dispatch [:initialise-authorisation])
+        :finalise-authorisation #(re-frame/dispatch [:finalise-authorisation %])
         :deauthorise #(re-frame/dispatch [:deauthorise])
         :update-route #(re-frame/dispatch [:update-route :admin])}])))

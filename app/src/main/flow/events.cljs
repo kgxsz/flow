@@ -57,7 +57,8 @@
  [interceptors/schema interceptors/current-user-id]
  (fn [{:keys [db]} [_ command response]]
    (case (-> command keys first)
-     :authorise {:query {:user {}}}
+     :initialise-authorisation {}
+     :finalise-authorisation {:query {:user {}}}
      :deauthorise {}
      {})))
 
@@ -70,17 +71,25 @@
 
 
 (re-frame/reg-event-fx
- :authorise
+ :initialise-authorisation
  [interceptors/schema]
- (fn [{:keys [db]} [_ command response]]
-   {:command {:authorise {}}
+ (fn [{:keys [db]} [_]]
+   {:command {:initialise-authorisation {}}
+    :db db}))
+
+
+(re-frame/reg-event-fx
+ :finalise-authorisation
+ [interceptors/schema]
+ (fn [{:keys [db]} [_ parameters]]
+   {:command {:finalise-authorisation parameters}
     :db db}))
 
 
 (re-frame/reg-event-fx
  :deauthorise
  [interceptors/schema]
- (fn [{:keys [db]} [_ command response]]
+ (fn [{:keys [db]} [_]]
    {:command {:deauthorise {}}
     :db (-> db
             (dissoc :current-user-id)
