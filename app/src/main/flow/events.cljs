@@ -73,8 +73,8 @@
 (re-frame/reg-event-fx
  :initialise-authorisation
  [interceptors/schema]
- (fn [{:keys [db]} [_]]
-   {:command {:initialise-authorisation {}}
+ (fn [{:keys [db]} [_ parameters]]
+   {:command {:initialise-authorisation parameters}
     :db db}))
 
 

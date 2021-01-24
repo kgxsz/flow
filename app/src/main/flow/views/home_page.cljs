@@ -37,7 +37,7 @@
           {:class (u/bem [:icon :arrow-right-circle :font-size-small])}]
          [:div
           {:class (u/bem [:text :font-size-large :padding-left-tiny])
-           :on-click initialise-authorisation}
+           :on-click (partial initialise-authorisation {:email-address "k.suzukawa@gmail.com"})}
           "Initialise authorisation"]]
         [:div
          {:class (u/bem [:cell :row])}
@@ -57,7 +57,7 @@
       [view
        {:authorised? @!authorised?}
        {}
-       {:initialise-authorisation #(re-frame/dispatch [:initialise-authorisation])
+       {:initialise-authorisation #(re-frame/dispatch [:initialise-authorisation %])
         :finalise-authorisation #(re-frame/dispatch [:finalise-authorisation %])
         :deauthorise #(re-frame/dispatch [:deauthorise])
         :update-route #(re-frame/dispatch [:update-route :admin])}])))

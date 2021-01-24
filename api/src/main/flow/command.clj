@@ -9,14 +9,20 @@
   {})
 
 
-(defmethod handle :initialise-authorisation [command]
-  (mailer/send-email {}
-                     "noreply@flow.keigo.io"
-                     "k.suzukawa@gmail.com"
-                     "Hello Keigo"
-                     {:html-body "<html>Authorisation code: 1234</html>"
-                      :text-body "Authorisation code: 1234"})
-  {})
+(defmethod handle :initialise-authorisation [[_ {:keys [email-address]}]]
+  (let [email-address-whitelist #{"k.suzukawa@gmail.com"}]
+    (if (contains? email-address-whitelist email-address)
+      (try
+        (mailer/send-email {}
+                           "Flow <noreply@flow.keigo.io>"
+                           email-address
+                           "Hello!"
+                           {:html-body "<html>Authorisation code: 1234</html>"
+                            :text-body "Authorisation code: 1234"})
+        {}
+        (catch Exception e
+          {}))
+      {})))
 
 
 (defmethod handle :finalise-authorisation [[_ {:keys [authorisation-code]}]]
