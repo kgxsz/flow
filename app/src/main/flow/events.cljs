@@ -1,8 +1,7 @@
 (ns flow.events
   (:require [re-frame.core :as re-frame]
             [flow.interceptors :as interceptors]
-            [goog.string :as gstring]
-            [goog.string.format]))
+            [clojure.string :as string]))
 
 
 (re-frame/reg-event-fx
@@ -71,18 +70,32 @@
 
 
 (re-frame/reg-event-fx
+ :update-input-value
+ [interceptors/schema]
+ (fn [{:keys [db]} [_ value]]
+   (let [valid-length? (<= (count value) 250)
+         sanitise #(-> %
+                       (string/trim)
+                       (string/trim-newline)
+                       (string/replace #" " ""))]
+     (if valid-length?
+       {:db (assoc db :input-value (sanitise value))}
+       {}))))
+
+
+(re-frame/reg-event-fx
  :initialise-authorisation
  [interceptors/schema]
- (fn [{:keys [db]} [_ parameters]]
-   {:command {:initialise-authorisation parameters}
+ (fn [{:keys [db]} [_ email-address]]
+   {:command {:initialise-authorisation {:email-address email-address}}
     :db db}))
 
 
 (re-frame/reg-event-fx
  :finalise-authorisation
  [interceptors/schema]
- (fn [{:keys [db]} [_ parameters]]
-   {:command {:finalise-authorisation parameters}
+ (fn [{:keys [db]} [_ authorisation-code]]
+   {:command {:finalise-authorisation {:authorisation-code authorisation-code}}
     :db db}))
 
 

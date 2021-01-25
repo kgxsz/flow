@@ -1,14 +1,12 @@
 (ns flow.views.home-page
   (:require [re-frame.core :as re-frame]
+            [flow.views.authorisation :as authorisation]
             [flow.utils :as u]))
 
 
 (defn view [{:keys [authorised?]}
-            _
-            {:keys [initialise-authorisation
-                    finalise-authorisation
-                    deauthorise
-                    update-route]}]
+            {:keys [authorisation]}
+            {:keys [deauthorise]}]
   [:div
    {:class (u/bem [:page])}
    [:div
@@ -16,11 +14,7 @@
     [:div
      {:class (u/bem [:cell :column :padding-top-huge])}
      [:div
-      {:class (u/bem [:icon :construction :font-size-xx-huge :align-center])}]
-     [:div
-      {:class (u/bem [:text :font-size-xx-huge :align-center])
-       :on-click update-route}
-      "Home"]
+      {:class (u/bem [:icon :leaf :font-size-xxx-huge :align-center])}]
      (if authorised?
        [:div
         {:class (u/bem [:cell :row :padding-top-large])}
@@ -31,22 +25,8 @@
           :on-click deauthorise}
          "Deauthorise"]]
        [:div
-        [:div
-         {:class (u/bem [:cell :row :padding-top-large])}
-         [:div
-          {:class (u/bem [:icon :arrow-right-circle :font-size-small])}]
-         [:div
-          {:class (u/bem [:text :font-size-large :padding-left-tiny])
-           :on-click (partial initialise-authorisation {:email-address "k.suzukawa@gmail.com"})}
-          "Initialise authorisation"]]
-        [:div
-         {:class (u/bem [:cell :row])}
-         [:div
-          {:class (u/bem [:icon :arrow-right-circle :font-size-small])}]
-         [:div
-          {:class (u/bem [:text :font-size-large :padding-left-tiny])
-           :on-click (partial finalise-authorisation {:authorisation-code 1234})}
-          "Finalise authorisation"]]])]]
+        {:class (u/bem [:cell :padding-top-xx-large])}
+        [authorisation]])]]
    [:div
     {:class (u/bem [:page__footer])}]])
 
@@ -56,8 +36,5 @@
     (fn []
       [view
        {:authorised? @!authorised?}
-       {}
-       {:initialise-authorisation #(re-frame/dispatch [:initialise-authorisation %])
-        :finalise-authorisation #(re-frame/dispatch [:finalise-authorisation %])
-        :deauthorise #(re-frame/dispatch [:deauthorise])
-        :update-route #(re-frame/dispatch [:update-route :admin])}])))
+       {:authorisation authorisation/authorisation}
+       {:deauthorise #(re-frame/dispatch [:deauthorise])}])))

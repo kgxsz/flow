@@ -23,3 +23,9 @@
  :route
  (fn [db [_]]
    (:route db)))
+
+
+(re-frame/reg-sub
+ :input-value
+ (fn [db [_]]
+   (:input-value db)))
