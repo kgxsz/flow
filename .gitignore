@@ -27,6 +27,7 @@ node_modules/
 *terraform.*
 
 # Other
-*/public/css/
-*/public/js/
-ssl/
+app/resources/public/css/
+app/resources/public/js/
+app/ssl/
+api/ssl/

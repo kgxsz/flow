@@ -18,7 +18,7 @@
                                             :sha "34a48a40facc4bbb6711fa13c8eb1e41a211e320"}}
                      :main-opts ["--main" "gardener.compiler"
                                  "--stylesheet" "flow.styles.core/core"
-                                 "--output-to" "public/css/index.css"
+                                 "--output-to" "resources/public/css/index.css"
                                  "--watch" "src/main/flow/styles"
                                  "--pretty-print" "true"]}
            :release/js {:extra-deps {thheller/shadow-cljs {:mvn/version "2.11.7"}}
@@ -29,5 +29,5 @@
                                                 :sha "34a48a40facc4bbb6711fa13c8eb1e41a211e320"}}
                          :main-opts ["--main" "gardener.compiler"
                                      "--stylesheet" "flow.styles.core/core"
-                                     "--output-to" "public/css/index.css"
+                                     "--output-to" "resources/public/css/index.css"
                                      "--build-once" "true"]}}}

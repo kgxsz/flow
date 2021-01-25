@@ -17,8 +17,8 @@ resource "aws_s3_bucket_object" "html" {
   provider = aws.eu-west-1
   bucket   = aws_s3_bucket.app.bucket
   key      = "index.html"
-  source   = "${path.module}/../app/public/index.html"
-  etag     = filemd5("${path.module}/../app/public/index.html")
+  source   = "${path.module}/../app/resources/public/index.html"
+  etag     = filemd5("${path.module}/../app/resources/public/index.html")
   content_type = "text/html"
 }
 
@@ -26,8 +26,8 @@ resource "aws_s3_bucket_object" "js" {
   provider = aws.eu-west-1
   bucket   = aws_s3_bucket.app.bucket
   key      = "js/index.js"
-  source   = "${path.module}/../app/public/js/index.js"
-  etag     = filemd5("${path.module}/../app/public/js/index.js")
+  source   = "${path.module}/../app/resources/public/js/index.js"
+  etag     = filemd5("${path.module}/../app/resources/public/js/index.js")
   content_type = "application/javascript"
 }
 
@@ -35,28 +35,28 @@ resource "aws_s3_bucket_object" "css" {
   provider = aws.eu-west-1
   bucket   = aws_s3_bucket.app.bucket
   key      = "css/index.css"
-  source   = "${path.module}/../app/public/css/index.css"
-  etag     = filemd5("${path.module}/../app/public/css/index.css")
+  source   = "${path.module}/../app/resources/public/css/index.css"
+  etag     = filemd5("${path.module}/../app/resources/public/css/index.css")
   content_type = "text/css"
 }
 
 resource "aws_s3_bucket_object" "images" {
   provider = aws.eu-west-1
-  for_each = fileset("${path.module}/../app/public/images", "*")
+  for_each = fileset("${path.module}/../app/resources/public/images", "*")
   bucket   = aws_s3_bucket.app.bucket
   key      = "images/${each.value}"
-  source   = "${path.module}/../app/public/images/${each.value}"
-  etag     = filemd5("${path.module}/../app/public/images/${each.value}")
+  source   = "${path.module}/../app/resources/public/images/${each.value}"
+  etag     = filemd5("${path.module}/../app/resources/public/images/${each.value}")
   content_type = "application/octet-stream"
 }
 
 resource "aws_s3_bucket_object" "fonts" {
   provider = aws.eu-west-1
-  for_each = fileset("${path.module}/../app/public/fonts", "*")
+  for_each = fileset("${path.module}/../app/resources/public/fonts", "*")
   bucket   = aws_s3_bucket.app.bucket
   key      = "fonts/${each.value}"
-  source   = "${path.module}/../app/public/fonts/${each.value}"
-  etag     = filemd5("${path.module}/../app/public/fonts/${each.value}")
+  source   = "${path.module}/../app/resources/public/fonts/${each.value}"
+  etag     = filemd5("${path.module}/../app/resources/public/fonts/${each.value}")
   content_type = "application/octet-stream"
 }
 
