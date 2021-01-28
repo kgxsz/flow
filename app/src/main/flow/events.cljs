@@ -32,7 +32,8 @@
  :update-route
  [interceptors/schema]
  (fn [{:keys [db]} [_ route]]
-   {:update-route {:route route}}))
+   {:update-route {:route route
+                   :db db}}))
 
 
 (re-frame/reg-event-fx
@@ -41,7 +42,7 @@
  (fn [{:keys [db]} [_ query response]]
    (case (-> query keys first)
      :user {:db (update db :user merge (:user response))}
-     {})))
+     {:db db})))
 
 
 (re-frame/reg-event-fx
@@ -56,10 +57,16 @@
  [interceptors/schema interceptors/current-user-id]
  (fn [{:keys [db]} [_ command response]]
    (case (-> command keys first)
-     :initialise-authorisation {}
-     :finalise-authorisation {:query {:user {}}}
-     :deauthorise {}
-     {})))
+     :initialise-authorisation {:db db}
+     :finalise-authorisation {:db (if (:current-user-id db)
+                                    (assoc db
+                                           :authorisation-finalised? false
+                                           :authorisation-failed? false)
+                                    (assoc db
+                                           :authorisation-finalised? false
+                                           :authorisation-failed? true))}
+     :deauthorise {:db db}
+     {:db db})))
 
 
 (re-frame/reg-event-fx
@@ -70,33 +77,53 @@
 
 
 (re-frame/reg-event-fx
- :update-input-value
+ :update-authorisation-email-address
  [interceptors/schema]
- (fn [{:keys [db]} [_ value]]
-   (let [valid-length? (<= (count value) 250)
+ (fn [{:keys [db]} [_ input-value]]
+   (let [valid-length? (<= (count input-value) 250)
          sanitise #(-> %
                        (string/trim)
                        (string/trim-newline)
                        (string/replace #" " ""))]
      (if valid-length?
-       {:db (assoc db :input-value (sanitise value))}
-       {}))))
+       {:db (assoc db :authorisation-email-address (sanitise input-value))}
+       {:db db}))))
+
+
+(re-frame/reg-event-fx
+ :update-authorisation-phrase
+ [interceptors/schema]
+ (fn [{:keys [db]} [_ input-value]]
+   (let [valid-length? (<= (count input-value) 250)
+         sanitise #(-> %
+                       (string/trim)
+                       (string/trim-newline)
+                       (string/replace #" " ""))]
+     (if valid-length?
+       {:db (assoc db :authorisation-phrase (sanitise input-value))}
+       {:db db}))))
 
 
 (re-frame/reg-event-fx
  :initialise-authorisation
  [interceptors/schema]
- (fn [{:keys [db]} [_ email-address]]
-   {:command {:initialise-authorisation {:email-address email-address}}
-    :db db}))
+ (fn [{:keys [db]} [_]]
+   (let [{:keys [authorisation-email-address authorisation-initialised?]} db]
+     (if authorisation-initialised?
+       {:db db}
+       {:command {:initialise-authorisation {:email-address authorisation-email-address}}
+        :db (assoc db :authorisation-initialised? true)}))))
 
 
 (re-frame/reg-event-fx
  :finalise-authorisation
  [interceptors/schema]
- (fn [{:keys [db]} [_ authorisation-code]]
-   {:command {:finalise-authorisation {:authorisation-code authorisation-code}}
-    :db db}))
+ (fn [{:keys [db]} [_]]
+   (let [{:keys [authorisation-phrase authorisation-finalised?]} db]
+     (if authorisation-finalised?
+       {:db db}
+       {:command {:finalise-authorisation {:phrase authorisation-phrase}}
+        :db (assoc db :authorisation-finalised? true)}))))
 
 
 (re-frame/reg-event-fx
@@ -104,6 +131,10 @@
  [interceptors/schema]
  (fn [{:keys [db]} [_]]
    {:command {:deauthorise {}}
-    :db (-> db
-            (dissoc :current-user-id)
-            (update :user dissoc (:current-user-id db)))}))
+    :db (dissoc db
+                :current-user-id
+                :authorisation-email-address
+                :authorisation-phrase
+                :authorisation-initialised?
+                :authorisation-finalised?
+                :authorisation-failed?)}))

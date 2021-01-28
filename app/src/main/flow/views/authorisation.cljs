@@ -1,49 +1,82 @@
 (ns flow.views.authorisation
   (:require [re-frame.core :as re-frame]
             [flow.views.input :as input]
+            [flow.views.button :as button]
             [flow.utils :as u]))
 
 
-(defn view [{:keys [input-value]}
-            _
-            {:keys [update-input-value
+(defn view [{:keys [authorisation-initialised?
+                    authorisation-failed?]}
+            {:keys [input
+                    button]}
+            {:keys [update-authorisation-email-address
                     initialise-authorisation
+                    update-authorisation-phrase
                     finalise-authorisation]}]
-  [:div
-   {:class (u/bem [:authorisation])}
-   [:div
-    {:class (u/bem [:text :align-center :padding-top-medium])}
-    "Let's start off with your email address."]
-   [:div
-    {:class (u/bem [:authorisation__email-address]
-                   [:cell :padding-top-tiny])}
+  (if authorisation-initialised?
     [:div
-     {:class (u/bem [:authorisation__email-address__icon]
-                    [:icon :envelope :font-size-large :colour-black-four])}]
-    [:input
-     {:class (u/bem [:input]
-                    [:authorisation__email-address__input])
-      :type :text
-      :value input-value
-      :placeholder "jane@smith.com"
-      :on-change update-input-value}]]
-   [:div
-    {:class (u/bem [:authorisation__email-address__button]
-                   [:cell :row :margin-top-small])}
-    [:div
-     {:class (u/bem [:text :colour-white-one])}
-     "Continue"]
-    [:div
-     {:class (u/bem [:icon :arrow-right :colour-white-one :padding-left-tiny])}]]])
+     {:class (u/bem [:authorisation])}
+     [:div
+      {:class (u/bem [:text :align-center :padding-top-medium])}
+      "Check your email for the magic phrase."]
+     [input
+      {:key :authorisation-phrase-input
+       :subscriptions {:value :authorisation-phrase}
+       :placeholder "donkey-purple-kettle"
+       :icon :magic-wand}
+      {:on-change update-authorisation-phrase}]
+     [:div
+      {:class (u/bem [:cell :row :margin-top-small])}
+      [button
+       {:key :authorisation-finalisation-button
+        :subscriptions {:disabled? :authorisation-finalisation-disabled?}
+        :label "Sign in"
+        :icon :arrow-right}
+       {:on-click finalise-authorisation}]]
+     (when authorisation-failed?
+       [:div
+        {:class (u/bem [:cell :row :padding-top-small])}
+        [:div
+         {:class (u/bem [:icon :font-size-medium :warning])}]
+        [:div
+         {:class (u/bem [:text :font-size-small :padding-left-tiny])}
+         "That magic phrase doesn't look right."]])]
 
+    [:div
+     {:class (u/bem [:authorisation])}
+     [:div
+      {:class (u/bem [:text :align-center :padding-top-medium])}
+      "Sign in with your email address."]
+     [input
+      {:key :authorisation-email-address-input
+       :subscriptions {:value :authorisation-email-address}
+       :placeholder "jane@smith.com"
+       :icon :envelope}
+      {:on-change update-authorisation-email-address}]
+     [:div
+      {:class (u/bem [:cell :row :margin-top-small])}
+      [button
+       {:key :authorisation-initialisation-button
+        :subscriptions {:disabled? :authorisation-initialisation-disabled?}
+        :label "Continue"
+        :icon :arrow-right}
+       {:on-click initialise-authorisation}]]]))
 
 
 (defn authorisation []
-  (let [!input-value (re-frame/subscribe [:input-value])]
+  (let [!authorisation-initialised? (re-frame/subscribe [:authorisation-initialised?])
+        !authorisation-failed? (re-frame/subscribe [:authorisation-failed?])]
     (fn []
       [view
-       {:input-value @!input-value}
-       {:email-input}
-       {:update-input-value #(re-frame/dispatch [:update-input-value (.. % -target -value)])
-        :initialise-authorisation #(re-frame/dispatch [:initialise-authorisation %])
-        :finalise-authorisation #(re-frame/dispatch [:finalise-authorisation %])}])))
+       {:authorisation-initialised? @!authorisation-initialised?
+        :authorisation-failed? @!authorisation-failed?}
+       {:input input/input
+        :button button/primary-button}
+       {:update-authorisation-email-address
+        #(re-frame/dispatch [:update-authorisation-email-address %])
+        :initialise-authorisation
+        #(re-frame/dispatch [:initialise-authorisation])
+        :update-authorisation-phrase
+        #(re-frame/dispatch [:update-authorisation-phrase %])
+        :finalise-authorisation
+        #(re-frame/dispatch [:finalise-authorisation])}])))
