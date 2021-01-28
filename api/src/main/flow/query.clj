@@ -7,8 +7,7 @@
 (defmethod handle :user [[_ {:keys [current-user-id]}]]
   (if current-user-id
     {:user {current-user-id {:id 1101
-                             :name "Johnny McGee"
-                             :email "johhny@mcgee.com"}}}
+                             :email-address "k.suzukawa@gmail.com"}}}
     {:user {}}))
 
 
