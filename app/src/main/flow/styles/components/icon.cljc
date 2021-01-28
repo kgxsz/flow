@@ -9,7 +9,6 @@
   [:.icon {:font-family "'icomoon'"
            :font-style :normal
            :font-weight 400
-           :color (:black-two c/colour)
            :font-variant :normal
            :text-transform :none
            :-webkit-font-smoothing :antialiased

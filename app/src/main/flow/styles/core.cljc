@@ -4,6 +4,7 @@
             [flow.styles.components.text :refer [text]]
             [flow.styles.components.icon :refer [icon]]
             [flow.styles.components.input :refer [input]]
+            [flow.styles.components.button :refer [button]]
             [flow.styles.components.cell :refer [cell]]
             [flow.styles.components.page :refer [page]]
             [flow.styles.components.authorisation :refer [authorisation]]
@@ -44,6 +45,7 @@
   ;; components
   icon
   input
+  button
   text
   cell
   page
