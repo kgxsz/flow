@@ -5,11 +5,10 @@
             [garden.units :refer [px percent ms vh vw]]))
 
 
-;; TODO - fix all constants
 (defstyles button
   [:.button
    {:cursor :pointer
-    :height (px 40)
+    :height (px (:x-large c/filling))
     :border [[:solid (px (:xx-tiny c/filling)) (:black-two c/colour)]]
     :border-radius (px (:medium c/radius))}
 

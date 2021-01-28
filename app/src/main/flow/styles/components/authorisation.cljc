@@ -6,9 +6,4 @@
 
 
 (defstyles authorisation
-  [:.authorisation {:width (px 270)}
-   [:&__email-address {}
-    [:&__button {:width (percent 100)
-                 :border-radius (px 3)
-                 :height (px 40)
-                 :background-color "#EEE"}]]])
+  [:.authorisation {:width (px (:xxx-huge c/filling))}])
