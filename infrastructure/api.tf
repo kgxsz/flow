@@ -96,18 +96,32 @@ resource "aws_iam_role" "api" {
   assume_role_policy = file("policies/api/role.json")
 }
 
-resource "aws_iam_policy" "api_logs" {
+resource "aws_iam_policy" "api_logging" {
   provider    = aws.eu-west-1
-  name        = "flow"
+  name        = "logging"
   path        = "/"
-  policy      = file("policies/api/logs.json")
+  policy      = file("policies/api/logging.json")
 }
 
-resource "aws_iam_policy_attachment" "api" {
+resource "aws_iam_policy_attachment" "api_logging" {
   provider   = aws.eu-west-1
-  name       = "flow"
+  name       = "logging"
   roles      = [aws_iam_role.api.name]
-  policy_arn = aws_iam_policy.api_logs.arn
+  policy_arn = aws_iam_policy.api_logging.arn
+}
+
+resource "aws_iam_policy" "api_emailing" {
+  provider    = aws.eu-west-1
+  name        = "emailing"
+  path        = "/"
+  policy      = file("policies/api/emailing.json")
+}
+
+resource "aws_iam_policy_attachment" "api_emailing" {
+  provider   = aws.eu-west-1
+  name       = "emailing"
+  roles      = [aws_iam_role.api.name]
+  policy_arn = aws_iam_policy.api_emailing.arn
 }
 
 resource "aws_lambda_function" "api" {
@@ -116,7 +130,11 @@ resource "aws_lambda_function" "api" {
     aws_s3_bucket.api,
     aws_s3_bucket_object.api,
     aws_iam_role.api,
-    aws_iam_policy.api_logs
+    aws_iam_policy.api_logging,
+    aws_iam_policy_attachment.api_logging,
+    aws_iam_policy.api_emailing,
+    aws_iam_policy_attachment.api_emailing,
+    aws_route53_record.api,
   ]
   s3_bucket        = aws_s3_bucket.api.bucket
   s3_key           = "flow.zip"

@@ -6,9 +6,8 @@
 
 (defmethod handle :user [[_ {:keys [current-user-id]}]]
   (if current-user-id
-    {:user {current-user-id {:id 3719
-                             :name "Johnny McGee"
-                             :email "johhny@mcgee.com"}}}
+    {:user {current-user-id {:id 1101
+                             :email-address "k.suzukawa@gmail.com"}}}
     {:user {}}))
 
 

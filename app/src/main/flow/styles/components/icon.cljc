@@ -9,12 +9,29 @@
   [:.icon {:font-family "'icomoon'"
            :font-style :normal
            :font-weight 400
-           :color (:black-two c/colour)
            :font-variant :normal
            :text-transform :none
            :-webkit-font-smoothing :antialiased
            :-moz-osx-font-smoothing :grayscale
            :text-decoration :none}
+
+   [:&--padding-top
+    (u/make-modifiers c/spacing :padding-top px)]
+
+   [:&--padding-bottom
+    (u/make-modifiers c/spacing :padding-bottom px)]
+
+   [:&--padding-left
+    (u/make-modifiers c/spacing :padding-left px)]
+
+   [:&--padding-right
+    (u/make-modifiers c/spacing :padding-right px)]
+
+   [:&--margin-top
+    (u/make-modifiers c/spacing :margin-top px)]
+
+   [:&--margin-bottom
+    (u/make-modifiers c/spacing :margin-bottom px)]
 
    [:&--font-size
     (u/make-modifiers c/font-size :font-size px)]

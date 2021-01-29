@@ -3,9 +3,10 @@
          :init-ns flow.dev}
  :ssl {:keystore "ssl/keystore.jks"
        :password #env "KEYSTORE_PASSWORD"}
- :dev-http {8080 "public"}
+ :dev-http {8080 "resources/public"}
  :source-paths ["src/main"]
  :builds {:app {:target :browser
+                :output-dir "resources/public/js"
                 :compiler-options {:optimizations :advanced}
                 :devtools {:repl-pprint true
                            :after-load flow.core/mount}

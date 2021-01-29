@@ -1,11 +1,12 @@
 (ns flow.views.home-page
   (:require [re-frame.core :as re-frame]
+            [flow.views.authorisation :as authorisation]
             [flow.utils :as u]))
 
 
 (defn view [{:keys [authorised?]}
-            _
-            {:keys [authorise deauthorise update-route]}]
+            {:keys [authorisation]}
+            {:keys [deauthorise]}]
   [:div
    {:class (u/bem [:page])}
    [:div
@@ -13,11 +14,7 @@
     [:div
      {:class (u/bem [:cell :column :padding-top-huge])}
      [:div
-      {:class (u/bem [:icon :construction :font-size-xx-huge :align-center])}]
-     [:div
-      {:class (u/bem [:text :font-size-xx-huge :align-center])
-       :on-click update-route}
-      "Home"]
+      {:class (u/bem [:icon :leaf :font-size-xxx-huge])}]
      (if authorised?
        [:div
         {:class (u/bem [:cell :row :padding-top-large])}
@@ -28,13 +25,8 @@
           :on-click deauthorise}
          "Deauthorise"]]
        [:div
-        {:class (u/bem [:cell :row :padding-top-large])}
-        [:div
-         {:class (u/bem [:icon :arrow-right-circle :font-size-small])}]
-        [:div
-         {:class (u/bem [:text :font-size-large :padding-left-tiny])
-          :on-click authorise}
-         "Authorise"]])]]
+        {:class (u/bem [:cell :padding-top-xx-large])}
+        [authorisation]])]]
    [:div
     {:class (u/bem [:page__footer])}]])
 
@@ -44,7 +36,5 @@
     (fn []
       [view
        {:authorised? @!authorised?}
-       {}
-       {:authorise #(re-frame/dispatch [:authorise])
-        :deauthorise #(re-frame/dispatch [:deauthorise])
-        :update-route #(re-frame/dispatch [:update-route :admin])}])))
+       {:authorisation authorisation/authorisation}
+       {:deauthorise #(re-frame/dispatch [:deauthorise])}])))

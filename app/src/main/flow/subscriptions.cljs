@@ -1,5 +1,7 @@
 (ns flow.subscriptions
-  (:require [re-frame.core :as re-frame]))
+  (:require [re-frame.core :as re-frame]
+            [flow.utils :as u]
+            [clojure.string :as string]))
 
 
 (re-frame/reg-sub
@@ -12,14 +14,58 @@
 
 
 (re-frame/reg-sub
- :authorised?
- (fn [db [_]]
-   (when (contains? db :current-user-id)
-     (and (some? (:current-user-id db))
-          (contains? (:user db) (:current-user-id db))))))
-
-
-(re-frame/reg-sub
  :route
  (fn [db [_]]
    (:route db)))
+
+
+(re-frame/reg-sub
+ :authorised?
+ (fn [db [_]]
+   (and
+    (contains? db :current-user-id)
+    (some? (:current-user-id db)))))
+
+
+(re-frame/reg-sub
+ :authorisation-email-address
+ (fn [db [_]]
+   (:authorisation-email-address db)))
+
+
+(re-frame/reg-sub
+ :authorisation-phrase
+ (fn [db [_]]
+   (:authorisation-phrase db)))
+
+
+(re-frame/reg-sub
+ :authorisation-initialised?
+ (fn [db [_]]
+   (:authorisation-initialised? db)))
+
+
+(re-frame/reg-sub
+ :authorisation-finalised?
+ (fn [db [_]]
+   (:authorisation-finalised? db)))
+
+
+(re-frame/reg-sub
+ :authorisation-initialisation-disabled?
+ (fn [db [_]]
+   (not (u/valid-email-address? (:authorisation-email-address db)))))
+
+
+(re-frame/reg-sub
+ :authorisation-finalisation-disabled?
+ (fn [db [_]]
+   (let [{:keys [authorisation-phrase]} db]
+     (or (string/blank? authorisation-phrase)
+         (< (count authorisation-phrase) 3)))))
+
+
+(re-frame/reg-sub
+ :authorisation-failed?
+ (fn [db [_]]
+   (true? (:authorisation-failed? db))))

@@ -8,9 +8,9 @@
 (defstyles page
   [:.page
    {:display :none
-    :min-height (vh (:100 c/proportion))
     :overflow :auto
-    :background-color (:white-one c/colour)}
+    :background-color (:white-one c/colour)
+    :color (:black-two c/colour)}
 
    (u/tiny-width
     {:display :none})

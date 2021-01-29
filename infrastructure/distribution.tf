@@ -3,6 +3,17 @@ data "aws_route53_zone" "zone" {
   name     = "keigo.io"
 }
 
+resource "aws_ses_domain_identity" "email" {
+  provider = aws.us-east-1
+  domain   = "flow.keigo.io"
+}
+
+resource "aws_ses_domain_identity_verification" "email" {
+  provider   = aws.us-east-1
+  domain     = aws_ses_domain_identity.email.id
+  depends_on = [aws_route53_record.email]
+}
+
 resource "aws_acm_certificate" "certificate" {
   provider                  = aws.us-east-1
   domain_name               = "flow.keigo.io"
@@ -26,11 +37,20 @@ resource "aws_route53_record" "validation" {
     }
   }
   allow_overwrite = true
-  name            = each.value.name
-  records         = [each.value.record]
-  type            = each.value.type
-  zone_id         = data.aws_route53_zone.zone.zone_id
-  ttl             = "60"
+  name    = each.value.name
+  records = [each.value.record]
+  type    = each.value.type
+  zone_id = data.aws_route53_zone.zone.zone_id
+  ttl     = "60"
+}
+
+resource "aws_route53_record" "email" {
+  provider = aws.us-east-1
+  zone_id  = data.aws_route53_zone.zone.zone_id
+  name     = "_amazonses.${aws_ses_domain_identity.email.id}"
+  type     = "TXT"
+  ttl      = "600"
+  records  = [aws_ses_domain_identity.email.verification_token]
 }
 
 resource "aws_route53_record" "app" {

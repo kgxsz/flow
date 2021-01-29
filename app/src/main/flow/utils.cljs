@@ -29,3 +29,10 @@
         (assoc :host (str "api." host))
         (assoc :path (->> path name (str "/")))
         (str))))
+
+
+(defn valid-email-address?
+  [email-address]
+  (let [pattern #"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"]
+    (and (string? email-address)
+         (re-matches pattern email-address))))
