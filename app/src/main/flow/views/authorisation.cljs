@@ -18,7 +18,7 @@
      {:class (u/bem [:authorisation])}
      [:div
       {:class (u/bem [:text :align-center :padding-top-medium])}
-      "Check your email for the magic phrase."]
+      "We've sent you a magic phrase."]
      [input
       {:key :authorisation-phrase-input
        :subscriptions {:value :authorisation-phrase}

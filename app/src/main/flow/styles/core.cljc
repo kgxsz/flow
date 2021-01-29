@@ -25,16 +25,22 @@
     :margin 0
     :padding 0}]
 
-  [:input
+  ["input[type=text]"
    {:outline :none
     :overflow :auto
     :-webkit-box-shadow :none
     :-moz-box-shadow :none
     :box-shadow :none
     :resize :none
+    :appearance :none
+    :-moz-appearance :none
+    :-webkit-appearance :none
     :-webkit-font-smoothing :antialiased
     :-moz-osx-font-smoothing :grayscale
     :text-decoration :none}]
+
+  ["input:-webkit-autofill"
+   {:-webkit-box-shadow [["0" "0" "0px" "1000px" :white :inset]]}]
 
   ["input::placeholder"
    {:color (:grey-one c/colour)}]

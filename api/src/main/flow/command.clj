@@ -19,7 +19,7 @@
          {}
          "Flow <noreply@flow.keigo.io>"
          email-address
-         "Complete your sign in to Flow"
+         "Complete your sign in"
          {:html-body (hiccup/html
                       [:table {:width "100%"
                                :height "250px"
