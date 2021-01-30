@@ -79,30 +79,28 @@ resource "aws_route53_record" "api" {
   }
 }
 
+resource "aws_cloudfront_origin_access_identity" "app" {
+  provider = aws.us-east-1
+}
+
 resource "aws_cloudfront_distribution" "app" {
-  provider        = aws.us-east-1
-  enabled         = true
-  is_ipv6_enabled = true
+  provider            = aws.us-east-1
+  enabled             = true
+  is_ipv6_enabled     = true
+  default_root_object = "index.html"
 
   origin {
-    domain_name = "app.flow.keigo.io.s3-website-eu-west-1.amazonaws.com"
+    domain_name = aws_s3_bucket.app.bucket_regional_domain_name
     origin_id   = "app.flow.keigo.io"
 
-    custom_origin_config {
-      http_port                = 80
-      https_port               = 443
-      origin_keepalive_timeout = 5
-      origin_protocol_policy   = "http-only"
-      origin_read_timeout      = 30
-      origin_ssl_protocols     = [
-        "TLSv1.2",
-      ]
+    s3_origin_config {
+      origin_access_identity = aws_cloudfront_origin_access_identity.app.cloudfront_access_identity_path
     }
   }
 
   custom_error_response {
     error_caching_min_ttl = 60
-    error_code            = 404
+    error_code            = 403
     response_code         = 200
     response_page_path    = "/"
   }
