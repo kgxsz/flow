@@ -93,14 +93,14 @@ resource "aws_cloudwatch_log_group" "api" {
 resource "aws_iam_role" "api" {
   provider           = aws.eu-west-1
   name               = "flow"
-  assume_role_policy = file("policies/api/role.json")
+  assume_role_policy = data.aws_iam_policy_document.api_role.json
 }
 
 resource "aws_iam_policy" "api_logging" {
   provider    = aws.eu-west-1
   name        = "logging"
   path        = "/"
-  policy      = file("policies/api/logging.json")
+  policy      = data.aws_iam_policy_document.api_logging.json
 }
 
 resource "aws_iam_policy_attachment" "api_logging" {
@@ -114,7 +114,7 @@ resource "aws_iam_policy" "api_emailing" {
   provider    = aws.eu-west-1
   name        = "emailing"
   path        = "/"
-  policy      = file("policies/api/emailing.json")
+  policy      = data.aws_iam_policy_document.api_emailing.json
 }
 
 resource "aws_iam_policy_attachment" "api_emailing" {
