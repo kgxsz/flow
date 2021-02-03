@@ -63,3 +63,17 @@ resource "aws_s3_bucket_object" "api" {
   source   = "${path.module}/../api/target/flow.zip"
   etag     = filemd5("${path.module}/../api/target/flow.zip")
 }
+
+resource "aws_dynamodb_table" "api" {
+  provider       = aws.eu-west-1
+  name           = "flow"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 1
+  write_capacity = 1
+  hash_key       = "partition"
+
+  attribute {
+    name = "partition"
+    type = "S"
+  }
+}

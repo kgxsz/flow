@@ -42,3 +42,21 @@ data "aws_iam_policy_document" "api_logging" {
     effect    = "Allow"
   }
 }
+
+data "aws_iam_policy_document" "api_persistence" {
+  provider = aws.eu-west-1
+  statement {
+    actions   = [
+      "dynamodb:DescribeTable",
+      "dynamodb:Query",
+      "dynamodb:Scan",
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:UpdateItem",
+      "dynamodb:BatchWriteItem",
+      "dynamodb:DeleteItem"
+    ]
+    resources = ["arn:aws:dynamodb:eu-west-1:*:table/flow}"]
+    effect    = "Allow"
+  }
+}
