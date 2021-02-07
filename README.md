@@ -68,6 +68,9 @@
 - In `infrastructure/` setup the environment variables:
   - `TF_VAR_cookie_store_key` as the 16 byte secret key set in production.
 - In `infrastructure/` update the remote assets with `terraform apply`.
+- If you're redeploying the infrastructure after a tear down, then restore the
+  production table in DynamoDB from a previous backup.
 
 ### Remote tear down
+- Create a backup of the production table in DynamoDB.
 - In `infrastructure/`, tear down remote assets with `terraform destroy`.
