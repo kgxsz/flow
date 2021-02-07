@@ -29,7 +29,7 @@
 
 
 (defn update-entity [entity-type id f]
-  (let [entity (get-entity entity-type id)]
+  (let [entity (fetch-entity entity-type id)]
     (faraday/update-item
      config
      :flow
