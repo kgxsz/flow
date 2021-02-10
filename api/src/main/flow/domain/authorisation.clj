@@ -55,6 +55,10 @@
   (db/fetch-entity :authorisation id))
 
 
+(defn fetch-all []
+  (db/fetch-entities :authorisation))
+
+
 (defn create [{:keys [user-id phrase]}]
   (let [now (t.coerce/to-date (t/now))]
     (db/put-entity :authorisation

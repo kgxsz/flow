@@ -14,12 +14,16 @@
   (db/fetch-entity :user id))
 
 
+(defn fetch-all []
+  (db/fetch-entities :user))
+
+
 (defn create [{:keys [email-address name]}]
   (let [now (t.coerce/to-date (t/now))
         id (id email-address)]
     (when (nil? (fetch id))
       (db/put-entity :user
-                     {:id (id email-address)
+                     {:id id
                       :name name
                       :email-address email-address
                       :created-at now
