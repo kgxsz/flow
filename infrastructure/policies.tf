@@ -56,7 +56,7 @@ data "aws_iam_policy_document" "api_persistence" {
       "dynamodb:BatchWriteItem",
       "dynamodb:DeleteItem"
     ]
-    resources = ["arn:aws:dynamodb:eu-west-1:*:table/flow}"]
+    resources = ["arn:aws:dynamodb:eu-west-1:*:table/flow"]
     effect    = "Allow"
   }
 }
