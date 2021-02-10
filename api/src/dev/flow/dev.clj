@@ -1,7 +1,11 @@
 (ns flow.dev
   (:require [ring.adapter.jetty :as jetty]
             [flow.middleware :as middleware]
-            [flow.core :as core]))
+            [flow.core :as core]
+            [flow.db :as db]
+            [flow.domain.authorisation :as authorisation]
+            [flow.domain.user :as user]
+            [taoensso.faraday :as faraday]))
 
 
 (defn server []
@@ -12,3 +16,40 @@
                  :keystore "ssl/keystore.jks"
                  :key-password (System/getenv "KEYSTORE_PASSWORD")}]
    (jetty/run-jetty #'core/handler options)))
+
+
+(defn seed []
+  (let [table-index [:partition :s]
+        table-options {:throughput {:read 1
+                                    :write 1}
+                       :block? true}
+        users [{:name "Keigo"
+                :email-address "k.suzukawa@gmail.com"}]]
+    (faraday/create-table db/config :flow table-index table-options)
+    (doall (map user/create users))))
+
+
+(comment
+
+  (server)
+
+  (seed)
+
+  (user/create {:name "Keigo" :email-address "k.suzukawa@gmail.com"})
+
+  (user/create {:name "Kasia" :email-address "ksarnecka50@gmail.com"})
+
+  (user/fetch (user/id "k.suzukawa@gmail.com"))
+
+  (user/id "k.suzukawa@gmail.com")
+
+  (user/fetch-all)
+
+  (authorisation/create {:user-id (user/id "k.suzukawa@gmail.com")
+                         :phrase (authorisation/generate-phrase)})
+
+  (authorisation/fetch (authorisation/id (user/id "k.suzukawa@gmail.com") "paste-work-belief"))
+
+  (authorisation/fetch-all)
+
+  )

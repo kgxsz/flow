@@ -16,8 +16,8 @@
   - Name as `api.localhost`.
   - Common name as `api.localhost`.
   - URI as `api.localhost`.
-  - dNS name as `api.localhost`.
-  - Empty iPAddress.
+  - DNS name as `api.localhost`.
+  - Empty IP Address.
   - Choose a password, this is your keystore password.
 - Export the certificate to `api/ssl/Certificates.p12`
 - In `api/ssl/` generate the `keystore.jks` with: 
@@ -29,21 +29,28 @@
   - Name as `localhost`.
   - Common name as `localhost`.
   - URI as `localhost`.
-  - dNS name as `localhost`.
-  - Empty iPAddress.
+  - DNS name as `localhost`.
+  - Empty IP Address.
   - Choose a password, this is your keystore password.
 - Export the certificate to `app/ssl/Certificates.p12`
 - In `app/ssl/` generate the `keystore.jks` with: 
   `keytool -importkeystore -destkeystore keystore.jks -srcstoretype PKCS12 -srckeystore Certificates.p12`.
 - Ensure that the destination and source keystore passwords are equal to the keystore password above.
 
+### Local database setup
+- Install a local DynamoDB instance with: `brew install --cask dynamodb-local`.
+- Start the local DynamoDB instance with: `dynamodb-local -inMemory true`.
+
 ### Local api development setup
 - In `api/` setup the environment variables:
   - `KEYSTORE_PASSWORD` as determined above.
   - `CORS_ORIGIN` as `https://localhost:8080`.
   - `COOKIE_STORE_KEY` as 16 byte secret key.
+  - `DB_ENDPOINT` as `http://localhost:8000`.
 - In `api/` start the REPL with `clj -A:repl`.
-- Connect to the api's Clojure REPL, load `flow.dev`, and run `(server)`.
+- Connect to the api's Clojure REPL, load `flow.dev`.
+- Start the local server with: `(server)`.
+- Seed the local DynamoDB instance with: `(seed)`.
 - The api will be running at `https://api.localhost:443`.
 
 ### Local app development setup
@@ -69,5 +76,6 @@
   - `TF_VAR_cookie_store_key` as the 16 byte secret key set in production.
 - In `infrastructure/` update the remote assets with `terraform apply`.
 
-### Remote tear down
+## Tear down
+- Manually backup the DynamoDB table in the AWS UI as a precaution.
 - In `infrastructure/`, tear down remote assets with `terraform destroy`.

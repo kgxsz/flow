@@ -108,10 +108,12 @@
  :initialise-authorisation
  [interceptors/schema]
  (fn [{:keys [db]} [_]]
-   (let [{:keys [authorisation-email-address authorisation-initialised?]} db]
+   (let [{:keys [authorisation-initialised?]} db]
      (if authorisation-initialised?
        {:db db}
-       {:command {:initialise-authorisation {:email-address authorisation-email-address}}
+       {:command {:initialise-authorisation (select-keys
+                                             db
+                                             [:authorisation-email-address])}
         :db (assoc db :authorisation-initialised? true)}))))
 
 
@@ -119,10 +121,13 @@
  :finalise-authorisation
  [interceptors/schema]
  (fn [{:keys [db]} [_]]
-   (let [{:keys [authorisation-phrase authorisation-finalised?]} db]
+   (let [{:keys [authorisation-finalised?]} db]
      (if authorisation-finalised?
        {:db db}
-       {:command {:finalise-authorisation {:phrase authorisation-phrase}}
+       {:command {:finalise-authorisation (select-keys
+                                           db
+                                           [:authorisation-phrase
+                                            :authorisation-email-address])}
         :db (assoc db :authorisation-finalised? true)}))))
 
 

@@ -1,6 +1,7 @@
 variable "cors_origin" { default = "https://flow.keigo.io" }
 variable "cookie_store_key" {}
 variable "cookie_attribute_domain" { default = ".flow.keigo.io" }
+variable "db_endpoint" { default = "http://dynamodb.eu-west-1.amazonaws.com" }
 
 resource "aws_api_gateway_rest_api" "api" {
   provider = aws.eu-west-1
@@ -110,6 +111,20 @@ resource "aws_iam_policy_attachment" "api_logging" {
   policy_arn = aws_iam_policy.api_logging.arn
 }
 
+resource "aws_iam_policy" "api_persistence" {
+  provider    = aws.eu-west-1
+  name        = "persistence"
+  path        = "/"
+  policy      = data.aws_iam_policy_document.api_persistence.json
+}
+
+resource "aws_iam_policy_attachment" "api_persistence" {
+  provider   = aws.eu-west-1
+  name       = "persistence"
+  roles      = [aws_iam_role.api.name]
+  policy_arn = aws_iam_policy.api_persistence.arn
+}
+
 resource "aws_iam_policy" "api_emailing" {
   provider    = aws.eu-west-1
   name        = "emailing"
@@ -132,6 +147,8 @@ resource "aws_lambda_function" "api" {
     aws_iam_role.api,
     aws_iam_policy.api_logging,
     aws_iam_policy_attachment.api_logging,
+    aws_iam_policy.api_persistence,
+    aws_iam_policy_attachment.api_persistence,
     aws_iam_policy.api_emailing,
     aws_iam_policy_attachment.api_emailing,
     aws_route53_record.api,
@@ -152,6 +169,7 @@ resource "aws_lambda_function" "api" {
       CORS_ORIGIN = var.cors_origin
       COOKIE_STORE_KEY = var.cookie_store_key
       COOKIE_ATTRIBUTE_DOMAIN = var.cookie_attribute_domain
+      DB_ENDPOINT = var.db_endpoint
     }
   }
 }
