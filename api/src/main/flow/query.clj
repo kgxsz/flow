@@ -1,21 +1,20 @@
 (ns flow.query
-  (:require [flow.db :as db]
+  (:require [flow.domain.user :as user]
             [taoensso.faraday :as faraday]))
-
-
-(defn query-user [user-id]
-  (let [query {:partition (str "user:" user-id)}]
-    (:data (faraday/get-item db/config :flow query))))
 
 
 (defmulti handle first)
 
 
-(defmethod handle :user [[_ {:keys [user-id current-user-id]}]]
-  (if-let [user-id (or user-id current-user-id)]
-    {:user {user-id (query-user user-id)}}
-    {:user {}}))
+(defmethod handle :user
+  [[_ {:keys [user-id current-user-id]}]]
+  (when-not (uuid? user-id)
+    (throw (IllegalArgumentException. "Unsupported query parameters.")))
+  (let [user (user/fetch user-id)
+        current-user (user/fetch current-user-id)]
+    {:user {user-id (user/strip user current-user)}}))
 
 
-(defmethod handle :default [query]
+(defmethod handle :default
+  [query]
   (throw (IllegalArgumentException. "Unsupported query method.")))
