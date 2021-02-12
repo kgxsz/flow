@@ -10,7 +10,7 @@
  (fn [{:keys [db]} event]
    {:db {}
     :initialise-routing {}
-    :query {:user {}}}))
+    :command {:initialise {}}}))
 
 
 (re-frame/reg-event-fx
