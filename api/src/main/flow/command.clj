@@ -6,7 +6,13 @@
 (defmulti handle first)
 
 
-(defmethod handle :initialise-authorisation [[_ {:keys [authorisation-email-address]}]]
+(defmethod handle :initialise
+  [[_ {:keys [current-user-id]}]]
+  {})
+
+
+(defmethod handle :initialise-authorisation
+  [[_ {:keys [authorisation-email-address]}]]
   (try
     (let [user-id (user/id authorisation-email-address)
           authorisation-phrase (authorisation/generate-phrase)]
@@ -20,7 +26,8 @@
       {})))
 
 
-(defmethod handle :finalise-authorisation [[_ {:keys [authorisation-email-address authorisation-phrase]}]]
+(defmethod handle :finalise-authorisation
+  [[_ {:keys [authorisation-email-address authorisation-phrase]}]]
   (try
     (let [user-id (user/id authorisation-email-address)
           authorisation-id (authorisation/id user-id authorisation-phrase)
@@ -34,9 +41,11 @@
       {})))
 
 
-(defmethod handle :deauthorise [command]
+(defmethod handle :deauthorise
+  [command]
   {:current-user-id nil})
 
 
-(defmethod handle :default [command]
+(defmethod handle :default
+  [command]
   (throw (IllegalArgumentException. "Unsupported command method.")))
