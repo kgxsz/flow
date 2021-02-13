@@ -23,11 +23,10 @@
         table-options {:throughput {:read 1
                                     :write 1}
                        :block? true}
-        users [{:email-address "k.suzukawa@gmail.com"
-                :name "Keigo"
-                :roles #{:admin :customer}}]]
+        users [["k.suzukawa@gmail.com" "Keigo" #{:admin :customer}]
+               ["ksarnecka50@gmail.com" "Kasia" #{:customer}]]]
     (faraday/create-table db/config :flow table-index table-options)
-    (doall (map user/create users))))
+    (doall (map (partial apply user/create) users))))
 
 
 (comment
@@ -36,13 +35,9 @@
 
   (seed)
 
-  (user/create {:email-address "k.suzukawa@gmail.com"
-                :name "Keigo"
-                :roles #{:admin :customer}})
+  (user/create "k.suzukawa@gmail.com" "Keigo" #{:admin :customer})
 
-  (user/create {:email-address "ksarnecka50@gmail.com"
-                :name "Kasia"
-                :roles #{:customer}})
+  (user/create "ksarnecka50@gmail.com" "Kasia" #{:customer})
 
   (user/fetch (user/id "k.suzukawa@gmail.com"))
 

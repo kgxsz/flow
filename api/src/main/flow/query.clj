@@ -1,5 +1,6 @@
 (ns flow.query
   (:require [flow.domain.user :as user]
+            [flow.domain.authorisation :as authorisation]
             [taoensso.faraday :as faraday]))
 
 
@@ -12,7 +13,18 @@
     (throw (IllegalArgumentException. "Unsupported query parameters.")))
   (let [user (user/fetch user-id)
         current-user (user/fetch current-user-id)]
-    {:user {user-id (user/apply-visible-keys user current-user)}}))
+    {:user
+     {user-id (user/convey-keys user current-user)}}))
+
+
+(defmethod handle :authorisation
+  [[_ {:keys [authorisation-id current-user-id]}]]
+  (when-not (uuid? authorisation-id)
+    (throw (IllegalArgumentException. "Unsupported query parameters.")))
+  (let [authorisation (authorisation/fetch authorisation-id)
+        current-user (user/fetch current-user-id)]
+    {:authorisation
+     {authorisation-id (authorisation/convey-keys authorisation current-user)}}))
 
 
 (defmethod handle :default

@@ -18,7 +18,7 @@
           authorisation-phrase (authorisation/generate-phrase)]
       (if (user/fetch user-id)
         (do
-          (authorisation/create {:user-id user-id :phrase authorisation-phrase})
+          (authorisation/create user-id authorisation-phrase)
           (authorisation/send-phrase authorisation-email-address authorisation-phrase)
           {})
         {}))
