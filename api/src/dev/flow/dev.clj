@@ -44,7 +44,7 @@
                 :name "Kasia"
                 :roles #{:customer}})
 
-  (user/fetch (user/id "ks.suzukawa@gmail.com"))
+  (user/fetch (user/id "k.suzukawa@gmail.com"))
 
   (user/fetch-all)
 

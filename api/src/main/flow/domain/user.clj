@@ -2,25 +2,25 @@
   (:require [flow.db :as db]
             [clj-time.coerce :as t.coerce]
             [clj-time.core :as t]
-            [clj-uuid :as uuid]))
+            [clj-uuid :as uuid]
+            [medley.core :as medley]))
 
 
-(defn strip
-  [user {:keys [roles] :as current-user}]
-  (let [admin [:id :email-address :name :roles :created-at :deleted-at]
-        customer [:id :name :created-at :deleted-at]
-        self [:id :email-address :name :created-at :deleted-at]
-        public []]
-    (if (nil? current-user)
-      (let [x (select-keys user public)]
-        (when-not (empty? x) x))
-      (let [x (if (= current-user user)
-                (merge (select-keys user self)
-                       (select-keys user (when (contains? roles :admin) admin))
-                       (select-keys user (when (contains? roles :customer) customer)))
-                (merge (select-keys user (when (contains? roles :admin) admin))
-                       (select-keys user (when (contains? roles :customer) customer))))]
-        (when-not (empty? x) x)))))
+(defn apply-visible-keys
+  [{:keys [id] :as entity} {:keys [roles] :as current-user}]
+  (let [visible-keys {:roles {:admin [:id :email-address :name :roles :created-at :deleted-at]
+                              :customer [:id :name :created-at :deleted-at]}
+                      :owner [:id :email-address :name :created-at :deleted-at]
+                      :public []}
+        filter-roles (comp vals (partial medley/filter-keys (partial contains? roles)))
+        roles? (some? roles)
+        owner? (= id (:id current-user))
+        entity (select-keys
+                entity
+                (cond-> (:public visible-keys)
+                  roles? (concat (filter-roles (:roles visible-keys)))
+                  owner? (concat (:owner visible-keys))))]
+    (when-not (empty? entity) entity)))
 
 
 (defn id [email-address]

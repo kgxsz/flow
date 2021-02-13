@@ -12,7 +12,7 @@
     (throw (IllegalArgumentException. "Unsupported query parameters.")))
   (let [user (user/fetch user-id)
         current-user (user/fetch current-user-id)]
-    {:user {user-id (user/strip user current-user)}}))
+    {:user {user-id (user/apply-visible-keys user current-user)}}))
 
 
 (defmethod handle :default
