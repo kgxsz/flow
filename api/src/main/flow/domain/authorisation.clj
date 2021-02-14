@@ -90,4 +90,4 @@
   (db/update-entity
    :authorisation
    id
-   #(assoc % :authorosation/finalised-at (t.coerce/to-date (t/now)))))
+   #(assoc % :authorisation/finalised-at (t.coerce/to-date (t/now)))))
