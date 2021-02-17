@@ -57,14 +57,22 @@
  [interceptors/schema interceptors/current-user-id]
  (fn [{:keys [db]} [_ command response]]
    (case (-> command keys first)
+     :initialise (if-let [current-user-id (:current-user-id db)]
+                   {:db db
+                    :query {:user {:user-id current-user-id}}}
+                   {:db db})
      :initialise-authorisation {:db db}
-     :finalise-authorisation {:db (if (:current-user-id db)
-                                    (assoc db
+     :finalise-authorisation (if-let [current-user-id (:current-user-id db)]
+                               {:db (assoc db
                                            :authorisation-finalised? false
                                            :authorisation-failed? false)
-                                    (assoc db
+                                ;; TODO - this needs to lead to the auth
+                                ;; finalise becoming true when the user
+                                ;; arrives? Or is the loading page enough?
+                                :query {:user {:user-id current-user-id}}}
+                               {:db (assoc db
                                            :authorisation-finalised? false
-                                           :authorisation-failed? true))}
+                                           :authorisation-failed? true)})
      :deauthorise {:db db}
      {:db db})))
 

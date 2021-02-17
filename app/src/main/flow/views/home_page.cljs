@@ -1,11 +1,13 @@
 (ns flow.views.home-page
   (:require [re-frame.core :as re-frame]
             [flow.views.authorisation :as authorisation]
+            [flow.views.navigation :as navigation]
             [flow.utils :as u]))
 
 
 (defn view [{:keys [authorised?]}
-            {:keys [authorisation]}
+            {:keys [navigation
+                    authorisation]}
             {:keys [deauthorise]}]
   [:div
    {:class (u/bem [:page])}
@@ -17,13 +19,8 @@
       {:class (u/bem [:icon :leaf :font-size-xxx-huge])}]
      (if authorised?
        [:div
-        {:class (u/bem [:cell :row :padding-top-large])}
-        [:div
-         {:class (u/bem [:icon :arrow-right-circle :font-size-small])}]
-        [:div
-         {:class (u/bem [:text :font-size-large :padding-left-tiny])
-          :on-click deauthorise}
-         "Deauthorise"]]
+        {:class (u/bem [:cell :padding-top-xx-large])}
+        [navigation]]
        [:div
         {:class (u/bem [:cell :padding-top-xx-large])}
         [authorisation]])]]
@@ -36,5 +33,6 @@
     (fn []
       [view
        {:authorised? @!authorised?}
-       {:authorisation authorisation/authorisation}
-       {:deauthorise #(re-frame/dispatch [:deauthorise])}])))
+       {:navigation navigation/navigation
+        :authorisation authorisation/authorisation}
+       {}])))

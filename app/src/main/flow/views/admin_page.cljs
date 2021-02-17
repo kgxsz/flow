@@ -13,11 +13,16 @@
     [:div
      {:class (u/bem [:cell :column :padding-top-huge])}
      [:div
-      {:class (u/bem [:icon :construction :font-size-xx-huge :align-center])}]
-     [:div
-      {:class (u/bem [:text :font-size-xx-huge :align-center])
-       :on-click update-route}
-      "Admin"]]]
+      {:class (u/bem [:icon :leaf :font-size-xxx-huge])}]
+     (if authorised?
+       [:div
+        {:class (u/bem [:cell :row :padding-top-large])}
+        [:div
+         {:class (u/bem [:icon :arrow-right-circle :font-size-small])}]
+        [:div
+         {:class (u/bem [:text :font-size-large :padding-left-tiny])
+          :on-click update-route}
+         "Go home"]])]]
    [:div
     {:class (u/bem [:page__footer])}]])
 
