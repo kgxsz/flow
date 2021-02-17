@@ -8,7 +8,7 @@
    conveyable-keys]
   (let [filter-roles (comp flatten vals (partial medley/filter-keys (partial contains? roles)))
         roles? (some? roles)
-        owner? (= id (:id current-user))
+        owner? (= id (:user/id current-user))
         entity (select-keys
                 entity
                 (cond-> (:public conveyable-keys)

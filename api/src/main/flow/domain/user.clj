@@ -21,6 +21,7 @@
                          :owner [:user/id
                                  :user/email-address
                                  :user/name
+                                 :user/roles
                                  :user/created-at
                                  :user/deleted-at]
                          :public []}]
