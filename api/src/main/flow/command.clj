@@ -6,11 +6,6 @@
 (defmulti handle first)
 
 
-(defmethod handle :initialise
-  [[_ {:keys [current-user-id]}]]
-  {})
-
-
 (defmethod handle :initialise-authorisation
   [[_ {:keys [authorisation-email-address]}]]
   (try

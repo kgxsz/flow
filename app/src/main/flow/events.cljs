@@ -10,7 +10,7 @@
  (fn [{:keys [db]} event]
    {:db {}
     :initialise-routing {}
-    :command {:initialise {}}}))
+    :query {:current-user {}}}))
 
 
 (re-frame/reg-event-fx
@@ -41,6 +41,7 @@
  [interceptors/schema interceptors/current-user-id]
  (fn [{:keys [db]} [_ query response]]
    (case (-> query keys first)
+     :current-user {:db (update db :user merge (:current-user response))}
      :user {:db (update db :user merge (:user response))}
      {:db db})))
 
@@ -57,22 +58,14 @@
  [interceptors/schema interceptors/current-user-id]
  (fn [{:keys [db]} [_ command response]]
    (case (-> command keys first)
-     :initialise (if-let [current-user-id (:current-user-id db)]
-                   {:db db
-                    :query {:user {:user-id current-user-id}}}
-                   {:db db})
      :initialise-authorisation {:db db}
-     :finalise-authorisation (if-let [current-user-id (:current-user-id db)]
-                               {:db (assoc db
-                                           :authorisation-finalised? false
-                                           :authorisation-failed? false)
-                                ;; TODO - this needs to lead to the auth
-                                ;; finalise becoming true when the user
-                                ;; arrives? Or is the loading page enough?
-                                :query {:user {:user-id current-user-id}}}
-                               {:db (assoc db
-                                           :authorisation-finalised? false
-                                           :authorisation-failed? true)})
+     :finalise-authorisation {:db (assoc db
+                                         :authorisation-finalised? false
+                                         :authorisation-failed? false)
+                              ;; TODO - this needs to lead to the auth
+                              ;; finalise becoming true when the user
+                              ;; arrives? Or is the loading page enough?
+                              :query {:current-user {}}}
      :deauthorise {:db db}
      {:db db})))
 
