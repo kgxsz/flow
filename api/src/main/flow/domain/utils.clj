@@ -3,9 +3,9 @@
 
 
 (defn convey-keys
-  [{:keys [user/id] :as entity}
+  [conveyable-keys
    {:keys [user/roles] :as current-user}
-   conveyable-keys]
+   {:keys [user/id] :as entity}]
   (let [filter-roles (comp flatten vals (partial medley/filter-keys (partial contains? roles)))
         roles? (some? roles)
         owner? (= id (:user/id current-user))

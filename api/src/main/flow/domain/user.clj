@@ -7,7 +7,7 @@
             [medley.core :as medley]))
 
 
-(defn convey-keys [entity current-user]
+(defn convey-keys [current-user entity]
   (let [conveyable-keys {:roles {:admin [:user/id
                                          :user/email-address
                                          :user/name
@@ -25,7 +25,7 @@
                                  :user/created-at
                                  :user/deleted-at]
                          :public []}]
-    (utils/convey-keys entity current-user conveyable-keys)))
+    (utils/convey-keys conveyable-keys current-user entity)))
 
 
 (defn id [email-address]

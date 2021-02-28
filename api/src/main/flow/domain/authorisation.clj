@@ -47,7 +47,7 @@
       (t/before? (t/now))))
 
 
-(defn convey-keys [entity current-user]
+(defn convey-keys [current-user entity]
   (let [conveyable-keys {:roles {:admin [:authorisation/id
                                          :user/id
                                          :authorisation/phrase
@@ -56,7 +56,7 @@
                                  :customer []}
                          :owner []
                          :public []}]
-    (utils/convey-keys entity current-user conveyable-keys)))
+    (utils/convey-keys conveyable-keys current-user entity)))
 
 
 (defn id [user-id phrase]
