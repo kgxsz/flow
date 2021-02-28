@@ -20,7 +20,7 @@
      [loading-page]
      (case route
        :home [home-page]
-       :admin [admin-page {:content :core}]
+       :admin [admin-page {:content :summary}]
        :admin.users [admin-page {:content :users}]
        :admin.authorisations [admin-page {:content :authorisations}]
        :unknown [unknown-page]))])
