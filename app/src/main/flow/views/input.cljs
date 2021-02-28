@@ -6,6 +6,7 @@
 (defn view [{:keys [icon
                     value
                     placeholder]}
+            _
             {:keys [on-change]}]
   [:div
    {:class (u/bem [:input])}
@@ -26,4 +27,5 @@
       [view
        (assoc properties
               :value @!value)
+       {}
        behaviours])))

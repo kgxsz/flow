@@ -24,6 +24,10 @@
      (case route
        :home {:db db}
        :admin {:db db}
+       :admin.users {:db db
+                     :query {:users {}}}
+       :admin.authorisations {:db db
+                              :query {:authorisations {}}}
        :unknown {:db db}
        {:db db}))))
 
@@ -42,7 +46,8 @@
  (fn [{:keys [db]} [_ query response]]
    (case (-> query keys first)
      :current-user {:db (update db :user merge (:current-user response))}
-     :user {:db (update db :user merge (:user response))}
+     :users {:db (update db :user merge (:users response))}
+     :authorisations {:db (update db :authorisation merge (:authorisations response))}
      {:db db})))
 
 

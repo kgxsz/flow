@@ -1,5 +1,4 @@
-(ns flow.dev
-  (:require [devtools.core :as devtools]))
+(ns flow.dev)
 
 
 (defn repl []

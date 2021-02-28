@@ -8,6 +8,7 @@
                     label
                     prefix-icon
                     icon]}
+            _
             {:keys [on-click]}]
   [:div
    {:class (u/bem [:button type (when disabled? :disabled)]
@@ -27,6 +28,7 @@
       [view
        (assoc properties
               :disabled? @!disabled?)
+       {}
        behaviours])))
 
 

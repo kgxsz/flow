@@ -3,7 +3,7 @@
             [flow.utils :as u]))
 
 
-(defn view []
+(defn view [_ _ _]
   [:div
    {:class (u/bem [:page])}
    [:div
@@ -17,4 +17,4 @@
 
 
 (defn loading-page []
-  [view])
+  [view {} {} {}])

@@ -6,7 +6,8 @@
         com.domkm/silk {:mvn/version "0.1.2"}
         cljs-ajax {:mvn/version "0.7.4"}
         com.cemerick/url {:mvn/version "0.1.1"}
-        kibu/pushy {:mvn/version "0.3.8"}}
+        kibu/pushy {:mvn/version "0.3.8"}
+        com.andrewmcveigh/cljs-time {:mvn/version "0.5.2"}}
  :aliases {:dev/js {:extra-paths ["src/dev"]
                     :extra-deps {thheller/shadow-cljs {:mvn/version "2.11.7"}
                                  refactor-nrepl {:mvn/version "2.5.0"}

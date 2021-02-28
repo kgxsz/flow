@@ -17,13 +17,11 @@
      {:class (u/bem [:cell :column :padding-top-huge])}
      [:div
       {:class (u/bem [:icon :leaf :font-size-xxx-huge])}]
-     (if authorised?
-       [:div
-        {:class (u/bem [:cell :padding-top-xx-large])}
-        [navigation]]
-       [:div
-        {:class (u/bem [:cell :padding-top-xx-large])}
-        [authorisation]])]]
+     [:div
+      {:class (u/bem [:cell :padding-top-xx-large])}
+      (if authorised?
+        [navigation]
+        [authorisation])]]]
    [:div
     {:class (u/bem [:page__footer])}]])
 

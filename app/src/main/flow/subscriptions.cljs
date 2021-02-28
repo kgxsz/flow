@@ -79,3 +79,15 @@
  :current-user
  (fn [db [_]]
    (get-in db [:user (:current-user-id db)])))
+
+
+(re-frame/reg-sub
+ :users
+ (fn [db [_]]
+   (vals (:user db))))
+
+
+(re-frame/reg-sub
+ :authorisations
+ (fn [db [_]]
+   (vals (:authorisation db))))
