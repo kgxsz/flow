@@ -3,14 +3,12 @@
             [flow.utils :as u]))
 
 
-(defn view [{:keys [key
-                    icon
+(defn view [{:keys [icon
                     value
                     placeholder]}
             {:keys [on-change]}]
   [:div
-   {:key key
-    :class (u/bem [:input])}
+   {:class (u/bem [:input])}
    [:div
     {:class (u/bem [:input__icon]
                    [:icon icon :font-size-large :colour-black-four])}]
@@ -24,7 +22,7 @@
 
 (defn input [properties behaviours]
   (let [!value (re-frame/subscribe [(get-in properties [:subscriptions :value])])]
-    (fn []
+    (fn [properties behaviours]
       [view
        (assoc properties
               :value @!value)
