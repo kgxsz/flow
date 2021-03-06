@@ -3,16 +3,15 @@
             [flow.utils :as u]))
 
 
-(defn view [{:keys [key
-                    type
+(defn view [{:keys [type
                     disabled?
                     label
                     prefix-icon
                     icon]}
+            _
             {:keys [on-click]}]
   [:div
-   {:key key
-    :class (u/bem [:button type (when disabled? :disabled)]
+   {:class (u/bem [:button type (when disabled? :disabled)]
                   [:cell :row :width-cover :height-x-large])
     :on-click (when-not disabled? on-click)}
    [:div
@@ -25,10 +24,11 @@
 
 (defn button [properties behaviours]
   (let [!disabled? (re-frame/subscribe [(get-in properties [:subscriptions :disabled?])])]
-    (fn []
+    (fn [properties behaviours]
       [view
        (assoc properties
               :disabled? @!disabled?)
+       {}
        behaviours])))
 
 

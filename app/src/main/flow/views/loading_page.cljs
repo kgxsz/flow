@@ -3,7 +3,7 @@
             [flow.utils :as u]))
 
 
-(defn view []
+(defn view [_ _ _]
   [:div
    {:class (u/bem [:page])}
    [:div
@@ -11,10 +11,10 @@
     [:div
      {:class (u/bem [:cell :column :padding-top-huge])}
      [:div
-      {:class (u/bem [:icon :leaf :font-size-xxx-huge :align-center])}]]]
+      {:class (u/bem [:icon :leaf :font-size-xxx-huge])}]]]
    [:div
     {:class (u/bem [:page__footer])}]])
 
 
 (defn loading-page []
-  [view])
+  [view {} {} {}])

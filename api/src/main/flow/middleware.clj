@@ -68,8 +68,7 @@
   [handler]
   (fn [{:keys [headers] :as request}]
     (let [content-type (get-in request [:headers "content-type"])]
-      (if (or (= content-type "application/json")
-              (= content-type "application/transit+json"))
+      (if (= content-type "application/transit+json")
         (try
           ((muuntaja.middleware/wrap-format handler) request)
           (catch clojure.lang.ExceptionInfo e

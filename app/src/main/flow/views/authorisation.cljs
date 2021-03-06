@@ -15,21 +15,20 @@
                     finalise-authorisation]}]
   (if authorisation-initialised?
     [:div
-     {:class (u/bem [:authorisation])}
+     {:key :authorisation-initialised
+      :class (u/bem [:authorisation])}
      [:div
       {:class (u/bem [:text :align-center :padding-top-medium])}
       "We've sent you a magic phrase."]
      [input
-      {:key :authorisation-phrase-input
-       :subscriptions {:value :authorisation-phrase}
+      {:subscriptions {:value :authorisation-phrase}
        :placeholder "donkey-purple-kettle"
        :icon :magic-wand}
       {:on-change update-authorisation-phrase}]
      [:div
       {:class (u/bem [:cell :row :margin-top-small])}
       [button
-       {:key :authorisation-finalisation-button
-        :subscriptions {:disabled? :authorisation-finalisation-disabled?}
+       {:subscriptions {:disabled? :authorisation-finalisation-disabled?}
         :label "Sign in"
         :icon :arrow-right}
        {:on-click finalise-authorisation}]]
@@ -43,21 +42,20 @@
          "That magic phrase doesn't look right."]])]
 
     [:div
-     {:class (u/bem [:authorisation])}
+     {:key :authorisation-uninitialised
+      :class (u/bem [:authorisation])}
      [:div
       {:class (u/bem [:text :align-center :padding-top-medium])}
       "Sign in with your email address."]
      [input
-      {:key :authorisation-email-address-input
-       :subscriptions {:value :authorisation-email-address}
+      {:subscriptions {:value :authorisation-email-address}
        :placeholder "jane@smith.com"
        :icon :envelope}
       {:on-change update-authorisation-email-address}]
      [:div
       {:class (u/bem [:cell :row :margin-top-small])}
       [button
-       {:key :authorisation-initialisation-button
-        :subscriptions {:disabled? :authorisation-initialisation-disabled?}
+       {:subscriptions {:disabled? :authorisation-initialisation-disabled?}
         :label "Continue"
         :icon :arrow-right}
        {:on-click initialise-authorisation}]]]))

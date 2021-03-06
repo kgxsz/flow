@@ -7,8 +7,12 @@
             [flow.utils :as u]))
 
 
-(defn view [{:keys [initialising? route]}
-            {:keys [loading-page home-page admin-page unknown-page]}
+(defn view [{:keys [initialising?
+                    route]}
+            {:keys [loading-page
+                    home-page
+                    admin-page
+                    unknown-page]}
             _]
   [:div
    {:class (u/bem [:core])}
@@ -16,7 +20,9 @@
      [loading-page]
      (case route
        :home [home-page]
-       :admin [admin-page]
+       :admin [admin-page {:content :summary}]
+       :admin.users [admin-page {:content :users}]
+       :admin.authorisations [admin-page {:content :authorisations}]
        :unknown [unknown-page]))])
 
 

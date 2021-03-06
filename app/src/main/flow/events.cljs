@@ -10,7 +10,7 @@
  (fn [{:keys [db]} event]
    {:db {}
     :initialise-routing {}
-    :query {:user {}}}))
+    :query {:current-user {}}}))
 
 
 (re-frame/reg-event-fx
@@ -24,6 +24,10 @@
      (case route
        :home {:db db}
        :admin {:db db}
+       :admin.users {:db db
+                     :query {:users {}}}
+       :admin.authorisations {:db db
+                              :query {:authorisations {}}}
        :unknown {:db db}
        {:db db}))))
 
@@ -41,7 +45,10 @@
  [interceptors/schema interceptors/current-user-id]
  (fn [{:keys [db]} [_ query response]]
    (case (-> query keys first)
+     :current-user {:db (update db :user merge (:current-user response))}
+     :users {:db (update db :user merge (:users response))}
      :user {:db (update db :user merge (:user response))}
+     :authorisations {:db (update db :authorisation merge (:authorisations response))}
      {:db db})))
 
 
@@ -58,14 +65,22 @@
  (fn [{:keys [db]} [_ command response]]
    (case (-> command keys first)
      :initialise-authorisation {:db db}
-     :finalise-authorisation {:db (if (:current-user-id db)
-                                    (assoc db
-                                           :authorisation-finalised? false
-                                           :authorisation-failed? false)
-                                    (assoc db
-                                           :authorisation-finalised? false
-                                           :authorisation-failed? true))}
+     :finalise-authorisation {:db (assoc db
+                                         :authorisation-finalised? false
+                                         :authorisation-failed? false)
+                              ;; TODO - this needs to lead to the auth
+                              ;; finalise becoming true when the user
+                              ;; arrives? Or is the loading page enough?
+                              :query {:current-user {}}}
      :deauthorise {:db db}
+     :add-user (if (:user-id response)
+                 {:query {:user {:user-id (:user-id response)}}
+                  :db db}
+                 {:db db})
+     :delete-user (if (:user-id response)
+                    {:query {:user {:user-id (:user-id response)}}
+                     :db db}
+                    {:db db})
      {:db db})))
 
 
@@ -143,3 +158,60 @@
                 :authorisation-initialised?
                 :authorisation-finalised?
                 :authorisation-failed?)}))
+
+
+(re-frame/reg-event-fx
+ :delete-user
+ [interceptors/schema]
+ (fn [{:keys [db]} [_ user-id]]
+   {:command {:delete-user {:user-id user-id}}
+    :db db}))
+
+
+(re-frame/reg-event-fx
+ :update-user-addition-name
+ [interceptors/schema]
+ (fn [{:keys [db]} [_ input-value]]
+   (let [valid-length? (<= (count input-value) 250)
+         sanitise #(-> %
+                       (string/trim)
+                       (string/trim-newline)
+                       (string/replace #" " ""))]
+     (if valid-length?
+       {:db (assoc db :user-addition-name (sanitise input-value))}
+       {:db db}))))
+
+
+(re-frame/reg-event-fx
+ :update-user-addition-email-address
+ [interceptors/schema]
+ (fn [{:keys [db]} [_ input-value]]
+   (let [valid-length? (<= (count input-value) 250)
+         sanitise #(-> %
+                       (string/trim)
+                       (string/trim-newline)
+                       (string/replace #" " ""))]
+     (if valid-length?
+       {:db (assoc db :user-addition-email-address (sanitise input-value))}
+       {:db db}))))
+
+
+(re-frame/reg-event-fx
+ :toggle-user-addition-admin-role?
+ [interceptors/schema]
+ (fn [{:keys [db]} [_]]
+   {:db (update db :user-addition-admin-role? not)}))
+
+
+(re-frame/reg-event-fx
+ :add-user
+ [interceptors/schema]
+ (fn [{:keys [db]} [_ user]]
+   {:command {:add-user {:user {:email-address (:user-addition-email-address db)
+                                :name (:user-addition-name db)
+                                :roles (cond-> #{:customer}
+                                         (:user-addition-admin-role? db) (conj :admin))}}}
+    :db (dissoc db
+                :user-addition-email-address
+                :user-addition-name
+                :user-addition-admin-role?)}))

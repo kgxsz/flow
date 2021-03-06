@@ -7,4 +7,6 @@
 
 
 (def routes (silk/routes [[:home [[]]]
-                          [:admin [["admin"]]]]))
+                          [:admin [["admin"]]]
+                          [:admin.users [["admin" "users"]]]
+                          [:admin.authorisations [["admin" "authorisations"]]]]))

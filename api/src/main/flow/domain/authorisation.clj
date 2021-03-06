@@ -1,11 +1,13 @@
 (ns flow.domain.authorisation
   (:require [flow.db :as db]
+            [flow.domain.utils :as utils]
             [clj-uuid :as uuid]
             [clj-time.coerce :as t.coerce]
             [clj-time.core :as t]
             [hiccup.core :as hiccup]
             [clojure.java.io :as io]
-            [flow.email :as email]))
+            [flow.email :as email]
+            [medley.core :as medley]))
 
 
 (defn generate-phrase
@@ -39,10 +41,22 @@
    (str "Use this magic phrase to complete your sign in: " phrase)))
 
 
-(defn expired? [{:keys [initialised-at] :as authorisation}]
+(defn expired? [{:authorisation/keys [initialised-at]}]
   (-> (t.coerce/from-date initialised-at)
       (t/plus (t/minutes 5))
       (t/before? (t/now))))
+
+
+(defn convey-keys [current-user entity]
+  (let [conveyable-keys {:roles {:admin [:authorisation/id
+                                         :user/id
+                                         :authorisation/phrase
+                                         :authorisation/initialised-at
+                                         :authorisation/finalised-at]
+                                 :customer []}
+                         :owner []
+                         :public []}]
+    (utils/convey-keys conveyable-keys current-user entity)))
 
 
 (defn id [user-id phrase]
@@ -59,17 +73,23 @@
   (db/fetch-entities :authorisation))
 
 
-(defn create [{:keys [user-id phrase]}]
-  (let [now (t.coerce/to-date (t/now))]
-    (db/put-entity :authorisation
-                   {:id (id user-id phrase)
-                    :user-id user-id
-                    :phrase phrase
-                    :initialised-at now
-                    :finalised-at nil})))
+(defn create [user-id phrase]
+  (let [now (t.coerce/to-date (t/now))
+        id (id user-id phrase)]
+    (db/put-entity
+     :authorisation
+     id
+     {:authorisation/id id
+      :user/id user-id
+      :authorisation/phrase phrase
+      :authorisation/initialised-at now
+      :authorisation/finalised-at nil})))
 
 
 (defn finalise [id]
-  (db/update-entity :authorisation
-                    id
-                    #(assoc % :finalised-at (t.coerce/to-date (t/now)))))
+  (when-let [{:keys [authorisation/finalised-at]} (fetch id)]
+    (when (nil? finalised-at)
+      (db/update-entity
+       :authorisation
+       id
+       #(assoc % :authorisation/finalised-at (t.coerce/to-date (t/now)))))))

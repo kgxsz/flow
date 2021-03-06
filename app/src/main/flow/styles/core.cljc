@@ -4,6 +4,7 @@
             [flow.styles.components.text :refer [text]]
             [flow.styles.components.icon :refer [icon]]
             [flow.styles.components.input :refer [input]]
+            [flow.styles.components.toggle :refer [toggle]]
             [flow.styles.components.button :refer [button]]
             [flow.styles.components.cell :refer [cell]]
             [flow.styles.components.page :refer [page]]
@@ -51,6 +52,7 @@
   ;; components
   icon
   input
+  toggle
   button
   text
   cell
