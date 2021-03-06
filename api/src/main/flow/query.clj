@@ -29,6 +29,19 @@
      {}}))
 
 
+(defmethod handle :user
+  [[_ {:keys [user-id current-user-id]}]]
+  (if-let [current-user (user/fetch current-user-id)]
+    (if-let [{:keys [user/id] :as user} (user/fetch user-id)]
+      ;; TODO - define a better way of dealing with maps here for a single item
+      {:user
+       {id (user/convey-keys current-user user)}}
+      {:user
+       {}})
+    {:user
+     {}}))
+
+
 (defmethod handle :authorisation
   [[_ {:keys [authorisation-id current-user-id]}]]
   ;; TODO - this needs to move into a proper spec

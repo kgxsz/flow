@@ -27,8 +27,4 @@
       :border-radius (px (:x-huge c/radius))}
 
      [:&--active
-      {:left (px (+ (:x-tiny c/spacing) (:medium c/spacing)))}]]
-
-    [:&--disabled
-     {:cursor :not-allowed
-      :opacity (:10 c/fraction)}]]])
+      {:left (px (+ (:x-tiny c/spacing) (:medium c/spacing)))}]]]])

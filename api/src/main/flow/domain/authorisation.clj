@@ -87,7 +87,9 @@
 
 
 (defn finalise [id]
-  (db/update-entity
-   :authorisation
-   id
-   #(assoc % :authorisation/finalised-at (t.coerce/to-date (t/now)))))
+  (when-let [{:keys [authorisation/finalised-at]} (fetch id)]
+    (when (nil? finalised-at)
+      (db/update-entity
+       :authorisation
+       id
+       #(assoc % :authorisation/finalised-at (t.coerce/to-date (t/now)))))))

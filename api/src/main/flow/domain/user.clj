@@ -54,3 +54,17 @@
         :user/roles roles
         :user/created-at now
         :user/deleted-at nil}))))
+
+
+(defn delete [id]
+  (when-let [{:keys [user/deleted-at]} (fetch id)]
+    (when (nil? deleted-at)
+      (db/update-entity
+       :user
+       id
+       #(assoc % :user/deleted-at (t.coerce/to-date (t/now)))))))
+
+
+(defn admin?
+  [id]
+  (contains? (:user/roles (fetch id)) :admin))

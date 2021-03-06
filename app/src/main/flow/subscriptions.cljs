@@ -91,3 +91,30 @@
  :authorisations
  (fn [db [_]]
    (vals (:authorisation db))))
+
+
+(re-frame/reg-sub
+ :user-addition-name
+ (fn [db [_]]
+   (:user-addition-name db)))
+
+
+(re-frame/reg-sub
+ :user-addition-email-address
+ (fn [db [_]]
+   (:user-addition-email-address db)))
+
+
+(re-frame/reg-sub
+ :user-addition-admin-role?
+ (fn [db [_]]
+   ;; TODO - if the key doesn't exist, what should be done here?
+   (:user-addition-admin-role? db)))
+
+
+(re-frame/reg-sub
+ :user-addition-disabled?
+ (fn [db [_]]
+   (or
+    (not (u/valid-email-address? (:user-addition-email-address db)))
+    (string/blank? (:user-addition-name db)))))

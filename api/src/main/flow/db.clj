@@ -18,7 +18,8 @@
    config
    :flow
    {:partition (entity-partition entity-type entity-id)
-    :entity (faraday/freeze entity)}))
+    :entity (faraday/freeze entity)})
+  entity-id)
 
 
 (defn fetch-entity [entity-type entity-id]
@@ -31,13 +32,15 @@
 
 (defn update-entity [entity-type entity-id f]
   (if-let [entity (fetch-entity entity-type entity-id)]
-    (faraday/update-item
-     config
-     :flow
-     {:partition (entity-partition entity-type entity-id)}
-     {:update-expr "SET entity = :entity"
-      :expr-attr-vals {":entity" (faraday/freeze (f entity))}
-      :return :all-new})
+    (do
+      (faraday/update-item
+       config
+       :flow
+       {:partition (entity-partition entity-type entity-id)}
+       {:update-expr "SET entity = :entity"
+        :expr-attr-vals {":entity" (faraday/freeze (f entity))}
+        :return :all-new})
+      entity-id)
     (throw (IllegalArgumentException.
             (str "the " entity-type " entity with id " entity-id " does not exist.")))))
 

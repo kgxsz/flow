@@ -21,6 +21,7 @@
       {})))
 
 
+;; TODO - convert all language here to an authorisation-attempt
 (defmethod handle :finalise-authorisation
   [[_ {:keys [authorisation-email-address authorisation-phrase]}]]
   (try
@@ -28,10 +29,38 @@
           authorisation-id (authorisation/id user-id authorisation-phrase)
           authorisation (authorisation/fetch authorisation-id)]
       (if (and (some? authorisation) (not (authorisation/expired? authorisation)))
+        ;; TODO - user return IDs here consistently
         (do
           (authorisation/finalise authorisation-id)
           {:current-user-id user-id})
         {}))
+    (catch Exception e
+      {})))
+
+
+(defmethod handle :add-user
+  [[_ {:keys [user current-user-id]}]]
+  (try
+    (if (user/admin? current-user-id)
+      (if-let [user-id (user/create (:email-address user)
+                                    (:name user)
+                                    (:roles user))]
+        ;; TODO - probably want something more general here like a temp-id
+        {:user-id user-id}
+        {})
+      {})
+    (catch Exception e
+      {})))
+
+
+(defmethod handle :delete-user
+  [[_ {:keys [user-id current-user-id]}]]
+  (try
+    (if (user/admin? current-user-id)
+      (if-let [user-id (user/delete user-id)]
+        {:user-id user-id}
+        {})
+      {})
     (catch Exception e
       {})))
 
