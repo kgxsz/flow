@@ -58,27 +58,26 @@
   "Wraps the eponymous utility function with
    the user entity specific sanctioned keys."
   [current-user user]
-  (let [default-sanctioned-keys #{}
-        owner-sanctioned-keys #{:user/id
-                                :user/email-address
-                                :user/name
-                                :user/roles
-                                :user/created-at
-                                :user/deleted-at}
-        role-sanctioned-keys {:admin #{:user/id
-                                       :user/email-address
-                                       :user/name
-                                       :user/roles
-                                       :user/created-at
-                                       :user/deleted-at}
-                              :customer #{:user/id
-                                          :user/name
-                                          :user/created-at
-                                          :user/deleted-at}}]
+  (let [sanctioned-keys
+        {:default #{}
+         :owner #{:user/id
+                  :user/email-address
+                  :user/name
+                  :user/roles
+                  :user/created-at
+                  :user/deleted-at}
+         :role {:admin #{:user/id
+                         :user/email-address
+                         :user/name
+                         :user/roles
+                         :user/created-at
+                         :user/deleted-at}
+                :customer #{:user/id
+                            :user/name
+                            :user/created-at
+                            :user/deleted-at}}}]
     (utils/filter-sanctioned-keys
-     default-sanctioned-keys
-     owner-sanctioned-keys
-     role-sanctioned-keys
+     sanctioned-keys
      current-user
      user)))
 
