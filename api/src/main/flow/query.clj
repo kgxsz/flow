@@ -13,7 +13,7 @@
   ;; TODO - generalise queries that require a current user to exist
   (if-let [{:keys [user/id] :as current-user} (user/fetch current-user-id)]
     {:current-user
-     {id (user/convey-keys current-user current-user)}}
+     {id (user/filter-sanctioned-keys current-user current-user)}}
     {:current-user
      {}}))
 
@@ -23,7 +23,7 @@
   (if-let [current-user (user/fetch current-user-id)]
     {:users
      (->> (user/fetch-all)
-          (map (partial user/convey-keys current-user))
+          (map (partial user/filter-sanctioned-keys current-user))
           (medley/index-by :user/id))}
     {:users
      {}}))
@@ -35,7 +35,7 @@
     (if-let [{:keys [user/id] :as user} (user/fetch user-id)]
       ;; TODO - define a better way of dealing with maps here for a single item
       {:user
-       {id (user/convey-keys current-user user)}}
+       {id (user/filter-sanctioned-keys current-user user)}}
       {:user
        {}})
     {:user
@@ -50,7 +50,7 @@
   (let [current-user (user/fetch current-user-id)
         {:keys [authorisation/id] :as authorisation} (authorisation/fetch authorisation-id)]
     {:authorisation
-     {id (authorisation/convey-keys current-user authorisation)}}))
+     {id (authorisation/filter-sanctioned-keys current-user authorisation)}}))
 
 
 (defmethod handle :authorisations
@@ -58,7 +58,7 @@
   (if-let [current-user (user/fetch current-user-id)]
     {:authorisations
      (->> (authorisation/fetch-all)
-          (map (partial authorisation/convey-keys current-user))
+          (map (partial authorisation/filter-sanctioned-keys current-user))
           (medley/index-by :authorisation/id))}
     {:authorisations
      {}}))

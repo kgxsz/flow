@@ -87,9 +87,29 @@
 
 
 (defn finalise [id]
-  (when-let [{:keys [authorisation/finalised-at]} (fetch id)]
-    (when (nil? finalised-at)
-      (db/update-entity
-       :authorisation
-       id
-       #(assoc % :authorisation/finalised-at (t.coerce/to-date (t/now)))))))
+  (db/update-entity
+   :authorisation
+   id
+   #(cond-> %
+      (nil? (:authorisation/finalised-at %))
+      (assoc :authorisation/finalised-at (t.coerce/to-date (t/now))))))
+
+
+(defn filter-sanctioned-keys
+  "Wraps the eponymous utility function with the
+   authorisation entity specific sanctioned keys."
+  [current-user authorisation]
+  (let [default-sanctioned-keys #{}
+        owner-sanctioned-keys #{}
+        role-sanctioned-keys {:admin #{:authorisation/id
+                                       :user/id
+                                       :authorisation/phrase
+                                       :authorisation/initialised-at
+                                       :authorisation/finalised-at}
+                              :customer #{}}]
+    (utils/filter-sanctioned-keys
+     default-sanctioned-keys
+     owner-sanctioned-keys
+     role-sanctioned-keys
+     current-user
+     authorisation)))

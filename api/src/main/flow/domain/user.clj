@@ -7,64 +7,83 @@
             [medley.core :as medley]))
 
 
-(defn convey-keys [current-user entity]
-  (let [conveyable-keys {:roles {:admin [:user/id
-                                         :user/email-address
-                                         :user/name
-                                         :user/roles
-                                         :user/created-at
-                                         :user/deleted-at]
-                                 :customer [:user/id
-                                            :user/name
-                                            :user/created-at
-                                            :user/deleted-at]}
-                         :owner [:user/id
-                                 :user/email-address
-                                 :user/name
-                                 :user/roles
-                                 :user/created-at
-                                 :user/deleted-at]
-                         :public []}]
-    (utils/convey-keys conveyable-keys current-user entity)))
-
-
-(defn id [email-address]
+(defn id
+  "Generates a deterministic user id based on the email address."
+  [email-address]
   (uuid/v5 #uuid "0cb29677-4eaf-578f-ab9b-f9ac67c33cb9"
            {:email-address email-address}))
 
 
-(defn fetch [id]
+(defn fetch
+  "Fetches the user at the given id."
+  [id]
   (db/fetch-entity :user id))
 
 
-(defn fetch-all []
+(defn fetch-all
+  "Fetches all users"
+  []
   (db/fetch-entities :user))
 
 
-(defn create [email-address name roles]
+(defn create
+  "Creates a new user."
+  [email-address name roles]
   (let [now (t.coerce/to-date (t/now))
         id (id email-address)]
-    (when (nil? (fetch id))
-      (db/put-entity
-       :user
-       id
-       {:user/id id
-        :user/email-address email-address
-        :user/name name
-        :user/roles roles
-        :user/created-at now
-        :user/deleted-at nil}))))
+    (db/put-entity
+     :user
+     id
+     {:user/id id
+      :user/email-address email-address
+      :user/name name
+      :user/roles roles
+      :user/created-at now
+      :user/deleted-at nil})))
 
 
-(defn delete [id]
-  (when-let [{:keys [user/deleted-at]} (fetch id)]
-    (when (nil? deleted-at)
-      (db/update-entity
-       :user
-       id
-       #(assoc % :user/deleted-at (t.coerce/to-date (t/now)))))))
+(defn delete
+  "Deletes a user. Doesn't actually remove the
+   entity, just marks it as deleted."
+  [id]
+  (db/update-entity
+   :user
+   id
+   #(cond-> %
+      (nil? (:user/deleted-at %))
+      (assoc :user/deleted-at (t.coerce/to-date (t/now))))))
+
+
+(defn filter-sanctioned-keys
+  "Wraps the eponymous utility function with
+   the user entity specific sanctioned keys."
+  [current-user user]
+  (let [default-sanctioned-keys #{}
+        owner-sanctioned-keys #{:user/id
+                                :user/email-address
+                                :user/name
+                                :user/roles
+                                :user/created-at
+                                :user/deleted-at}
+        role-sanctioned-keys {:admin #{:user/id
+                                       :user/email-address
+                                       :user/name
+                                       :user/roles
+                                       :user/created-at
+                                       :user/deleted-at}
+                              :customer #{:user/id
+                                          :user/name
+                                          :user/created-at
+                                          :user/deleted-at}}]
+    (utils/filter-sanctioned-keys
+     default-sanctioned-keys
+     owner-sanctioned-keys
+     role-sanctioned-keys
+     current-user
+     user)))
 
 
 (defn admin?
+  "Given an id, determines if the user is an admin."
   [id]
   (contains? (:user/roles (fetch id)) :admin))
