@@ -43,8 +43,8 @@
 
 
 (defn delete
-  "Deletes a user. Doesn't actually remove the
-   entity, just marks it as deleted."
+  "Deletes the user with the given id. Doesn't actually
+   remove the entity, just marks it as deleted."
   [id]
   (db/update-entity
    :user

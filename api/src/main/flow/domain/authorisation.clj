@@ -10,21 +10,29 @@
             [medley.core :as medley]))
 
 
-(defn id [user-id phrase]
+(defn id
+  "Generates a deterministic user id based on the user id and the phrase."
+  [user-id phrase]
   (uuid/v5 #uuid "2f636b80-6935-11eb-8e66-4838500ac459"
            {:user-id user-id
             :phrase phrase}))
 
 
-(defn fetch [id]
+(defn fetch
+  "Fetches the authorisation at the given id."
+  [id]
   (db/fetch-entity :authorisation id))
 
 
-(defn fetch-all []
+(defn fetch-all
+  "Fetches all authoirsations"
+  []
   (db/fetch-entities :authorisation))
 
 
-(defn create [user-id phrase]
+(defn create
+  "Creates a new authorisation."
+  [user-id phrase]
   (let [now (t.coerce/to-date (t/now))
         id (id user-id phrase)]
     (db/put-entity
@@ -37,7 +45,9 @@
       :authorisation/finalised-at nil})))
 
 
-(defn finalise [id]
+(defn finalise
+  "Marks the authorisation with the given id as finalised now."
+  [id]
   (db/update-entity
    :authorisation
    id
@@ -65,13 +75,16 @@
      authorisation)))
 
 
-(defn expired? [{:authorisation/keys [initialised-at]}]
+(defn expired?
+  "Given an authoirsation, determines if it is expired. "
+  [{:authorisation/keys [initialised-at]}]
   (-> (t.coerce/from-date initialised-at)
       (t/plus (t/minutes 5))
       (t/before? (t/now))) )
 
 
 (defn generate-phrase
+  "Generates a phrase of three words."
   []
   (->> (io/resource "words.edn")
        (slurp)
@@ -83,6 +96,7 @@
 
 
 (defn send-phrase
+  "Sends the given phrase to the given email address"
   [email-address phrase]
   (email/send-email
    email-address
