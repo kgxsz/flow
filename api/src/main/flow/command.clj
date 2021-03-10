@@ -41,7 +41,7 @@
 (defmethod handle :add-user
   [[_ {:keys [user current-user-id]}]]
   (try
-    (if (user/admin? current-user-id)
+    (if (user/admin? (user/fetch current-user-id))
       (if-let [user-id (user/create (:email-address user)
                                     (:name user)
                                     (:roles user))]
@@ -56,7 +56,7 @@
 (defmethod handle :delete-user
   [[_ {:keys [user-id current-user-id]}]]
   (try
-    (if (user/admin? current-user-id)
+    (if (user/admin? (user/fetch current-user-id))
       (if-let [user-id (user/delete user-id)]
         {:user-id user-id}
         {})

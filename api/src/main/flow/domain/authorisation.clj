@@ -10,55 +10,6 @@
             [medley.core :as medley]))
 
 
-(defn generate-phrase
-  []
-  (->> (io/resource "words.edn")
-       (slurp)
-       (clojure.edn/read-string)
-       (partial rand-nth)
-       (repeatedly 3)
-       (interpose "-")
-       (apply str)))
-
-
-(defn send-phrase
-  [email-address phrase]
-  (email/send-email
-   email-address
-   "Complete your sign in"
-   (hiccup/html
-    [:table {:width "100%"
-             :height "250px"
-             :border "0"
-             :cellspacing "0"
-             :cellpadding "0"}
-     [:tr {:style "color: #333333"}
-      [:td {:align "center"}
-       [:div "Use this magic phrase to"]
-       [:div "complete your sign in:"]
-       [:div {:style "padding-top: 10px; font-size: 24px; font-weight: 700"}
-        phrase]]]])
-   (str "Use this magic phrase to complete your sign in: " phrase)))
-
-
-(defn expired? [{:authorisation/keys [initialised-at]}]
-  (-> (t.coerce/from-date initialised-at)
-      (t/plus (t/minutes 5))
-      (t/before? (t/now))))
-
-
-(defn convey-keys [current-user entity]
-  (let [conveyable-keys {:roles {:admin [:authorisation/id
-                                         :user/id
-                                         :authorisation/phrase
-                                         :authorisation/initialised-at
-                                         :authorisation/finalised-at]
-                                 :customer []}
-                         :owner []
-                         :public []}]
-    (utils/convey-keys conveyable-keys current-user entity)))
-
-
 (defn id [user-id phrase]
   (uuid/v5 #uuid "2f636b80-6935-11eb-8e66-4838500ac459"
            {:user-id user-id
@@ -112,3 +63,41 @@
      sanctioned-keys
      current-user
      authorisation)))
+
+
+(defn expired? [{:authorisation/keys [initialised-at]}]
+  (-> (t.coerce/from-date initialised-at)
+      (t/plus (t/minutes 5))
+      (t/before? (t/now))) )
+
+
+(defn generate-phrase
+  []
+  (->> (io/resource "words.edn")
+       (slurp)
+       (clojure.edn/read-string)
+       (partial rand-nth)
+       (repeatedly 3)
+       (interpose "-")
+       (apply str)))
+
+
+(defn send-phrase
+  [email-address phrase]
+  (email/send-email
+   email-address
+   "Complete your sign in"
+   (hiccup/html
+    [:table {:width "100%"
+             :height "250px"
+             :border "0"
+             :cellspacing "0"
+             :cellpadding "0"}
+     [:tr {:style "color: #333333"}
+      [:td {:align "center"}
+       [:div "Use this magic phrase to"]
+       [:div "complete your sign in:"]
+       [:div {:style "padding-top: 10px; font-size: 24px; font-weight: 700"}
+        phrase]]]])
+   (str "Use this magic phrase to complete your sign in: " phrase)))
+

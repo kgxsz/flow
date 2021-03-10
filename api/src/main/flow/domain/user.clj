@@ -83,6 +83,6 @@
 
 
 (defn admin?
-  "Given an id, determines if the user is an admin."
-  [id]
-  (contains? (:user/roles (fetch id)) :admin))
+  "Given a user, determines if it is an admin."
+  [{:keys [user/roles]}]
+  (contains? roles :admin))
