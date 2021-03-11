@@ -1,12 +1,9 @@
-(ns flow.domain.authorisation
+(ns flow.entity.authorisation
   (:require [flow.db :as db]
-            [flow.domain.utils :as utils]
+            [flow.entity.utils :as utils]
             [clj-uuid :as uuid]
             [clj-time.coerce :as t.coerce]
             [clj-time.core :as t]
-            [hiccup.core :as hiccup]
-            [clojure.java.io :as io]
-            [flow.email :as email]
             [medley.core :as medley]))
 
 
@@ -45,15 +42,10 @@
       :authorisation/finalised-at nil})))
 
 
-(defn finalise
-  "Marks the authorisation with the given id as finalised now."
-  [id]
-  (db/update-entity
-   :authorisation
-   id
-   #(cond-> %
-      (nil? (:authorisation/finalised-at %))
-      (assoc :authorisation/finalised-at (t.coerce/to-date (t/now))))))
+(defn update
+  "Updates the authorisation at the given id by applying the given function."
+  [id f]
+  (db/update-entity :authorisation id f))
 
 
 (defn filter-sanctioned-keys
@@ -73,45 +65,3 @@
      sanctioned-keys
      current-user
      authorisation)))
-
-
-(defn expired?
-  "Given an authoirsation, determines if it is expired. "
-  [{:authorisation/keys [initialised-at]}]
-  (-> (t.coerce/from-date initialised-at)
-      (t/plus (t/minutes 5))
-      (t/before? (t/now))) )
-
-
-(defn generate-phrase
-  "Generates a phrase of three words."
-  []
-  (->> (io/resource "words.edn")
-       (slurp)
-       (clojure.edn/read-string)
-       (partial rand-nth)
-       (repeatedly 3)
-       (interpose "-")
-       (apply str)))
-
-
-(defn send-phrase
-  "Sends the given phrase to the given email address"
-  [email-address phrase]
-  (email/send-email
-   email-address
-   "Complete your sign in"
-   (hiccup/html
-    [:table {:width "100%"
-             :height "250px"
-             :border "0"
-             :cellspacing "0"
-             :cellpadding "0"}
-     [:tr {:style "color: #333333"}
-      [:td {:align "center"}
-       [:div "Use this magic phrase to"]
-       [:div "complete your sign in:"]
-       [:div {:style "padding-top: 10px; font-size: 24px; font-weight: 700"}
-        phrase]]]])
-   (str "Use this magic phrase to complete your sign in: " phrase)))
-

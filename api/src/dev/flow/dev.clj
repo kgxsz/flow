@@ -3,8 +3,8 @@
             [flow.middleware :as middleware]
             [flow.core :as core]
             [flow.db :as db]
-            [flow.domain.authorisation :as authorisation]
-            [flow.domain.user :as user]
+            [flow.entity.authorisation :as authorisation]
+            [flow.entity.user :as user]
             [taoensso.faraday :as faraday]))
 
 

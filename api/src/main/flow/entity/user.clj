@@ -1,10 +1,9 @@
-(ns flow.domain.user
+(ns flow.entity.user
   (:require [flow.db :as db]
-            [flow.domain.utils :as utils]
+            [flow.entity.utils :as utils]
             [clj-time.coerce :as t.coerce]
             [clj-time.core :as t]
-            [clj-uuid :as uuid]
-            [medley.core :as medley]))
+            [clj-uuid :as uuid]))
 
 
 (defn id
@@ -42,16 +41,10 @@
       :user/deleted-at nil})))
 
 
-(defn delete
-  "Deletes the user with the given id. Doesn't actually
-   remove the entity, just marks it as deleted."
-  [id]
-  (db/update-entity
-   :user
-   id
-   #(cond-> %
-      (nil? (:user/deleted-at %))
-      (assoc :user/deleted-at (t.coerce/to-date (t/now))))))
+(defn update
+  "Updates the user at the given id by applying the given function."
+  [id f]
+  (db/update-entity :user id f))
 
 
 (defn filter-sanctioned-keys
@@ -80,9 +73,3 @@
      sanctioned-keys
      current-user
      user)))
-
-
-(defn admin?
-  "Given a user, determines if it is an admin."
-  [{:keys [user/roles]}]
-  (contains? roles :admin))

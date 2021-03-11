@@ -1,4 +1,4 @@
-(ns flow.domain.utils
+(ns flow.entity.utils
   (:require [medley.core :as medley]))
 
 

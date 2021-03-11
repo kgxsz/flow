@@ -1,6 +1,6 @@
 (ns flow.query
-  (:require [flow.domain.user :as user]
-            [flow.domain.authorisation :as authorisation]
+  (:require [flow.entity.user :as user]
+            [flow.entity.authorisation :as authorisation]
             [taoensso.faraday :as faraday]
             [medley.core :as medley]))
 
