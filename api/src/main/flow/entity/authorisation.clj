@@ -1,6 +1,6 @@
 (ns flow.entity.authorisation
   (:require [flow.db :as db]
-            [flow.entity.utils :as utils]
+            [flow.entity.utils :as u]
             [clj-uuid :as uuid]
             [clj-time.coerce :as t.coerce]
             [clj-time.core :as t]
@@ -22,30 +22,30 @@
 
 
 (defn fetch-all
-  "Fetches all authoirsations"
+  "Fetches all authorisations"
   []
   (db/fetch-entities :authorisation))
 
 
-(defn create
+(defn create!
   "Creates a new authorisation."
   [user-id phrase]
   (let [now (t.coerce/to-date (t/now))
         id (id user-id phrase)]
-    (db/put-entity
+    (db/put-entity!
      :authorisation
      id
      {:authorisation/id id
       :user/id user-id
       :authorisation/phrase phrase
-      :authorisation/initialised-at now
-      :authorisation/finalised-at nil})))
+      :authorisation/created-at now
+      :authorisation/granted-at nil})))
 
 
-(defn update
-  "Updates the authorisation at the given id by applying the given function."
+(defn mutate!
+  "Mutates the authorisation at the given id by applying the given function."
   [id f]
-  (db/update-entity :authorisation id f))
+  (db/mutate-entity! :authorisation id f))
 
 
 (defn filter-sanctioned-keys
@@ -58,10 +58,10 @@
          :role {:admin #{:authorisation/id
                          :user/id
                          :authorisation/phrase
-                         :authorisation/initialised-at
-                         :authorisation/finalised-at}
+                         :authorisation/created-at
+                         :authorisation/granted-at}
                 :customer #{}}}]
-    (utils/filter-sanctioned-keys
+    (u/filter-sanctioned-keys
      sanctioned-keys
      current-user
      authorisation)))

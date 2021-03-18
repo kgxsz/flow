@@ -45,9 +45,9 @@
  [interceptors/schema interceptors/current-user-id]
  (fn [{:keys [db]} [_ query response]]
    (case (-> query keys first)
-     :current-user {:db (update db :user merge (:current-user response))}
+     :current-user {:db (update db :user merge (:users response))}
      :users {:db (update db :user merge (:users response))}
-     :user {:db (update db :user merge (:user response))}
+     :user {:db (update db :user merge (:users response))}
      :authorisations {:db (update db :authorisation merge (:authorisations response))}
      {:db db})))
 
@@ -64,23 +64,25 @@
  [interceptors/schema interceptors/current-user-id]
  (fn [{:keys [db]} [_ command response]]
    (case (-> command keys first)
-     :initialise-authorisation {:db db}
-     :finalise-authorisation {:db (assoc db
-                                         :authorisation-finalised? false
-                                         :authorisation-failed? false)
-                              ;; TODO - this needs to lead to the auth
-                              ;; finalise becoming true when the user
-                              ;; arrives? Or is the loading page enough?
-                              :query {:current-user {}}}
+     :initialise-authorisation-attempt {:db db}
+     :finalise-authorisation-attempt {:db (assoc db
+                                                 :authorisation-finalised? false
+                                                 :authorisation-failed? false)
+                                      ;; TODO - this needs to lead to the auth
+                                      ;; finalise becoming true when the user
+                                      ;; arrives? Or is the loading page enough?
+                                      :query {:current-user {}}}
      :deauthorise {:db db}
-     :add-user (if (:user-id response)
-                 {:query {:user {:user-id (:user-id response)}}
-                  :db db}
-                 {:db db})
-     :delete-user (if (:user-id response)
-                    {:query {:user {:user-id (:user-id response)}}
-                     :db db}
-                    {:db db})
+     :add-user (let [id (get-in command [:add-user :user :user/id])
+                     id-resolution (get-in response [:metadata :id-resolution])]
+                 (if-let [id (id-resolution id)]
+                   ;; TODO - need to do something when nothing was created
+                   {:query {:user {:user/id (id-resolution id)}}
+                    :db db}
+                   {:db db}))
+     :delete-user (let [id (get-in command [:delete-user :user/id])]
+                    {:query {:user {:user/id id}}
+                     :db db})
      {:db db})))
 
 
@@ -120,29 +122,29 @@
 
 
 (re-frame/reg-event-fx
+ ;; TODO attempt
  :initialise-authorisation
  [interceptors/schema]
  (fn [{:keys [db]} [_]]
    (let [{:keys [authorisation-initialised?]} db]
      (if authorisation-initialised?
        {:db db}
-       {:command {:initialise-authorisation (select-keys
-                                             db
-                                             [:authorisation-email-address])}
+       {:command {:initialise-authorisation-attempt
+                  {:user/email-address (:authorisation-email-address db)}}
         :db (assoc db :authorisation-initialised? true)}))))
 
 
 (re-frame/reg-event-fx
+ ;; TODO - attempt
  :finalise-authorisation
  [interceptors/schema]
  (fn [{:keys [db]} [_]]
    (let [{:keys [authorisation-finalised?]} db]
      (if authorisation-finalised?
        {:db db}
-       {:command {:finalise-authorisation (select-keys
-                                           db
-                                           [:authorisation-phrase
-                                            :authorisation-email-address])}
+       {:command {:finalise-authorisation-attempt
+                  {:user/email-address (:authorisation-email-address db)
+                   :authorisation/phrase (:authorisation-phrase db)}}
         :db (assoc db :authorisation-finalised? true)}))))
 
 
@@ -164,7 +166,7 @@
  :delete-user
  [interceptors/schema]
  (fn [{:keys [db]} [_ user-id]]
-   {:command {:delete-user {:user-id user-id}}
+   {:command {:delete-user {:user/id user-id}}
     :db db}))
 
 
@@ -207,10 +209,11 @@
  :add-user
  [interceptors/schema]
  (fn [{:keys [db]} [_ user]]
-   {:command {:add-user {:user {:email-address (:user-addition-email-address db)
-                                :name (:user-addition-name db)
-                                :roles (cond-> #{:customer}
-                                         (:user-addition-admin-role? db) (conj :admin))}}}
+   {:command {:add-user {:user {:user/id (random-uuid)
+                                :user/email-address (:user-addition-email-address db)
+                                :user/name (:user-addition-name db)
+                                :user/roles (cond-> #{:customer}
+                                              (:user-addition-admin-role? db) (conj :admin))}}}
     :db (dissoc db
                 :user-addition-email-address
                 :user-addition-name

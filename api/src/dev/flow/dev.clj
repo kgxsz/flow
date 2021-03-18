@@ -26,7 +26,7 @@
         users [["k.suzukawa@gmail.com" "Keigo" #{:admin :customer}]
                ["ksarnecka50@gmail.com" "Kasia" #{:customer}]]]
     (faraday/create-table db/config :flow table-index table-options)
-    (doall (map (partial apply user/create) users))))
+    (doall (map (partial apply user/create!) users))))
 
 
 (comment

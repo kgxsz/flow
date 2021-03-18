@@ -1,6 +1,6 @@
 (ns flow.entity.user
   (:require [flow.db :as db]
-            [flow.entity.utils :as utils]
+            [flow.entity.utils :as u]
             [clj-time.coerce :as t.coerce]
             [clj-time.core :as t]
             [clj-uuid :as uuid]))
@@ -25,12 +25,12 @@
   (db/fetch-entities :user))
 
 
-(defn create
+(defn create!
   "Creates a new user."
   [email-address name roles]
   (let [now (t.coerce/to-date (t/now))
         id (id email-address)]
-    (db/put-entity
+    (db/put-entity!
      :user
      id
      {:user/id id
@@ -41,10 +41,10 @@
       :user/deleted-at nil})))
 
 
-(defn update
-  "Updates the user at the given id by applying the given function."
+(defn mutate!
+  "Mutates the user at the given id by applying the given function."
   [id f]
-  (db/update-entity :user id f))
+  (db/mutate-entity! :user id f))
 
 
 (defn filter-sanctioned-keys
@@ -69,7 +69,7 @@
                             :user/name
                             :user/created-at
                             :user/deleted-at}}}]
-    (utils/filter-sanctioned-keys
+    (u/filter-sanctioned-keys
      sanctioned-keys
      current-user
      user)))

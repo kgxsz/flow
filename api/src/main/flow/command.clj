@@ -1,75 +1,102 @@
 (ns flow.command
   (:require [flow.entity.user :as user]
             [flow.entity.authorisation :as authorisation]
-            [flow.domain.admin :as admin]
+            [flow.domain.user-management :as user-management]
             [flow.domain.authorisation-attempt :as authorisation-attempt]))
 
 
 (defmulti handle first)
 
 
-(defmethod handle :initialise-authorisation
-  [[_ {:keys [authorisation-email-address]}]]
-  (try
-    (let [user-id (user/id authorisation-email-address)
-          authorisation-phrase (authorisation-attempt/generate-phrase)]
-      (if (user/fetch user-id)
-        (do
-          (authorisation/create user-id authorisation-phrase)
-          (authorisation-attempt/send-phrase authorisation-email-address authorisation-phrase)
-          {})
-        {}))
-    (catch Exception e
-      {})))
+(defmethod handle :initialise-authorisation-attempt
+  [[_ {:keys [user/email-address]}]]
 
+  "If the user with the given email address exists and has not been deleted,
+   then a phrase will be generated, an authorisation will be created, and an
+   email containing the phrase will be sent to the user such that they may
+   finalise their authorisation attempt."
 
-;; TODO - convert all language here to an authorisation-attempt
-(defmethod handle :finalise-authorisation
-  [[_ {:keys [authorisation-email-address authorisation-phrase]}]]
-  (try
-    (let [user-id (user/id authorisation-email-address)
-          authorisation-id (authorisation/id user-id authorisation-phrase)
-          authorisation (authorisation/fetch authorisation-id)]
-      (if (and (some? authorisation) (not (authorisation-attempt/expired? authorisation)))
-        ;; TODO - user return IDs here consistently
-        (do
-          (authorisation-attempt/finalise authorisation-id)
-          {:current-user-id user-id})
-        {}))
-    (catch Exception e
-      {})))
+  ;; TODO - this needs to move into a proper spec
+  (when-not (string? email-address)
+    (throw (IllegalArgumentException. "Unsupported command parameters.")))
 
-
-(defmethod handle :add-user
-  [[_ {:keys [user current-user-id]}]]
-  (try
-    (if (admin/priveledged? (user/fetch current-user-id))
-      (if-let [user-id (user/create (:email-address user)
-                                    (:name user)
-                                    (:roles user))]
-        ;; TODO - probably want something more general here like a temp-id
-        {:user-id user-id}
+  (let [{:user/keys [id deleted-at] :as user} (user/fetch (user/id email-address))]
+    (if (and (some? user) (nil? deleted-at))
+      (let [phrase (authorisation-attempt/generate-phrase)]
+        (authorisation/create! id phrase)
+        (authorisation-attempt/send-phrase! email-address phrase)
         {})
-      {})
-    (catch Exception e
       {})))
 
 
-(defmethod handle :delete-user
-  [[_ {:keys [user-id current-user-id]}]]
-  (try
-    (if (admin/priveledged? (user/fetch current-user-id))
-      (if-let [user-id (admin/delete user-id)]
-        {:user-id user-id}
-        {})
-      {})
-    (catch Exception e
+(defmethod handle :finalise-authorisation-attempt
+  [[_ {:keys [user/email-address authorisation/phrase]}]]
+
+  "If a grantable authorisation is found to match the given email address and phrase,
+   then the authorisation will be marked as granted, and a session will be created."
+
+  ;; TODO - this needs to move into a proper spec
+  (when-not (and (string? email-address)
+                 (string? phrase))
+    (throw (IllegalArgumentException. "Unsupported command parameters.")))
+
+  (let [user (user/fetch (user/id email-address))
+        authorisation (authorisation/fetch (authorisation/id (:user/id user) phrase))]
+    (if (and (some? authorisation) (authorisation-attempt/grantable? authorisation))
+      (do
+        (authorisation-attempt/grant! (:authorisation/id authorisation))
+        {:current-user-id (:user/id user)
+         ;; TODO - bring in the session here
+         #_:session #_{:current-user user}})
       {})))
 
 
 (defmethod handle :deauthorise
   [command]
-  {:current-user-id nil})
+
+  "The current user will be deauthorised."
+
+  {:current-user-id nil
+   ;; TODO - bring in the session here
+   #_:session #_{:current-user user}})
+
+
+(defmethod handle :add-user
+  [[_ {:keys [user current-user-id]}]]
+
+  "If the current user is an admin, and the given user doesn't
+   already exist, then the given user will be created."
+
+  ;; TODO - this needs to move into a proper spec
+  (when-not (map? user)
+    (throw (IllegalArgumentException. "Unsupported command parameters.")))
+
+  (if (and (user-management/admin? (user/fetch current-user-id))
+           (not (user-management/exists? (user/id (:user/email-address user)))))
+    {:metadata
+     {:id-resolution
+      {(:user/id user) (user/create! (:user/email-address user)
+                                     (:user/name user)
+                                     (:user/roles user))}}}
+    {}))
+
+
+(defmethod handle :delete-user
+  [[_ {:keys [user/id current-user-id]}]]
+
+  "If the current user is an admin, and user with the given user
+   id exists then that user will be deleted."
+
+  ;; TODO - this needs to move into a proper spec
+  (when-not (uuid? id)
+    (throw (IllegalArgumentException. "Unsupported command parameters.")))
+
+  (if (and (user-management/admin? (user/fetch current-user-id))
+           (user-management/exists? id))
+    (do
+      (user-management/delete! id)
+      {})
+    {}))
 
 
 (defmethod handle :default

@@ -7,26 +7,30 @@
             [flow.email :as email]))
 
 
-(defn finalise
-  "Marks the authorisation with the given id as finalised now."
+(defn grant!
+  "Marks the authorisation with the given id as granted now."
   [id]
-  (authorisation/update
+  (authorisation/mutate!
    id
    #(cond-> %
-      (nil? (:authorisation/finalised-at %))
-      (assoc :authorisation/finalised-at (t.coerce/to-date (t/now))))))
+      (nil? (:authorisation/granted-at %))
+      (assoc :authorisation/granted-at (t.coerce/to-date (t/now))))))
 
 
-(defn expired?
-  "Given an authoirsation, determines if it is expired. "
-  [{:authorisation/keys [initialised-at]}]
-  (-> (t.coerce/from-date initialised-at)
-      (t/plus (t/minutes 5))
-      (t/before? (t/now))) )
+(defn grantable?
+  "Given an authorisation, determines if it is grantable.
+   An authorisation is grantable if it hasn't already been
+   granted, and if it was created in the last 5 minutes."
+  [{:authorisation/keys [granted-at created-at]}]
+  (and
+   (nil? granted-at)
+   (-> (t.coerce/from-date created-at)
+       (t/plus (t/minutes 5))
+       (t/after? (t/now)))))
 
 
 (defn generate-phrase
-  "Generates a phrase of three words."
+  "Generates a phrase of three hyphenated words."
   []
   (->> (io/resource "words.edn")
        (slurp)
@@ -37,7 +41,7 @@
        (apply str)))
 
 
-(defn send-phrase
+(defn send-phrase!
   "Sends the given phrase to the given email address"
   [email-address phrase]
   (email/send-email

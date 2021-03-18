@@ -4,8 +4,8 @@
 
 (defn filter-sanctioned-keys
   "Given the roles of the current user, and whether or not the current user is the
-   owner of the entity, filters the entity's keys such that only relevent sanctioned
-   keys are left. If no keys are found to be sanctioned, then returns nil."
+   owner of the entity, filters the entity's keys such that only sanctioned keys
+   are left. If no keys are found to be sanctioned, then returns an empty map."
   [sanctioned-keys
    {:keys [user/roles] :as current-user}
    {:keys [user/id] :as entity}]
@@ -14,6 +14,5 @@
         sanctioned-keys (clojure.set/union
                          (:default sanctioned-keys)
                          (when owner? (:owner sanctioned-keys))
-                         (filter-roles (:role sanctioned-keys)))
-        entity (medley/filter-keys (partial contains? sanctioned-keys) entity)]
-    (when-not (empty? entity) entity)))
+                         (filter-roles (:role sanctioned-keys)))]
+    (medley/filter-keys (partial contains? sanctioned-keys) entity)))

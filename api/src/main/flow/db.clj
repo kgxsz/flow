@@ -36,7 +36,7 @@
     (mapv :entity result)))
 
 
-(defn put-entity
+(defn put-entity!
   "Puts an entity into DynamoDB if and only if the entity doesn't
    already exist. On success, returns the entity's id."
   [entity-type entity-id entity]
@@ -53,8 +53,8 @@
       (str "the " entity-type " entity with id " entity-id " already exists.")))))
 
 
-(defn update-entity
-  "Updates an entity by applying function f if and only if the
+(defn mutate-entity!
+  "Mutates an entity by applying function f if and only if the
    entity exists. On success, returns the entity's id."
   [entity-type entity-id f]
   (if-let [entity (fetch-entity entity-type entity-id)]
