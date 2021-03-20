@@ -13,10 +13,10 @@
   "Determines whether to dispatch to query/handle or command/handle,
    and adds it to the request to be used by the handler."
   [handler]
-  (fn [{:keys [uri] :as request}]
+  (fn [{:keys [uri metadata] :as request}]
     (case uri
-      "/query" (handler (assoc request :handle query/handle))
-      "/command" (handler (assoc request :handle command/handle))
+      "/query" (handler (assoc request :handle #(query/handle (first %) (second %) metadata)))
+      "/command" (handler (assoc request :handle #(command/handle (first %) (second %) metadata)))
       (throw (IllegalArgumentException. "Unsupported uri.")))))
 
 
