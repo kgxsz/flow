@@ -5,50 +5,42 @@
             [flow.utils :as u]))
 
 
-(defmulti handle first)
+(defmulti handle (fn [method payload metadata] method))
 
 
 (defmethod handle :current-user
-  [[_ {:keys [current-user-id]}]]
-  ;; TODO - current user could have been sourced as part of a session
-  (let [current-user (user/fetch current-user-id)]
-    {:users (->> current-user
-                 (user/filter-sanctioned-keys current-user)
-                 (u/index :user/id))}))
+  [_ _ {:keys [current-user]}]
+  {:users (->> current-user
+               (user/filter-sanctioned-keys current-user)
+               (u/index :user/id))})
 
 
 (defmethod handle :users
-  [[_ {:keys [current-user-id]}]]
-  ;; TODO - current user could have been sourced as part of a session
-  (let [current-user (user/fetch current-user-id)]
-    {:users (->> (user/fetch-all)
-                 (map (partial user/filter-sanctioned-keys current-user))
-                 (map (partial u/index :user/id))
-                 (into {}))}))
+  [_ _ {:keys [current-user]}]
+  {:users (->> (user/fetch-all)
+               (map (partial user/filter-sanctioned-keys current-user))
+               (map (partial u/index :user/id))
+               (into {}))})
 
 
 (defmethod handle :user
-  [[_ {:keys [user/id current-user-id]}]]
+  [_ {:keys [user/id]} {:keys [current-user]}]
   ;; TODO - this needs to move into a proper spec
   (when-not (uuid? id)
     (throw (IllegalArgumentException. "Unsupported query parameters.")))
-  ;; TODO - current user could have been sourced as part of a session
-  (if-let [current-user (user/fetch current-user-id)]
-    {:users (->> (user/fetch id)
-                 (user/filter-sanctioned-keys current-user)
-                 (u/index :user/id))}))
+  {:users (->> (user/fetch id)
+               (user/filter-sanctioned-keys current-user)
+               (u/index :user/id))})
 
 
 (defmethod handle :authorisations
-  [[_ {:keys [current-user-id]}]]
-  ;; TODO - current user could have been sourced as part of a session
-  (let [current-user (user/fetch current-user-id)]
-    {:authorisations (->> (authorisation/fetch-all)
-                          (map (partial authorisation/filter-sanctioned-keys current-user))
-                          (map (partial u/index :authorisation/id))
-                          (into {}))}))
+  [_ _ {:keys [current-user]}]
+  {:authorisations (->> (authorisation/fetch-all)
+                        (map (partial authorisation/filter-sanctioned-keys current-user))
+                        (map (partial u/index :authorisation/id))
+                        (into {}))})
 
 
 (defmethod handle :default
-  [query]
+  [_ _ _]
   (throw (IllegalArgumentException. "Unsupported query method.")))

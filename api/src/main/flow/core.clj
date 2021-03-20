@@ -54,13 +54,14 @@
 
 
 (def handler
-  (-> (fn [request]
-        (->> (:body-params request)
-             (map (:handle request))
+  (-> (fn [{:keys [handle body-params metadata]}]
+        (->> body-params
+             (map (fn [[method payload]]
+                    (handle method payload metadata)))
              (apply medley/deep-merge)
              (response/response)))
       (middleware/wrap-query-command-dispatch)
-      (middleware/wrap-current-user-id)
+      (middleware/wrap-current-user)
       (middleware/wrap-session)
       (middleware/wrap-content-validation)
       (middleware/wrap-content-type)

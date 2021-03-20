@@ -5,11 +5,11 @@
             [flow.domain.authorisation-attempt :as authorisation-attempt]))
 
 
-(defmulti handle first)
+(defmulti handle (fn [method payload metadata] method))
 
 
 (defmethod handle :initialise-authorisation-attempt
-  [[_ {:keys [user/email-address]}]]
+  [_ {:keys [user/email-address]} _]
 
   "If the user with the given email address exists and has not been deleted,
    then a phrase will be generated, an authorisation will be created, and an
@@ -30,7 +30,7 @@
 
 
 (defmethod handle :finalise-authorisation-attempt
-  [[_ {:keys [user/email-address authorisation/phrase]}]]
+  [_ {:keys [user/email-address authorisation/phrase]} _]
 
   "If a grantable authorisation is found to match the given email address and phrase,
    then the authorisation will be marked as granted, and a session will be created."
@@ -45,24 +45,20 @@
     (if (and (some? authorisation) (authorisation-attempt/grantable? authorisation))
       (do
         (authorisation-attempt/grant! (:authorisation/id authorisation))
-        {:current-user-id (:user/id user)
-         ;; TODO - bring in the session here
-         #_:session #_{:current-user user}})
+        {:metadata {:current-user user}})
       {})))
 
 
 (defmethod handle :deauthorise
-  [command]
+  [_ _ _]
 
   "The current user will be deauthorised."
 
-  {:current-user-id nil
-   ;; TODO - bring in the session here
-   #_:session #_{:current-user user}})
+  {:metadata {:current-user nil}})
 
 
 (defmethod handle :add-user
-  [[_ {:keys [user current-user-id]}]]
+  [_ {:keys [user]} {:keys [current-user]}]
 
   "If the current user is an admin, and the given user doesn't
    already exist, then the given user will be created."
@@ -71,7 +67,7 @@
   (when-not (map? user)
     (throw (IllegalArgumentException. "Unsupported command parameters.")))
 
-  (if (and (user-management/admin? (user/fetch current-user-id))
+  (if (and (user-management/admin? current-user)
            (not (user-management/exists? (user/id (:user/email-address user)))))
     {:metadata
      {:id-resolution
@@ -82,7 +78,7 @@
 
 
 (defmethod handle :delete-user
-  [[_ {:keys [user/id current-user-id]}]]
+  [_ {:keys [user/id]} {:keys [current-user]}]
 
   "If the current user is an admin, and user with the given user
    id exists then that user will be deleted."
@@ -91,7 +87,7 @@
   (when-not (uuid? id)
     (throw (IllegalArgumentException. "Unsupported command parameters.")))
 
-  (if (and (user-management/admin? (user/fetch current-user-id))
+  (if (and (user-management/admin? current-user)
            (user-management/exists? id))
     (do
       (user-management/delete! id)
@@ -100,5 +96,5 @@
 
 
 (defmethod handle :default
-  [command]
+  [_ _ _]
   (throw (IllegalArgumentException. "Unsupported command method.")))

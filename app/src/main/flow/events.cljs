@@ -76,8 +76,7 @@
      :add-user (let [id (get-in command [:add-user :user :user/id])
                      id-resolution (get-in response [:metadata :id-resolution])]
                  (if-let [id (id-resolution id)]
-                   ;; TODO - need to do something when nothing was created
-                   {:query {:user {:user/id (id-resolution id)}}
+                   {:query {:user {:user/id id}}
                     :db db}
                    {:db db}))
      :delete-user (let [id (get-in command [:delete-user :user/id])]

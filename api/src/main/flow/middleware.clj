@@ -1,6 +1,7 @@
 (ns flow.middleware
   (:require [flow.query :as query]
             [flow.command :as command]
+            [flow.entity.user :as user]
             [medley.core :as medley]
             [ring.middleware.cors :as cors.middleware]
             [ring.middleware.session :as session.middleware]
@@ -19,24 +20,26 @@
       (throw (IllegalArgumentException. "Unsupported uri.")))))
 
 
-(defn wrap-current-user-id
-  "For inbound requests, takes the current user id found in the session
-   and adds it to every query/command. For outbound responses, checks
-   whether the current user id has been updated or removed, and acts
-   accordingly by updating or removing the session."
+(defn wrap-current-user
+  "For inbound requests, takes the current user id found in the session and fetches
+   the current user, then adds it to the query/command metadata. For outbound
+   responses, checks whether the current user has been updated or removed, and
+   acts accordingly by updating or removing the current user id in the session.
+   Ensures that every response includes the current user id, nil or otherwise."
   [handler]
   (fn [{:keys [body-params session] :as request}]
-    (let [{:keys [current-user-id]} session
-          body-params (medley/map-vals
-                       #(assoc % :current-user-id current-user-id)
-                       body-params)
-          request (assoc request :body-params body-params)
+    (let [{:keys [user/id]} session
+          request (assoc-in request [:metadata :current-user] (user/fetch id))
           {:keys [body] :as response} (handler request)]
-      (if (contains? body :current-user-id)
-        (if-let [current-user-id (get-in response [:body :current-user-id])]
-          (assoc-in response [:session :current-user-id] current-user-id)
-          (assoc response :session nil))
-        (assoc-in response [:body :current-user-id] current-user-id)))))
+      (if (contains? (:metadata body) :current-user)
+        (if-let [id (get-in response [:body :metadata :current-user :user/id])]
+          (-> response
+              (assoc-in [:session :user/id] id)
+              (assoc-in [:body :metadata :current-user-id] id))
+          (-> response
+              (assoc :session nil)
+              (assoc-in [:body :metadata :current-user-id] nil)))
+        (assoc-in response [:body :metadata :current-user-id] id)))))
 
 
 (defn wrap-session
