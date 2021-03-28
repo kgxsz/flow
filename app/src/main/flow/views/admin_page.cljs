@@ -182,7 +182,7 @@
                  {:class (u/bem [:icon :enter-down :font-size-small])}]
                 [:div
                  {:class (u/bem [:text :font-size-small :padding-left-tiny])}
-                 (->> (:authorisation/initialised-at authorisation)
+                 (->> (:authorisation/created-at authorisation)
                       (t.coerce/from-date)
                       (t.format/unparse (t.format/formatter "MMM dd, yyyy - HH:mm.ss")))]]
                [:div
@@ -192,7 +192,7 @@
                 [:div
                  {:class (u/bem [:text :font-size-small :padding-left-tiny])}
                  (or
-                  (some->> (:authorisation/finalised-at authorisation)
+                  (some->> (:authorisation/granted-at authorisation)
                            (t.coerce/from-date)
                            (t.format/unparse (t.format/formatter "MMM dd, yyyy - HH:mm.ss")))
                   "n/a")]]])))])

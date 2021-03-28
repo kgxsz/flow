@@ -25,9 +25,9 @@
   (re-frame/->interceptor
    :id :current-user-id
    :before (fn [context]
-             (let [{:keys [current-user-id]} (get-in context [:coeffects :event 2])]
+             (let [{:keys [current-user-id]} (get-in context [:coeffects :event 2 :metadata])]
                (-> context
-                   (update-in [:coeffects :event 2] dissoc :current-user-id)
+                   (update-in [:coeffects :event 2 :metadata] dissoc :current-user-id)
                    (assoc-in [:coeffects :db :current-user-id] current-user-id))))
    :after (fn [context]
             (if (some? (get-in context [:effects :db]))

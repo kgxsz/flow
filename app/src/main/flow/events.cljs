@@ -9,8 +9,9 @@
  [interceptors/schema]
  (fn [{:keys [db]} event]
    {:db {}
+    ;; TODO - consider renaming
     :initialise-routing {}
-    :query {:current-user {}}}))
+    :api {:query {:current-user {}}}}))
 
 
 (re-frame/reg-event-fx
@@ -25,9 +26,9 @@
        :home {:db db}
        :admin {:db db}
        :admin.users {:db db
-                     :query {:users {}}}
+                     :api {:query {:users {}}}}
        :admin.authorisations {:db db
-                              :query {:authorisations {}}}
+                              :api {:query {:authorisations {}}}}
        :unknown {:db db}
        {:db db}))))
 
@@ -41,53 +42,23 @@
 
 
 (re-frame/reg-event-fx
- :query-success
+ ;; TODO - consider naming
+ :handle-api-success
  [interceptors/schema interceptors/current-user-id]
- (fn [{:keys [db]} [_ query response]]
-   (case (-> query keys first)
-     :current-user {:db (update db :user merge (:current-user response))}
-     :users {:db (update db :user merge (:users response))}
-     :user {:db (update db :user merge (:user response))}
-     :authorisations {:db (update db :authorisation merge (:authorisations response))}
-     {:db db})))
+ (fn [{:keys [db]} [_ parameters {:keys [users authorisations metadata]}]]
+   {:db (cond-> db
+          users (update :user merge users)
+          authorisations (update :authorisation merge authorisations)
+          ;; TODO - do something smarter here
+          (get-in parameters [:command :finalise-authorisation-attempt])
+          (assoc :authorisation-finalised? false
+                 :authorisation-failed? false))}))
 
 
 (re-frame/reg-event-fx
- :query-failure
+ :handle-api-failure
  [interceptors/schema interceptors/current-user-id]
- (fn [{:keys [db]} [_ query response]]
-   {:db (assoc db :error? true)}))
-
-
-(re-frame/reg-event-fx
- :command-success
- [interceptors/schema interceptors/current-user-id]
- (fn [{:keys [db]} [_ command response]]
-   (case (-> command keys first)
-     :initialise-authorisation {:db db}
-     :finalise-authorisation {:db (assoc db
-                                         :authorisation-finalised? false
-                                         :authorisation-failed? false)
-                              ;; TODO - this needs to lead to the auth
-                              ;; finalise becoming true when the user
-                              ;; arrives? Or is the loading page enough?
-                              :query {:current-user {}}}
-     :deauthorise {:db db}
-     :add-user (if (:user-id response)
-                 {:query {:user {:user-id (:user-id response)}}
-                  :db db}
-                 {:db db})
-     :delete-user (if (:user-id response)
-                    {:query {:user {:user-id (:user-id response)}}
-                     :db db}
-                    {:db db})
-     {:db db})))
-
-
-(re-frame/reg-event-fx
- :command-failure
- [interceptors/schema interceptors/current-user-id]
- (fn [{:keys [db]} [_ command response]]
+ (fn [{:keys [db]} [_ parameters response]]
    {:db (assoc db :error? true)}))
 
 
@@ -120,29 +91,30 @@
 
 
 (re-frame/reg-event-fx
+ ;; TODO attempt
  :initialise-authorisation
  [interceptors/schema]
  (fn [{:keys [db]} [_]]
    (let [{:keys [authorisation-initialised?]} db]
      (if authorisation-initialised?
        {:db db}
-       {:command {:initialise-authorisation (select-keys
-                                             db
-                                             [:authorisation-email-address])}
+       {:api {:command {:initialise-authorisation-attempt
+                        {:user/email-address (:authorisation-email-address db)}}}
         :db (assoc db :authorisation-initialised? true)}))))
 
 
 (re-frame/reg-event-fx
+ ;; TODO - attempt
  :finalise-authorisation
  [interceptors/schema]
  (fn [{:keys [db]} [_]]
    (let [{:keys [authorisation-finalised?]} db]
      (if authorisation-finalised?
        {:db db}
-       {:command {:finalise-authorisation (select-keys
-                                           db
-                                           [:authorisation-phrase
-                                            :authorisation-email-address])}
+       {:api {:command {:finalise-authorisation-attempt
+                        {:user/email-address (:authorisation-email-address db)
+                         :authorisation/phrase (:authorisation-phrase db)}}
+              :query {:current-user {}}}
         :db (assoc db :authorisation-finalised? true)}))))
 
 
@@ -150,7 +122,7 @@
  :deauthorise
  [interceptors/schema]
  (fn [{:keys [db]} [_]]
-   {:command {:deauthorise {}}
+   {:api {:command {:deauthorise {}}}
     :db (dissoc db
                 :current-user-id
                 :authorisation-email-address
@@ -164,7 +136,8 @@
  :delete-user
  [interceptors/schema]
  (fn [{:keys [db]} [_ user-id]]
-   {:command {:delete-user {:user-id user-id}}
+   {:api {:command {:delete-user {:user/id user-id}}
+          :query {:user {:user/id user-id}}}
     :db db}))
 
 
@@ -207,10 +180,13 @@
  :add-user
  [interceptors/schema]
  (fn [{:keys [db]} [_ user]]
-   {:command {:add-user {:user {:email-address (:user-addition-email-address db)
-                                :name (:user-addition-name db)
-                                :roles (cond-> #{:customer}
-                                         (:user-addition-admin-role? db) (conj :admin))}}}
+   {:api (let [id (random-uuid)]
+           {:command {:add-user {:user {:user/id id
+                                        :user/email-address (:user-addition-email-address db)
+                                        :user/name (:user-addition-name db)
+                                        :user/roles (cond-> #{:customer}
+                                                      (:user-addition-admin-role? db) (conj :admin))}}}
+            :query {:user {:user/id id}}})
     :db (dissoc db
                 :user-addition-email-address
                 :user-addition-name

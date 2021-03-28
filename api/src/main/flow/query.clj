@@ -1,69 +1,48 @@
 (ns flow.query
-  (:require [flow.domain.user :as user]
-            [flow.domain.authorisation :as authorisation]
+  (:require [flow.entity.user :as user]
+            [flow.entity.authorisation :as authorisation]
+            [flow.utils :as u]
             [taoensso.faraday :as faraday]
-            [medley.core :as medley]))
+            [clojure.spec.alpha :as s]))
 
 
-(defmulti handle first)
+(defmulti handle (fn [method payload metadata] method))
 
 
 (defmethod handle :current-user
-  [[_ {:keys [current-user-id]}]]
-  ;; TODO - generalise queries that require a current user to exist
-  (if-let [{:keys [user/id] :as current-user} (user/fetch current-user-id)]
-    {:current-user
-     {id (user/convey-keys current-user current-user)}}
-    {:current-user
-     {}}))
+  [_ _ {:keys [current-user]}]
+  {:users (->> current-user
+               (user/filter-sanctioned-keys current-user)
+               (u/index :user/id))})
 
 
 (defmethod handle :users
-  [[_ {:keys [current-user-id]}]]
-  (if-let [current-user (user/fetch current-user-id)]
-    {:users
-     (->> (user/fetch-all)
-          (map (partial user/convey-keys current-user))
-          (medley/index-by :user/id))}
-    {:users
-     {}}))
+  [_ _ {:keys [current-user]}]
+  {:users (->> (user/fetch-all)
+               (map (partial user/filter-sanctioned-keys current-user))
+               (map (partial u/index :user/id))
+               (into {}))})
 
+;; TODO - move this
+(s/def :user/id uuid?)
 
 (defmethod handle :user
-  [[_ {:keys [user-id current-user-id]}]]
-  (if-let [current-user (user/fetch current-user-id)]
-    (if-let [{:keys [user/id] :as user} (user/fetch user-id)]
-      ;; TODO - define a better way of dealing with maps here for a single item
-      {:user
-       {id (user/convey-keys current-user user)}}
-      {:user
-       {}})
-    {:user
-     {}}))
-
-
-(defmethod handle :authorisation
-  [[_ {:keys [authorisation-id current-user-id]}]]
-  ;; TODO - this needs to move into a proper spec
-  (when-not (uuid? authorisation-id)
+  [_ {:keys [user/id]} {:keys [current-user]}]
+  (when-not (s/valid? :user/id id)
     (throw (IllegalArgumentException. "Unsupported query parameters.")))
-  (let [current-user (user/fetch current-user-id)
-        {:keys [authorisation/id] :as authorisation} (authorisation/fetch authorisation-id)]
-    {:authorisation
-     {id (authorisation/convey-keys current-user authorisation)}}))
+  {:users (->> (user/fetch id)
+               (user/filter-sanctioned-keys current-user)
+               (u/index :user/id))})
 
 
 (defmethod handle :authorisations
-  [[_ {:keys [current-user-id]}]]
-  (if-let [current-user (user/fetch current-user-id)]
-    {:authorisations
-     (->> (authorisation/fetch-all)
-          (map (partial authorisation/convey-keys current-user))
-          (medley/index-by :authorisation/id))}
-    {:authorisations
-     {}}))
+  [_ _ {:keys [current-user]}]
+  {:authorisations (->> (authorisation/fetch-all)
+                        (map (partial authorisation/filter-sanctioned-keys current-user))
+                        (map (partial u/index :authorisation/id))
+                        (into {}))})
 
 
 (defmethod handle :default
-  [query]
+  [_ _ _]
   (throw (IllegalArgumentException. "Unsupported query method.")))
