@@ -1,6 +1,7 @@
 (ns flow.dev
   (:require [ring.adapter.jetty :as jetty]
             [flow.middleware :as middleware]
+            [flow.specifications :as specifications]
             [flow.core :as core]
             [flow.db :as db]
             [flow.entity.authorisation :as authorisation]

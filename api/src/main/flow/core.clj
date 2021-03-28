@@ -1,6 +1,9 @@
 (ns flow.core
-  (:require [muuntaja.core :as muuntaja]
+  (:require [flow.query :as query]
+            [flow.command :as command]
+            [muuntaja.core :as muuntaja]
             [flow.middleware :as middleware]
+            [flow.specifications :as specifications]
             [ring.util.response :as response]
             [clojure.java.io :as io]
             [medley.core :as medley])
@@ -53,17 +56,53 @@
    :body (try (slurp body) (catch Exception e body))})
 
 
+(defn handle-command
+  "Fulfills each command method and merges the outcomes into a result.
+   Outputs a map containing the yet to be fulfilled query, and the metadata
+   provided merged with any metadata present in the command result."
+  [{:keys [query command metadata]}]
+  (let [handle (fn [[method payload]] (command/handle method payload metadata))
+        result (apply medley/deep-merge (map handle command))]
+    {:query query
+     :metadata (medley/deep-merge metadata (get result :metadata {}))}))
+
+
+(defn resolve-ids
+  "Takes the ID resolution map provided in the metadata and replaces any
+   temporary ID in the query with its counterpart non temporary ID produced
+   in the command. This is needed because the app cannot know an entity's ID
+   before it is created, so it provides a temporary one that requires resolving."
+  [{:keys [query metadata]}]
+  {:query (clojure.walk/postwalk
+           #(get (:id-resolution metadata) % %)
+           query)
+   :metadata metadata})
+
+
+(defn handle-query
+  "Fulfills each query method and merges the outcomes into a result.
+   Outputs a map containing each entity, and the metadata provided
+   merged with any metadata present in the query result."
+  [{:keys [query metadata]}]
+  (let [handle (fn [[method payload]] (query/handle method payload metadata))
+        result (apply medley/deep-merge (map handle query))]
+    {:users (get result :users {})
+     :authorisations (get result :authorisations {})
+     :metadata (medley/deep-merge metadata (get result :metadata {}))}))
+
+
 (def handler
-  (-> (fn [request]
-        (->> (:body-params request)
-             (map (:handle request))
-             (apply medley/deep-merge)
-             (response/response)))
-      (middleware/wrap-query-command-dispatch)
+  (-> (fn [{:keys [body-params]}]
+        (-> body-params
+            (handle-command)
+            (resolve-ids)
+            (handle-query)
+            (response/response)))
       (middleware/wrap-current-user)
       (middleware/wrap-session)
       (middleware/wrap-content-validation)
       (middleware/wrap-content-type)
+      (middleware/wrap-request-path)
       (middleware/wrap-request-method)
       (middleware/wrap-cors)
       (middleware/wrap-exception)))

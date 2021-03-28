@@ -1,45 +1,33 @@
 (ns flow.middleware
-  (:require [flow.query :as query]
-            [flow.command :as command]
-            [flow.entity.user :as user]
+  (:require [flow.entity.user :as user]
             [medley.core :as medley]
             [ring.middleware.cors :as cors.middleware]
             [ring.middleware.session :as session.middleware]
             [ring.middleware.session.cookie :as cookie]
-            [muuntaja.middleware :as muuntaja.middleware]))
-
-
-(defn wrap-query-command-dispatch
-  "Determines whether to dispatch to query/handle or command/handle,
-   and adds it to the request to be used by the handler."
-  [handler]
-  (fn [{:keys [uri metadata] :as request}]
-    (case uri
-      "/query" (handler (assoc request :handle #(query/handle (first %) (second %) metadata)))
-      "/command" (handler (assoc request :handle #(command/handle (first %) (second %) metadata)))
-      (throw (IllegalArgumentException. "Unsupported uri.")))))
+            [muuntaja.middleware :as muuntaja.middleware]
+            [clojure.spec.alpha :as s]))
 
 
 (defn wrap-current-user
   "For inbound requests, takes the current user id found in the session and fetches
-   the current user, then adds it to the query/command metadata. For outbound
-   responses, checks whether the current user has been updated or removed, and
-   acts accordingly by updating or removing the current user id in the session.
-   Ensures that every response includes the current user id, nil or otherwise."
+   the current user, then attaches it to the metadata. For outbound responses, checks
+   whether the current user has been updated or removed, and acts accordingly by updating
+   or removing the current user id in the session. Ensures that every response includes
+   metadata with the current user id, nil or otherwise."
   [handler]
-  (fn [{:keys [body-params session] :as request}]
+  (fn [{:keys [session] :as request}]
     (let [{:keys [user/id]} session
-          request (assoc-in request [:metadata :current-user] (user/fetch id))
+          request (assoc-in request [:body-params :metadata :current-user] (user/fetch id))
           {:keys [body] :as response} (handler request)]
-      (if (contains? (:metadata body) :current-user)
-        (if-let [id (get-in response [:body :metadata :current-user :user/id])]
-          (-> response
-              (assoc-in [:session :user/id] id)
-              (assoc-in [:body :metadata :current-user-id] id))
-          (-> response
-              (assoc :session nil)
-              (assoc-in [:body :metadata :current-user-id] nil)))
-        (assoc-in response [:body :metadata :current-user-id] id)))))
+      (if-let [id (get-in response [:body :metadata :current-user :user/id])]
+        (-> response
+            (assoc-in [:session :user/id] id)
+            (assoc-in [:body :metadata :current-user-id] id)
+            (update-in [:body :metadata] dissoc :current-user))
+        (-> response
+            (assoc-in [:session] nil)
+            (assoc-in [:body :metadata :current-user-id] nil)
+            (update-in [:body :metadata] dissoc :current-user))))))
 
 
 (defn wrap-session
@@ -58,12 +46,20 @@
 
 
 (defn wrap-content-validation
-  "Determines the validity of the content provided by the client."
+  "Determines the validity of the content provided by the client, and the validity of
+   the content returned to the client."
   [handler]
   (fn [{:keys [body-params] :as request}]
-    (if (and (map? body-params) (not (empty? body-params)))
-      (handler request)
-      (throw (IllegalArgumentException. "Unsupported content.")))))
+    ;; TODO - remove this line when done
+    (clojure.pprint/pprint (str "request body-params valid: " (s/valid? :request/body-params body-params)))
+    (if (s/valid? :request/body-params body-params)
+      (let [{:keys [body] :as response} (handler request)]
+        ;; TODO - remove this line when done
+        (clojure.pprint/pprint (str "response body valid: " (s/valid? :response/body body)))
+        (if (s/valid? :response/body body)
+          response
+          (throw (Exception. "Invalid response content."))))
+      (throw (IllegalArgumentException. "Invalid request content.")))))
 
 
 (defn wrap-content-type
@@ -79,6 +75,15 @@
               (when (= :muuntaja/decode type)
                 (throw (IllegalArgumentException. (str "Malformed " format " content.")))))))
         (throw (IllegalArgumentException. "Unsupported or missing Content-Type header."))))))
+
+
+(defn wrap-request-path
+  "Filters out any request path other than the root."
+  [handler]
+  (fn [{:keys [uri] :as request}]
+    (if (or (= uri "/") (= uri ""))
+      (handler request)
+      (throw (IllegalArgumentException. "Unsupported request path.")))))
 
 
 (defn wrap-request-method

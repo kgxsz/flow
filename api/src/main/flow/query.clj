@@ -1,8 +1,9 @@
 (ns flow.query
   (:require [flow.entity.user :as user]
             [flow.entity.authorisation :as authorisation]
+            [flow.utils :as u]
             [taoensso.faraday :as faraday]
-            [flow.utils :as u]))
+            [clojure.spec.alpha :as s]))
 
 
 (defmulti handle (fn [method payload metadata] method))
@@ -22,11 +23,12 @@
                (map (partial u/index :user/id))
                (into {}))})
 
+;; TODO - move this
+(s/def :user/id uuid?)
 
 (defmethod handle :user
   [_ {:keys [user/id]} {:keys [current-user]}]
-  ;; TODO - this needs to move into a proper spec
-  (when-not (uuid? id)
+  (when-not (s/valid? :user/id id)
     (throw (IllegalArgumentException. "Unsupported query parameters.")))
   {:users (->> (user/fetch id)
                (user/filter-sanctioned-keys current-user)
