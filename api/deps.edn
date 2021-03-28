@@ -10,7 +10,8 @@
         hiccup {:mvn/version "1.0.5"}
         clj-time {:mvn/version "0.15.2"}
         danlentz/clj-uuid {:mvn/version "0.1.9"}
-        com.taoensso/faraday {:mvn/version "1.11.1"}}
+        com.taoensso/faraday {:mvn/version "1.11.1"}
+        expound {:mvn/version "0.8.9"}}
  :aliases {:repl {:extra-paths ["src/dev"]
                   :extra-deps {ring/ring-jetty-adapter {:mvn/version "1.8.0"}
                                refactor-nrepl {:mvn/version "2.5.0"}

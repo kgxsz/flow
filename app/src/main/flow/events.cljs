@@ -181,11 +181,11 @@
  [interceptors/schema]
  (fn [{:keys [db]} [_ user]]
    {:api (let [id (random-uuid)]
-           {:command {:add-user {:user {:user/id id
-                                        :user/email-address (:user-addition-email-address db)
-                                        :user/name (:user-addition-name db)
-                                        :user/roles (cond-> #{:customer}
-                                                      (:user-addition-admin-role? db) (conj :admin))}}}
+           {:command {:add-user {:user/id id
+                                 :user/email-address (:user-addition-email-address db)
+                                 :user/name (:user-addition-name db)
+                                 :user/roles (cond-> #{:customer}
+                                               (:user-addition-admin-role? db) (conj :admin))}}
             :query {:user {:user/id id}}})
     :db (dissoc db
                 :user-addition-email-address

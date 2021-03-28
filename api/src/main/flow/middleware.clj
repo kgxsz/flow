@@ -5,7 +5,8 @@
             [ring.middleware.session :as session.middleware]
             [ring.middleware.session.cookie :as cookie]
             [muuntaja.middleware :as muuntaja.middleware]
-            [clojure.spec.alpha :as s]))
+            [clojure.spec.alpha :as s]
+            [expound.alpha :as expound]))
 
 
 (defn wrap-current-user
@@ -50,16 +51,15 @@
    the content returned to the client."
   [handler]
   (fn [{:keys [body-params] :as request}]
-    ;; TODO - remove this line when done
-    (clojure.pprint/pprint (str "request body-params valid: " (s/valid? :request/body-params body-params)))
     (if (s/valid? :request/body-params body-params)
       (let [{:keys [body] :as response} (handler request)]
-        ;; TODO - remove this line when done
-        (clojure.pprint/pprint (str "response body valid: " (s/valid? :response/body body)))
         (if (s/valid? :response/body body)
           response
-          (throw (Exception. "Invalid response content."))))
-      (throw (IllegalArgumentException. "Invalid request content.")))))
+          (do (expound/expound :response/body body)
+              (throw (Exception. "Invalid response content.")))))
+      (do
+        (expound/expound :request/body-params body-params)
+        (throw (IllegalArgumentException. "Invalid request content."))))))
 
 
 (defn wrap-content-type

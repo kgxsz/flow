@@ -23,13 +23,9 @@
                (map (partial u/index :user/id))
                (into {}))})
 
-;; TODO - move this
-(s/def :user/id uuid?)
 
 (defmethod handle :user
   [_ {:keys [user/id]} {:keys [current-user]}]
-  (when-not (s/valid? :user/id id)
-    (throw (IllegalArgumentException. "Unsupported query parameters.")))
   {:users (->> (user/fetch id)
                (user/filter-sanctioned-keys current-user)
                (u/index :user/id))})
