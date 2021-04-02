@@ -34,7 +34,7 @@
  :api
  (fn [parameters]
    ;; TODO - fix all this soon
-   (ajax/POST (utils/make-url nil)
+   (ajax/POST (utils/make-url)
               {:params parameters
                :with-credentials true
                :handler (fn [response]
