@@ -2,8 +2,7 @@
   (:require [flow.entity.user :as user]
             [flow.entity.authorisation :as authorisation]
             [flow.utils :as u]
-            [taoensso.faraday :as faraday]
-            [clojure.spec.alpha :as s]))
+            [taoensso.faraday :as faraday]))
 
 
 (defmulti handle (fn [method payload metadata] method))

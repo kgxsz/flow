@@ -36,9 +36,9 @@
 
   (seed)
 
-  (user/create "k.suzukawa@gmail.com" "Keigo" #{:admin :customer})
+  (user/create! "k.suzukawa@gmail.com" "Keigo" #{:admin :customer})
 
-  (user/create "ksarnecka50@gmail.com" "Kasia" #{:customer})
+  (user/create! "ksarnecka50@gmail.com" "Kasia" #{:customer})
 
   (user/fetch (user/id "k.suzukawa@gmail.com"))
 
