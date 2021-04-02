@@ -50,7 +50,7 @@
   [entity-type entity-id entity]
   (when-not (s/valid? (entity-specification entity-type) entity)
     (expound/expound (entity-specification entity-type) entity)
-    (throw (IllegalArgumentException.
+    (throw (IllegalStateException.
             (str "the " entity-type " entity with id " entity-id " violates specification."))))
   (if (nil? (fetch-entity entity-type entity-id))
     (do
@@ -73,7 +73,7 @@
     (let [entity (f entity)]
       (when-not (s/valid? (entity-specification entity-type) entity)
         (expound/expound (entity-specification entity-type) entity)
-        (throw (IllegalArgumentException.
+        (throw (IllegalStateException.
                 (str "the " entity-type " entity with id " entity-id " violates specification."))))
       (faraday/update-item
        config
