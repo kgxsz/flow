@@ -104,8 +104,8 @@
       (middleware/wrap-content-type)
       (middleware/wrap-request-path)
       (middleware/wrap-request-method)
-      (middleware/wrap-cors)
-      (middleware/wrap-exception)))
+      (middleware/wrap-exception)
+      (middleware/wrap-cors)))
 
 
 (defn -handleRequest

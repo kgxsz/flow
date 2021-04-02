@@ -95,17 +95,6 @@
       (throw (IllegalArgumentException. "Unsupported request method.")))))
 
 
-(defn wrap-cors
-  "Handles the cross origin resource sharing concerns."
-  [handler]
-  (cors.middleware/wrap-cors
-   handler
-   :access-control-allow-origin [(re-pattern (System/getenv "CORS_ORIGIN"))]
-   :access-control-allow-methods [:options :post]
-   :access-control-allow-headers ["Content-Type"]
-   :access-control-allow-credentials "true"))
-
-
 (defn wrap-exception
   "Handles all uncaught exceptions."
   [handler]
@@ -116,3 +105,14 @@
         {:status 400
          :headers {"Content-Type" "application/json; charset=utf-8"}
          :body (str "{\"error\": \"" (.getMessage e) "\"}")}))))
+
+
+(defn wrap-cors
+  "Handles the cross origin resource sharing concerns."
+  [handler]
+  (cors.middleware/wrap-cors
+   handler
+   :access-control-allow-origin [(re-pattern (System/getenv "CORS_ORIGIN"))]
+   :access-control-allow-methods [:options :post]
+   :access-control-allow-headers ["Content-Type"]
+   :access-control-allow-credentials "true"))
