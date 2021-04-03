@@ -14,19 +14,33 @@
     (is (= {"y" {:x "y"}} (index :x {:x "y"})))))
 
 
+(deftest test-constained-string?
+
+  (testing "The string length exceeds n."
+    (is (false? (constrained-string? 4 "Hello"))))
+
+  (testing "The string length equals n."
+    (is (true? (constrained-string? 5 "Hello"))))
+
+  (testing "The string length subceeds n."
+    (is (true? (constrained-string? 5 "Hello"))))
+
+  (testing "The string is blank."
+    (is (false? (constrained-string? 5 "")))))
+
+
 (deftest test-sanitised-string?
 
-  (testing "The string length is considered."
-    (is (false? (sanitised-string? 4 "Hello")))
-    (is (true? (sanitised-string? 5 "Hello")))
-    (is (true? (sanitised-string? 6 "Hello"))))
+  (testing "The string contains whitespaces."
+    (is (false? (sanitised-string? " Hello")))
+    (is (false? (sanitised-string? "Hello ")))
+    (is (false? (sanitised-string? "Hello World"))))
 
-  (testing "The string contains whitespaces, newlines, or carriage returns."
-    (is (false? (sanitised-string? 30 " Hello")))
-    (is (false? (sanitised-string? 30 "Hello ")))
-    (is (false? (sanitised-string? 30 "Hello World")))
-    (is (false? (sanitised-string? 30 "Hello\nWorld")))
-    (is (false? (sanitised-string? 30 "Hello\rWorld")))))
+  (testing "The string contains newlines or carriage returns."
+    (is (false? (sanitised-string? "Hello\nWorld")))
+    (is (false? (sanitised-string? "Hello\n")))
+    (is (false? (sanitised-string? "Hello\rWorld")))
+    (is (false? (sanitised-string? "\rHello")))))
 
 
 (deftest test-email-address?

@@ -4,19 +4,22 @@
 
 
 ;; Common
-(s/def :common/sanitised-string (partial u/sanitised-string? 250))
+(s/def :common/email-address (s/and u/email-address?
+                                    (partial u/constrained-string? 250)))
 
 
 ;; Entities
 (s/def :user/id uuid?)
-(s/def :user/name :common/sanitised-string)
-(s/def :user/email-address u/email-address?)
+(s/def :user/name (s/and u/sanitised-string?
+                         (partial u/constrained-string? 250)))
+(s/def :user/email-address :common/email-address)
 (s/def :user/roles (s/coll-of #{:customer :admin} :kind set? :min-count 1))
 (s/def :user/created-at inst?)
 (s/def :user/deleted-at (s/nilable inst?))
 
 (s/def :authorisation/id uuid?)
-(s/def :authorisation/phrase :common/sanitised-string)
+(s/def :authorisation/phrase (s/and u/sanitised-string?
+                                    (partial u/constrained-string? 250)))
 (s/def :authorisation/created-at inst?)
 (s/def :authorisation/granted-at (s/nilable inst?))
 
@@ -34,6 +37,14 @@
                                        :authorisation/phrase
                                        :authorisation/created-at
                                        :authorisation/granted-at]))
+
+
+;; Email
+(s/def :email/html (partial u/constrained-string? 10000))
+(s/def :email/text (partial u/constrained-string? 10000))
+(s/def :email/body (s/keys :req-un [:email/html :email/text]))
+(s/def :email/subject (partial u/constrained-string? 250))
+(s/def :email/email-address :common/email-address)
 
 
 ;; Command

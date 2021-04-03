@@ -44,20 +44,20 @@
 (defn send-phrase!
   "Sends the given phrase to the given email address"
   [email-address phrase]
-  (email/send-email
+  (email/send-email!
    email-address
    "Complete your sign in"
-   (hiccup/html
-    [:table {:width "100%"
-             :height "250px"
-             :border "0"
-             :cellspacing "0"
-             :cellpadding "0"}
-     [:tr {:style "color: #333333"}
-      [:td {:align "center"}
-       [:div "Use this magic phrase to"]
-       [:div "complete your sign in:"]
-       [:div {:style "padding-top: 10px; font-size: 24px; font-weight: 700"}
-        phrase]]]])
-   (str "Use this magic phrase to complete your sign in: " phrase)))
+   {:html (hiccup/html
+           [:table {:width "100%"
+                    :height "250px"
+                    :border "0"
+                    :cellspacing "0"
+                    :cellpadding "0"}
+            [:tr {:style "color: #333333"}
+             [:td {:align "center"}
+              [:div "Use this magic phrase to"]
+              [:div "complete your sign in:"]
+              [:div {:style "padding-top: 10px; font-size: 24px; font-weight: 700"}
+               phrase]]]])
+    :text (str "Use this magic phrase to complete your sign in: " phrase)}))
 

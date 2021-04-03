@@ -67,10 +67,7 @@
  [interceptors/schema]
  (fn [{:keys [db]} [_ input-value]]
    (let [valid-length? (<= (count input-value) 250)
-         sanitise #(-> %
-                       (string/trim)
-                       (string/trim-newline)
-                       (string/replace #" " ""))]
+         sanitise #(string/replace % #"\n|\r| " "")]
      (if valid-length?
        {:db (assoc db :authorisation-email-address (sanitise input-value))}
        {:db db}))))
@@ -81,10 +78,7 @@
  [interceptors/schema]
  (fn [{:keys [db]} [_ input-value]]
    (let [valid-length? (<= (count input-value) 250)
-         sanitise #(-> %
-                       (string/trim)
-                       (string/trim-newline)
-                       (string/replace #" " ""))]
+         sanitise #(string/replace % #"\n|\r| " "")]
      (if valid-length?
        {:db (assoc db :authorisation-phrase (sanitise input-value))}
        {:db db}))))
@@ -146,10 +140,7 @@
  [interceptors/schema]
  (fn [{:keys [db]} [_ input-value]]
    (let [valid-length? (<= (count input-value) 250)
-         sanitise #(-> %
-                       (string/trim)
-                       (string/trim-newline)
-                       (string/replace #" " ""))]
+         sanitise #(string/replace % #"\n|\r| " "")]
      (if valid-length?
        {:db (assoc db :user-addition-name (sanitise input-value))}
        {:db db}))))
@@ -160,10 +151,7 @@
  [interceptors/schema]
  (fn [{:keys [db]} [_ input-value]]
    (let [valid-length? (<= (count input-value) 250)
-         sanitise #(-> %
-                       (string/trim)
-                       (string/trim-newline)
-                       (string/replace #" " ""))]
+         sanitise #(string/replace % #"\n|\r| " "")]
      (if valid-length?
        {:db (assoc db :user-addition-email-address (sanitise input-value))}
        {:db db}))))
