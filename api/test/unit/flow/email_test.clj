@@ -12,14 +12,14 @@
 
 (deftest test-send-email!
 
-  (testing "The email address violates specification."
+  (testing "Throws an exception when the email address violates specification."
     (with-redefs [mailer/send-email (constantly nil)]
       (is (thrown? IllegalStateException (send-email!
                                           ""
                                           subject
                                           body)))))
 
-  (testing "The subject violates specification."
+  (testing "Throws an exception when the subject violates specification."
     (with-redefs [mailer/send-email (constantly nil)]
       (is (thrown? IllegalStateException
                    (send-email! (send-email!
@@ -27,7 +27,7 @@
                                  (->> (repeat 251 "a") (apply str))
                                  body))))))
 
-  (testing "The body violates specification."
+  (testing "Throws an exception when the body violates specification."
     (with-redefs [mailer/send-email (constantly nil)]
       (is (thrown? IllegalStateException
                    (send-email! email-address
@@ -38,6 +38,6 @@
                                 subject
                                 (assoc body :text (->> (repeat 10001 "a") (apply str))))))))
 
-  (testing "No specifications violated."
+  (testing "Returns nil when the operation is executed successfully."
     (with-redefs [mailer/send-email (constantly nil)]
       (is (nil? (send-email! email-address subject body))))))
