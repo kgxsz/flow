@@ -31,6 +31,13 @@
 
 (deftest test-email-address?
 
+  (testing "The string contains whitespaces, newlines, or carriage returns."
+    (is (false? (email-address? " hello@world.com")))
+    (is (false? (email-address? "hello@world.com ")))
+    (is (false? (email-address? "hel lo@world.com")))
+    (is (false? (email-address? "hello@\nworld.com")))
+    (is (false? (email-address? "hello@world.com\r"))))
+
   (testing "The string does not adhere to an email address pattern."
     (is (false? (email-address? "hello")))
     (is (false? (email-address? "hello@.com")))
@@ -39,13 +46,6 @@
     (is (false? (email-address? ".hello@world")))
     (is (false? (email-address? "hello@world.")))
     (is (false? (email-address? "Hello@World.com"))))
-
-  (testing "The string contains whitespaces, newlines, or carriage returns."
-    (is (false? (email-address? " hello@world.com")))
-    (is (false? (email-address? "hello@world.com ")))
-    (is (false? (email-address? "hel lo@world.com")))
-    (is (false? (email-address? "hello@\nworld.com")))
-    (is (false? (email-address? "hello@world.com\r"))))
 
   (testing "The string adheres to an email address pattern."
     (is (true? (email-address? "hello@world.com")))

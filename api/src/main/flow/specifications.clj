@@ -3,16 +3,20 @@
             [clojure.spec.alpha :as s]))
 
 
+;; Common
+(s/def :common/sanitised-string (partial u/sanitised-string? 250))
+
+
 ;; Entities
 (s/def :user/id uuid?)
-(s/def :user/name (partial u/sanitised-string? 250))
+(s/def :user/name :common/sanitised-string)
 (s/def :user/email-address u/email-address?)
 (s/def :user/roles (s/coll-of #{:customer :admin} :kind set? :min-count 1))
 (s/def :user/created-at inst?)
 (s/def :user/deleted-at (s/nilable inst?))
 
 (s/def :authorisation/id uuid?)
-(s/def :authorisation/phrase (partial u/sanitised-string? 250))
+(s/def :authorisation/phrase :common/sanitised-string)
 (s/def :authorisation/created-at inst?)
 (s/def :authorisation/granted-at (s/nilable inst?))
 
