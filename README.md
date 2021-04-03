@@ -62,12 +62,19 @@
 - The app will be running at `https://localhost:8080`.
 
 
+## Testing
+
+### Unit
+- In `api/` run the unit tests with `clj -A:test/unit`.
+- Alternatively, in the api's Clojure REPL, run `(kaocha/run :unit)`.
+
+
 ## Remote deployment
 
 ### Create the assets
 - In `app/` build an optimised index.js file with `clj -A:release/js`.
 - In `app/` build an optimised index.css file with `clj -A:release/css`.
-- In `api/` clear out previous assets with `rm -rf classes && mkdir classes && rm-rf target && mkdir target`.
+- In `api/` clear out previous assets with `rm -rf classes && mkdir classes && rm -rf target && mkdir target`.
 - In `api/` compile the API with `clj -A:compile`.
 - In `api/` zip the API with `clj -A:zip mach.pack.alpha.aws-lambda target/flow.zip -C:compile -R:compile`
 

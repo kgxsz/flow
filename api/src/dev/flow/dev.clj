@@ -6,7 +6,8 @@
             [flow.db :as db]
             [flow.entity.authorisation :as authorisation]
             [flow.entity.user :as user]
-            [taoensso.faraday :as faraday]))
+            [taoensso.faraday :as faraday]
+            [kaocha.repl :as kaocha]))
 
 
 (defn server []
@@ -35,6 +36,8 @@
   (server)
 
   (seed)
+
+  (kaocha/run :unit)
 
   (user/create! "k.suzukawa@gmail.com" "Keigo" #{:admin :customer})
 

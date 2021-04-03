@@ -1,5 +1,4 @@
-(ns flow.utils
-  (:require [clojure.string :as string]))
+(ns flow.utils)
 
 
 (defn index
@@ -15,26 +14,24 @@
 
 
 (defn sanitised-string?
-  "Takes a number n and a string s, and
-   ensures that s is a string that has
-   been sanitised and has a length less
-   than or equal to n."
+  "Takes a number and a string, and ensures
+   that the string has been sanitised and
+   has a length less than or equal to n.
+   A string is considered sanitised if it
+   has contains no whitespace, newline,
+   or carriage return characters."
   [n s]
-  (let [sanitise #(-> %
-                      (string/trim)
-                      (string/trim-newline)
-                      (string/replace #" " ""))]
-    (and
-     (string? s)
-     (= s (sanitise s))
-     (<= (count s) n))))
+  (and
+   (string? s)
+   (nil? (re-find #"\n|\r| " s))
+   (<= (count s) n)))
 
 
 (defn email-address?
-  "Takes a string s and ensures that it
-   is a string and adheres to an email
-   address pattern."
+  "Takes a string and ensures that it
+   adheres to an email address pattern."
   [s]
   (let [pattern #"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"]
-    (and (string? s)
-         (re-matches pattern s))))
+    (boolean
+     (and (string? s)
+          (re-matches pattern s)))))
