@@ -8,20 +8,35 @@
                                     (partial u/constrained-string? 250)))
 
 
-;; Entities
+;; User
 (s/def :user/id uuid?)
 (s/def :user/name (s/and u/sanitised-string?
                          (partial u/constrained-string? 250)))
 (s/def :user/email-address :common/email-address)
-(s/def :user/roles (s/coll-of #{:customer :admin} :kind set? :min-count 1))
+(s/def :user/role #{:customer :admin})
+(s/def :user/roles (s/coll-of :user/role :kind set? :min-count 1))
 (s/def :user/created-at inst?)
 (s/def :user/deleted-at (s/nilable inst?))
 
+
+;; Authorisation
 (s/def :authorisation/id uuid?)
 (s/def :authorisation/phrase (s/and u/sanitised-string?
                                     (partial u/constrained-string? 250)))
 (s/def :authorisation/created-at inst?)
 (s/def :authorisation/granted-at (s/nilable inst?))
+
+
+;; Sanctioned keys
+(s/def :sanctioned-keys/default (s/coll-of keyword? :type set?))
+(s/def :sanctioned-keys/owner (s/coll-of keyword? :type set?))
+(s/def :sanctioned-keys/roles  (s/map-of :user/role (s/coll-of keyword? :type set?)))
+
+;; Entity
+(s/def :entity/sanctioned-keys (s/keys :req-un [:sanctioned-keys/default
+                                                :sanctioned-keys/owner
+                                                :sanctioned-keys/roles]))
+(s/def :entity/type #{:user :authorisation})
 
 
 ;; DB
@@ -36,7 +51,6 @@
                                        :authorisation/phrase
                                        :authorisation/created-at
                                        :authorisation/granted-at]))
-(s/def :db/entity-type #{:user :authorisation})
 
 
 ;; Email
