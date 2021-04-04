@@ -4,45 +4,51 @@
             [clojure.test :refer :all]))
 
 
-(def entity-id #uuid "19f3c785-cf5f-530b-841d-6161400e6793")
-(def entity-type :user)
-(def entity {:user/id #uuid "19f3c785-cf5f-530b-841d-6161400e6793"
-             :user/email-address "j.mcjohnson@gmail.com"
-             :user/name "Johnson"
-             :user/roles #{:customer}
-             :user/created-at #inst "2021-04-02T19:58:19.213-00:00"
-             :user/deleted-at nil})
+(def user {:user/id #uuid "19f3c785-cf5f-530b-841d-6161400e6793"
+           :user/email-address "j.mcjohnson@gmail.com"
+           :user/name "Johnson"
+           :user/roles #{:customer}
+           :user/created-at #inst "2021-04-02T19:58:19.213-00:00"
+           :user/deleted-at nil})
+
+(def authorisation {:authorisation/id #uuid "31f3c785-0f5f-530b-841d-7761400e6793"
+                    :user/id #uuid "19f3c785-cf5f-530b-841d-6161400e6793"
+                    :authorisation/phrase "amount-addition-harbor",
+                    :authorisation/created-at #inst "2021-04-03T11:21:46.894-00:00",
+                    :authorisation/granted-at nil})
 
 
 (deftest test-entity-specification
 
   (testing "Returns the spec key when the entity type is known."
-    (is (= :db/user (entity-specification :user))))
+    (is (= :db/user (entity-specification :user)))
+    (is (= :db/authorisation (entity-specification :authorisation))))
 
-  (testing "Returns the spec key when the entity type is unknown."
-    (is (= :db/hello-world (entity-specification :hello-world)))))
+  (testing "An exception is thrown when the entity type is unknown."
+    (is (thrown? IllegalStateException (entity-specification :hello-world)))))
 
 
 (deftest test-entity-partition
 
   (testing "Returns the entity partition when the entity type is known."
     (is (= "user:19f3c785-cf5f-530b-841d-6161400e6793"
-           (entity-partition entity-type entity-id))))
+           (entity-partition :user (:user/id user))))
+    (is (= "authorisation:31f3c785-0f5f-530b-841d-7761400e6793"
+           (entity-partition :authorisation (:authorisation/id authorisation)))))
 
-  (testing "Returns the entity partition when the entity type is unknown."
-    (is (= "hello-world:19f3c785-cf5f-530b-841d-6161400e6793"
-           (entity-partition :hello-world entity-id)))))
+  (testing "An exception is thrown when the entity type is unknown."
+    (is (thrown? IllegalStateException (entity-partition :hello-world (:user/id user))))))
 
 
 (deftest test-fetch-entity
 
   (testing "Returns nil when the underlying entity does not exist."
     (with-redefs [faraday/get-item (constantly nil)]
-      (is (nil? (fetch-entity entity-type entity-id)))))
+      (is (nil? (fetch-entity :user (:user/id user))))))
 
   (testing "Returns the entity when the underlying entity exists."
-    (with-redefs [faraday/get-item (constantly {:entity entity})]
-      (is (= entity (fetch-entity entity-type entity-id))))))
+    (with-redefs [faraday/get-item (constantly {:entity authorisation})]
+      (is (= authorisation (fetch-entity :authorisation (:authorisation/id authorisation)))))))
 
 
 (deftest test-fetch-entities
@@ -51,30 +57,29 @@
     (with-redefs [faraday/scan (constantly [])]
       (is (= [] (fetch-entities :authorisations)))))
 
-  (testing "Returns a vecotr of entities when any underlying entities exist."
-    (with-redefs [faraday/scan (constantly [{:entity entity}
-                                            {:entity entity}])]
-      (is (= [entity entity] (fetch-entities :authorisation))))))
+  (testing "Returns a vector of entities when any underlying entities exist."
+    (with-redefs [faraday/scan (constantly [{:entity user} {:entity user}])]
+      (is (= [user user] (fetch-entities :user))))))
 
 
 (deftest test-put-entity!
 
   (testing "Throws an exception when the entity provided already exists."
-    (with-redefs [faraday/get-item (constantly {:entity entity})
+    (with-redefs [faraday/get-item (constantly {:entity user})
                   faraday/put-item (constantly nil)]
       (is (thrown? IllegalStateException
-                   (put-entity! entity-type entity-id entity)))))
+                   (put-entity! :user (:user/id user) user)))))
 
   (testing "Throws an exception whe the entity provided violates specification."
     (with-redefs [faraday/get-item (constantly nil)
                   faraday/put-item (constantly nil)]
       (is (thrown? IllegalStateException
-                   (put-entity! entity-type entity-id {})))))
+                   (put-entity! :user (:authorisation/id authorisation) authorisation)))))
 
   (testing "Returns the entity ID when the operation is executed successfully."
     (with-redefs [faraday/get-item (constantly nil)
                   faraday/put-item (constantly nil)]
-      (is (= entity-id (put-entity! entity-type entity-id entity))))))
+      (is (= (:user/id user) (put-entity! :user (:user/id user) user))))))
 
 
 (deftest test-mutate-entity!
@@ -83,15 +88,15 @@
     (with-redefs [faraday/get-item (constantly nil)
                   faraday/update-item (constantly nil)]
       (is (thrown? IllegalStateException
-                   (mutate-entity! entity-type entity-id identity)))))
+                   (mutate-entity! :user (:user/id user) identity)))))
 
   (testing "Throws an exception when the entity mutation doesn't adhere to specification."
-    (with-redefs [faraday/get-item (constantly {:entity entity})
+    (with-redefs [faraday/get-item (constantly {:entity authorisation})
                   faraday/update-item (constantly nil)]
       (is (thrown? IllegalStateException
-                   (mutate-entity! entity-type entity-id (constantly {}))))))
+                   (mutate-entity! :authorisation (:authorisation/id authorisation) (constantly {}))))))
 
   (testing "Returns the entity ID when the operation is executed successfully."
     (with-redefs [faraday/get-item (constantly {:entity entity})
                   faraday/update-item (constantly nil)]
-      (is (= entity-id (mutate-entity! entity-type entity-id identity))))))
+      (is (= (:user/id user) (mutate-entity! :user (:user/id user) identity))))))

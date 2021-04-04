@@ -31,12 +31,12 @@
                               :user/roles
                               :user/created-at
                               :user/deleted-at]))
-
 (s/def :db/authorisation (s/keys :req [:authorisation/id
                                        :user/id
                                        :authorisation/phrase
                                        :authorisation/created-at
                                        :authorisation/granted-at]))
+(s/def :db/entity-type #{:user :authorisation})
 
 
 ;; Email

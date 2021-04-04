@@ -13,6 +13,10 @@
 (defn entity-specification
   "Generates the spec key for the given entity."
   [entity-type]
+  (when-not (s/valid? :db/entity-type entity-type)
+    (expound/expound :db/entity-type entity-type)
+    (throw (IllegalStateException.
+            (str "the " entity-type " entity type violates specification."))))
   (keyword "db" (name entity-type)))
 
 
@@ -20,6 +24,10 @@
   "Generates the partitition key for DynamoDB,
    made up of the given entity type and its id."
   [entity-type id]
+  (when-not (s/valid? :db/entity-type entity-type)
+    (expound/expound :db/entity-type entity-type)
+    (throw (IllegalStateException.
+            (str "the " entity-type " entity type violates specification."))))
   (str (name entity-type) ":" id))
 
 
