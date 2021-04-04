@@ -30,12 +30,13 @@
 ;; Sanctioned keys
 (s/def :sanctioned-keys/default (s/coll-of keyword? :type set?))
 (s/def :sanctioned-keys/owner (s/coll-of keyword? :type set?))
-(s/def :sanctioned-keys/roles  (s/map-of :user/role (s/coll-of keyword? :type set?)))
+(s/def :sanctioned-keys/role (s/map-of :user/role (s/coll-of keyword? :type set?)))
+
 
 ;; Entity
-(s/def :entity/sanctioned-keys (s/keys :req-un [:sanctioned-keys/default
+(s/def :entity/sanctioned-keys (s/keys :opt-un [:sanctioned-keys/default
                                                 :sanctioned-keys/owner
-                                                :sanctioned-keys/roles]))
+                                                :sanctioned-keys/role]))
 (s/def :entity/type #{:user :authorisation})
 
 
