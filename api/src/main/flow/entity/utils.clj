@@ -11,12 +11,6 @@
   [sanctioned-keys
    {:keys [user/roles] :as current-user}
    {:keys [user/id] :as entity}]
-
-  (when-not (s/valid? :entity/sanctioned-keys sanctioned-keys)
-    (expound/expound :entity/sanctioned-keys sanctioned-keys)
-    (throw (IllegalStateException.
-            "The sanctioned keys violates specification.")))
-
   (let [owner? (= id (:user/id current-user))
         filter-roles (comp (partial apply clojure.set/union) vals (partial medley/filter-keys (partial contains? roles)))
         sanctioned-keys (clojure.set/union
