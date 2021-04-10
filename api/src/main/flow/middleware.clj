@@ -104,7 +104,11 @@
       (catch IllegalArgumentException e
         {:status 400
          :headers {"Content-Type" "application/json; charset=utf-8"}
-         :body (str "{\"error\": \"" (.getMessage e) "\"}")}))))
+         :body (str "{\"error\": \"" (.getMessage e) "\"}")})
+      (catch Exception e
+        {:status 500
+         :headers {"Content-Type" "application/json; charset=utf-8"}
+         :body "{\"error\": \"Internal error detected.\"}"}))))
 
 
 (defn wrap-cors
