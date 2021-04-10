@@ -139,16 +139,8 @@
             :entity/z "z"}
            (filter-sanctioned-keys
             {:default #{:entity/x}
-             :owner #{:entity/y}
+             :owner #{:entity/y :entity/w}
              :role {:a #{:entity/z :entity/x}}}
             {:user/roles #{:a}
              :user/id 1}
-            entity)))
-    (is (= {:entity/x "x"}
-           (filter-sanctioned-keys
-            {:default #{:entity/x}
-             :owner #{:entity/y}
-             :role {:a #{:entity/z :entity/x}}}
-            {:user/roles #{:b}
-             :user/id 2}
             entity))))))
