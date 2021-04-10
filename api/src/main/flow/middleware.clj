@@ -1,12 +1,12 @@
 (ns flow.middleware
   (:require [flow.entity.user :as user]
+            [flow.utils :as u]
             [medley.core :as medley]
             [ring.middleware.cors :as cors.middleware]
             [ring.middleware.session :as session.middleware]
             [ring.middleware.session.cookie :as cookie]
             [muuntaja.middleware :as muuntaja.middleware]
-            [clojure.spec.alpha :as s]
-            [expound.alpha :as expound]))
+            [clojure.spec.alpha :as s]))
 
 
 (defn wrap-current-user
@@ -52,14 +52,8 @@
   [handler]
   (fn [{:keys [body-params] :as request}]
     (if (s/valid? :request/body-params body-params)
-      (let [{:keys [body] :as response} (handler request)]
-        (if (s/valid? :response/body body)
-          response
-          (do (expound/expound :response/body body)
-              (throw (Exception. "Invalid response content.")))))
-      (do
-        (expound/expound :request/body-params body-params)
-        (throw (IllegalArgumentException. "Invalid request content."))))))
+      (update (handler request) :body (partial u/validate :response/body))
+      (throw (IllegalArgumentException. "Invalid request content.")))))
 
 
 (defn wrap-content-type

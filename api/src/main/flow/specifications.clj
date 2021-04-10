@@ -47,10 +47,9 @@
 
 
 ;; Email
-(s/def :email/html (partial u/constrained-string? 10000))
-(s/def :email/text (partial u/constrained-string? 10000))
-(s/def :email/body (s/keys :req-un [:email/html :email/text]))
-(s/def :email/subject (partial u/constrained-string? 250))
+(s/def :email/html (partial u/constrained-string? 1000))
+(s/def :email/text (partial u/constrained-string? 1000))
+(s/def :email/subject (partial u/constrained-string? 50))
 (s/def :email/email-address :common/email-address)
 
 

@@ -1,5 +1,7 @@
 (ns flow.utils
-  (:require [clojure.string :as string]))
+  (:require [clojure.string :as string]
+            [clojure.spec.alpha :as s]
+            [expound.alpha :as expound]))
 
 
 (defn index
@@ -43,3 +45,16 @@
     (boolean
      (and (string? s)
           (re-matches pattern s)))))
+
+
+(defn validate
+  "Takes a specification and data, and returns the data if it does not
+   violate the specification, if it does, then an illegal state exception
+   is thrown and the violaton is printed out. This function should only
+   be used for internal violations, not for validating external inputs."
+  [specification data]
+  (if (s/valid? specification data)
+    data
+    (do
+      (expound/expound specification data)
+      (throw (IllegalStateException. "Specification violation")))))

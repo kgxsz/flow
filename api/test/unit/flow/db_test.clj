@@ -112,6 +112,6 @@
                    (mutate-entity! :authorisation (:authorisation/id authorisation) (constantly {}))))))
 
   (testing "Returns the entity ID when the operation is executed successfully."
-    (with-redefs [faraday/get-item (constantly {:entity entity})
+    (with-redefs [faraday/get-item (constantly {:entity user})
                   faraday/update-item (constantly nil)]
       (is (= (:user/id user) (mutate-entity! :user (:user/id user) identity))))))

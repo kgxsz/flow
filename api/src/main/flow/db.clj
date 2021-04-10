@@ -1,7 +1,6 @@
 (ns flow.db
   (:require [taoensso.faraday :as faraday]
-            [clojure.spec.alpha :as s]
-            [expound.alpha :as expound]))
+            [flow.utils :as u]))
 
 
 (def config {:access-key (System/getenv "ACCESS_KEY")
@@ -48,25 +47,15 @@
   "Puts an entity into DynamoDB if and only if the entity doesn't
    already exist. On success, returns the entity's id."
   [entity-type entity-id entity]
-
-  ;; TODO - utilitify these specs
-  (when-not (s/valid? :db/entity-partition (entity-partition entity-type entity-id))
-    (expound/expound :db/entity-partition (entity-partition entity-type entity-id))
-    (throw (IllegalStateException.
-            (str "the partition violates specification."))))
-
-  (when-not (s/valid? (entity-specification entity-type) entity)
-    (expound/expound (entity-specification entity-type) entity)
-    (throw (IllegalStateException.
-            (str "the " entity-type " entity with id " entity-id " violates specification."))))
-
   (if (nil? (fetch-entity entity-type entity-id))
     (do
       (faraday/put-item
        config
        :flow
-       {:partition (entity-partition entity-type entity-id)
-        :entity (faraday/freeze entity)})
+       {:partition (u/validate :db/entity-partition (entity-partition entity-type entity-id))
+        :entity (->> entity
+                     (u/validate (entity-specification entity-type))
+                     (faraday/freeze))})
       entity-id)
     (throw
      (IllegalStateException.
@@ -78,24 +67,16 @@
    entity exists. On success, returns the entity's id."
   [entity-type entity-id f]
   (if-let [entity (fetch-entity entity-type entity-id)]
-    (let [entity (f entity)]
-
-      (when-not (s/valid? :db/entity-partition (entity-partition entity-type entity-id))
-        (expound/expound :db/entity-partition (entity-partition entity-type entity-id))
-        (throw (IllegalStateException.
-                (str "the partition violates specification."))))
-
-      (when-not (s/valid? (entity-specification entity-type) entity)
-        (expound/expound (entity-specification entity-type) entity)
-        (throw (IllegalStateException.
-                (str "the " entity-type " entity with id " entity-id " violates specification."))))
-
+    (do
       (faraday/update-item
        config
        :flow
-       {:partition (entity-partition entity-type entity-id)}
+       {:partition (u/validate :db/entity-partition (entity-partition entity-type entity-id))}
        {:update-expr "SET entity = :entity"
-        :expr-attr-vals {":entity" (faraday/freeze entity)}
+        :expr-attr-vals {":entity" (->> entity
+                                        (f)
+                                        (u/validate (entity-specification entity-type))
+                                        (faraday/freeze))}
         :return :all-new})
       entity-id)
     (throw

@@ -24,7 +24,7 @@
       (is (thrown? IllegalStateException
                    (send-email! (send-email!
                                  email-address
-                                 (->> (repeat 251 "a") (apply str))
+                                 (->> (repeat 51 "a") (apply str))
                                  body))))))
 
   (testing "Throws an exception when the body violates specification."
@@ -32,11 +32,11 @@
       (is (thrown? IllegalStateException
                    (send-email! email-address
                                 subject
-                                (assoc body :html (->> (repeat 10001 "a") (apply str))))))
+                                (assoc body :html (->> (repeat 1001 "a") (apply str))))))
       (is (thrown? IllegalStateException
                    (send-email! email-address
                                 subject
-                                (assoc body :text (->> (repeat 10001 "a") (apply str))))))))
+                                (assoc body :text (->> (repeat 1001 "a") (apply str))))))))
 
   (testing "Returns nil when the operation is executed successfully."
     (with-redefs [mailer/send-email (constantly nil)]
