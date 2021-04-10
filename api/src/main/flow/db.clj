@@ -13,10 +13,6 @@
 (defn entity-specification
   "Generates the spec key for the given entity."
   [entity-type]
-  (when-not (s/valid? :entity/type entity-type)
-    (expound/expound :entity/type entity-type)
-    (throw (IllegalStateException.
-            (str "the " entity-type " entity type violates specification."))))
   (keyword "db" (name entity-type)))
 
 
@@ -24,10 +20,6 @@
   "Generates the partitition key for DynamoDB,
    made up of the given entity type and its id."
   [entity-type id]
-  (when-not (s/valid? :entity/type entity-type)
-    (expound/expound :entity/type entity-type)
-    (throw (IllegalStateException.
-            (str "the " entity-type " entity type violates specification."))))
   (str (name entity-type) ":" id))
 
 
@@ -56,10 +48,18 @@
   "Puts an entity into DynamoDB if and only if the entity doesn't
    already exist. On success, returns the entity's id."
   [entity-type entity-id entity]
+
+  ;; TODO - utilitify these specs
+  (when-not (s/valid? :db/entity-partition (entity-partition entity-type entity-id))
+    (expound/expound :db/entity-partition (entity-partition entity-type entity-id))
+    (throw (IllegalStateException.
+            (str "the partition violates specification."))))
+
   (when-not (s/valid? (entity-specification entity-type) entity)
     (expound/expound (entity-specification entity-type) entity)
     (throw (IllegalStateException.
             (str "the " entity-type " entity with id " entity-id " violates specification."))))
+
   (if (nil? (fetch-entity entity-type entity-id))
     (do
       (faraday/put-item
@@ -79,10 +79,17 @@
   [entity-type entity-id f]
   (if-let [entity (fetch-entity entity-type entity-id)]
     (let [entity (f entity)]
+
+      (when-not (s/valid? :db/entity-partition (entity-partition entity-type entity-id))
+        (expound/expound :db/entity-partition (entity-partition entity-type entity-id))
+        (throw (IllegalStateException.
+                (str "the partition violates specification."))))
+
       (when-not (s/valid? (entity-specification entity-type) entity)
         (expound/expound (entity-specification entity-type) entity)
         (throw (IllegalStateException.
                 (str "the " entity-type " entity with id " entity-id " violates specification."))))
+
       (faraday/update-item
        config
        :flow

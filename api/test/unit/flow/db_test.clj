@@ -24,8 +24,8 @@
     (is (= :db/user (entity-specification :user)))
     (is (= :db/authorisation (entity-specification :authorisation))))
 
-  (testing "An exception is thrown when the entity type is unknown."
-    (is (thrown? IllegalStateException (entity-specification :hello-world)))))
+  (testing "Returns the spec key when the entity type is unknown."
+    (is (= :db/hello-world (entity-specification :hello-world)))))
 
 
 (deftest test-entity-partition
@@ -37,7 +37,8 @@
            (entity-partition :authorisation (:authorisation/id authorisation)))))
 
   (testing "An exception is thrown when the entity type is unknown."
-    (is (thrown? IllegalStateException (entity-partition :hello-world (:user/id user))))))
+    (= "hello-world:09f3c185-005f-530b-841d-1161400e6793"
+       (entity-partition :hello-world "09f3c185-005f-530b-841d-1161400e6793"))))
 
 
 (deftest test-fetch-entity
@@ -70,9 +71,17 @@
       (is (thrown? IllegalStateException
                    (put-entity! :user (:user/id user) user)))))
 
-  (testing "Throws an exception whe the entity provided violates specification."
+  (testing "Throws an exception when the entity type provided violates specification."
     (with-redefs [faraday/get-item (constantly nil)
                   faraday/put-item (constantly nil)]
+      (is (thrown? IllegalStateException
+                   (put-entity! :hello-world (:authorisation/id authorisation) authorisation)))))
+
+  (testing "Throws an exception when the entity provided violates specification."
+    (with-redefs [faraday/get-item (constantly nil)
+                  faraday/put-item (constantly nil)]
+      (is (thrown? IllegalStateException
+                   (put-entity! :user (:authorisation/id user) {})))
       (is (thrown? IllegalStateException
                    (put-entity! :user (:authorisation/id authorisation) authorisation)))))
 
@@ -89,6 +98,12 @@
                   faraday/update-item (constantly nil)]
       (is (thrown? IllegalStateException
                    (mutate-entity! :user (:user/id user) identity)))))
+
+  (testing "Throws an exception when the entity type provided doesn't adhere to specification."
+    (with-redefs [faraday/get-item (constantly {:entity authorisation})
+                  faraday/update-item (constantly nil)]
+      (is (thrown? IllegalStateException
+                   (mutate-entity! :hello-world (:authorisation/id authorisation) identity)))))
 
   (testing "Throws an exception when the entity mutation doesn't adhere to specification."
     (with-redefs [faraday/get-item (constantly {:entity authorisation})

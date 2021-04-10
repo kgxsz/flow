@@ -1,6 +1,7 @@
 (ns flow.specifications
   (:require [flow.utils :as u]
-            [clojure.spec.alpha :as s]))
+            [clojure.spec.alpha :as s]
+            [clojure.string :as string]))
 
 
 ;; Common
@@ -27,19 +28,6 @@
 (s/def :authorisation/granted-at (s/nilable inst?))
 
 
-;; Sanctioned keys
-(s/def :sanctioned-keys/default (s/coll-of keyword? :type set?))
-(s/def :sanctioned-keys/owner (s/coll-of keyword? :type set?))
-(s/def :sanctioned-keys/role (s/map-of :user/role (s/coll-of keyword? :type set?)))
-
-
-;; Entity
-(s/def :entity/sanctioned-keys (s/keys :opt-un [:sanctioned-keys/default
-                                                :sanctioned-keys/owner
-                                                :sanctioned-keys/role]))
-(s/def :entity/type #{:user :authorisation})
-
-
 ;; DB
 (s/def :db/user (s/keys :req [:user/id
                               :user/name
@@ -52,6 +40,10 @@
                                        :authorisation/phrase
                                        :authorisation/created-at
                                        :authorisation/granted-at]))
+
+(s/def :db/entity-partition (s/or :user #(string/starts-with? % "user:")
+                                  :authorisation #(string/starts-with? % "authorisation:")))
+
 
 
 ;; Email
@@ -102,7 +94,7 @@
                                         :query/user
                                         :query/authorisations])))
 (s/def :request/body-params (s/and
-                             (comp pos? count)
+                             #(or (contains? % :command) (contains? % :query))
                              (s/keys :opt-un [:request/metadata
                                               :request/command
                                               :request/query])))

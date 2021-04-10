@@ -17,6 +17,7 @@
     (expound/expound :email/subject subject)
     (throw (IllegalStateException. "the email subject violate specification")))
 
+  ;; TODO - use separate specs for the free text vs HTML text
   (when-not (s/valid? :email/body body)
     (expound/expound :email/body body)
     (throw (IllegalStateException. "the email body violate specification")))
