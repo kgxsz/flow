@@ -71,3 +71,26 @@
   (testing "Returns true when the string adheres to an email address pattern."
     (is (true? (email-address? "hello@world.com")))
     (is (true? (email-address? "hello.world@hello.world.com")))))
+
+
+(deftest test-validate?
+
+  (testing "Returns the data when the data provided doesn't violate specification."
+    (is (= "hello@world.com"
+           (validate
+            :email/email-address
+            "hello@world.com")))
+    (is (= {:query {:current-user {}}}
+           (validate
+            :request/body-params
+            {:query {:current-user {}}}))))
+
+  (testing "Throws an exception when the data provided violates specification."
+    (is (thrown? IllegalStateException
+                 (validate
+                  :email/email-address
+                  "@world.com")))
+    (is (thrown? IllegalStateException
+                 (validate
+                  :request/body-params
+                  {:query {:current-user {:hello "world"}}})))))
