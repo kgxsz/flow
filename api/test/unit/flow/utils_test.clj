@@ -3,19 +3,6 @@
             [clojure.test :refer :all]))
 
 
-(deftest test-index
-
-  (testing "Returns an empty map when the specified key doesn't exist."
-    (is (= {} (index :z {:x :y}))))
-
-  (testing "Returns an empty map when the specified key is nil."
-    (is (= {} (index :x {:x nil}))))
-
-  (testing "Returns the indexed map when the specified key can be extracted."
-    (is (= {:y {:x :y}} (index :x {:x :y})))
-    (is (= {"y" {:x "y"}} (index :x {:x "y"})))))
-
-
 (deftest test-constained-string?
 
   (testing "Returns false when the string length exceeds n."

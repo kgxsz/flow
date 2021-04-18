@@ -1,5 +1,7 @@
 (ns flow.middleware
   (:require [flow.entity.user :as user]
+            [flow.entity.authorisation :as authorisation]
+            [flow.entity.utils :as entity.u]
             [flow.utils :as u]
             [medley.core :as medley]
             [ring.middleware.cors :as cors.middleware]
@@ -7,6 +9,32 @@
             [ring.middleware.session.cookie :as cookie]
             [muuntaja.middleware :as muuntaja.middleware]
             [clojure.spec.alpha :as s]))
+
+
+(defn wrap-access-control
+  "For inbound requests does nothing. For outbound responses, works through each entity
+   in the response's body and selects the keys that correspond to the correct level of access:
+   - The default accessible keys, which are visible to anybody.
+   - The owner accessible keys, which are visible when the current user owns the entity.
+   - The role accessible keys, which are visible when the current user has the corresponding role.
+   If an entity has had all its keys removed then the entity itself will be removed from the response."
+  [handler]
+  (fn [request]
+    (let [response (handler request)
+          current-user (get-in response [:body :metadata :current-user])]
+      (-> response
+          (update-in [:body :users]
+           #(medley/deep-merge
+             (medley/map-vals user/select-default-accessible-keys %)
+             (medley/map-vals (partial user/select-owner-accessible-keys current-user) %)
+             (medley/map-vals (partial user/select-role-accessible-keys current-user) %)))
+          (update-in [:body :users] (partial medley/remove-vals empty?))
+          (update-in [:body :authorisations]
+           #(medley/deep-merge
+             (medley/map-vals authorisation/select-default-accessible-keys %)
+             (medley/map-vals (partial authorisation/select-owner-accessible-keys current-user) %)
+             (medley/map-vals (partial authorisation/select-role-accessible-keys current-user) %)))
+          (update-in [:body :authorisations] (partial medley/remove-vals empty?))))))
 
 
 (defn wrap-current-user

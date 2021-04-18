@@ -3,8 +3,7 @@
             [flow.entity.utils :as u]
             [clj-uuid :as uuid]
             [clj-time.coerce :as t.coerce]
-            [clj-time.core :as t]
-            [medley.core :as medley]))
+            [clj-time.core :as t]))
 
 
 (defn id
@@ -22,7 +21,7 @@
 
 
 (defn fetch-all
-  "Fetches all authorisations"
+  "Fetches all authorisations."
   []
   (db/fetch-entities :authorisation))
 
@@ -48,20 +47,41 @@
   (db/mutate-entity! :authorisation id f))
 
 
-(defn filter-sanctioned-keys
-  "Wraps the eponymous utility function with the
-   authorisation entity specific sanctioned keys."
+(defn index-authorisation
+  "Returns a map with key equal to the id of the provided authorisation,
+   and value equal to the authorisation itself."
+  [authorisation]
+  (u/index-entity :authorisation/id authorisation))
+
+
+(defn index-authorisations
+  "Returns a map with keys equal to the ids of the provided authorisations,
+   and values equal to the authorisations themselves."
+  [authorisations]
+  (u/index-entities :authorisation/id authorisations))
+
+
+(defn select-default-accessible-keys
+  "Returns the provided authorisation with only the default accessible keys present."
+  [authorisation]
+  (let [keys []]
+    (u/select-default-accessible-keys keys authorisation)))
+
+
+(defn select-owner-accessible-keys
+  "Returns the provided authorisation with only the owner accessible keys present."
   [current-user authorisation]
-  (let [sanctioned-keys
-        {:default #{}
-         :owner #{}
-         :role {:admin #{:authorisation/id
-                         :user/id
-                         :authorisation/phrase
-                         :authorisation/created-at
-                         :authorisation/granted-at}
-                :customer #{}}}]
-    (u/filter-sanctioned-keys
-     sanctioned-keys
-     current-user
-     authorisation)))
+  (let [keys []]
+    (u/select-owner-accessible-keys keys current-user authorisation)))
+
+
+(defn select-role-accessible-keys
+  "Returns the provided authorisation with only the role accessible keys present."
+  [current-user authorisation]
+  (let [keys {:admin [:authorisation/id
+                      :user/id
+                      :authorisation/phrase
+                      :authorisation/created-at
+                      :authorisation/granted-at]
+              :customer []}]
+    (u/select-role-accessible-keys keys current-user authorisation)))

@@ -98,6 +98,7 @@
             (resolve-ids)
             (handle-query)
             (response/response)))
+      (middleware/wrap-access-control)
       (middleware/wrap-current-user)
       (middleware/wrap-session)
       (middleware/wrap-content-validation)

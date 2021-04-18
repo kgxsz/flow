@@ -20,12 +20,12 @@
 
 
 (defn fetch-all
-  "Fetches all users"
+  "Fetches all users."
   []
   (db/fetch-entities :user))
 
 
-(defn create!
+(defn create !
   "Creates a new user."
   [email-address name roles]
   (let [now (t.coerce/to-date (t/now))
@@ -47,29 +47,50 @@
   (db/mutate-entity! :user id f))
 
 
-(defn filter-sanctioned-keys
-  "Wraps the eponymous utility function with
-   the user entity specific sanctioned keys."
+(defn index-user
+  "Returns a map with key equal to the id of the provided user,
+   and value equal to the user itself."
+  [user]
+  (u/index-entity :user/id user))
+
+
+(defn index-users
+  "Returns a map with keys equal to the ids of the provided users,
+   and values equal to the users themselves."
+  [users]
+  (u/index-entities :user/id users))
+
+
+(defn select-default-accessible-keys
+  "Returns the provided user with only the default accessible keys present."
+  [user]
+  (let [keys []]
+    (u/select-default-accessible-keys keys user)))
+
+
+(defn select-owner-accessible-keys
+  "Returns the provided user with only the owner accessible keys present."
   [current-user user]
-  (let [sanctioned-keys
-        {:default #{}
-         :owner #{:user/id
-                  :user/email-address
-                  :user/name
-                  :user/roles
-                  :user/created-at
-                  :user/deleted-at}
-         :role {:admin #{:user/id
-                         :user/email-address
+  (let [keys [:user/id
+              :user/email-address
+              :user/name
+              :user/roles
+              :user/created-at
+              :user/deleted-at]]
+    (u/select-owner-accessible-keys keys current-user user)))
+
+
+(defn select-role-accessible-keys
+  "Returns the provided user with only the role accessible keys present."
+  [current-user user]
+  (let [keys {:admin [:user/id
+                      :user/email-address
+                      :user/name
+                      :user/roles
+                      :user/created-at
+                      :user/deleted-at]
+              :customer [:user/id
                          :user/name
-                         :user/roles
                          :user/created-at
-                         :user/deleted-at}
-                :customer #{:user/id
-                            :user/name
-                            :user/created-at
-                            :user/deleted-at}}}]
-    (u/filter-sanctioned-keys
-     sanctioned-keys
-     current-user
-     user)))
+                         :user/deleted-at]}]
+    (u/select-role-accessible-keys keys current-user user)))

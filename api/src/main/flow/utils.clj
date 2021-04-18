@@ -4,18 +4,6 @@
             [expound.alpha :as expound]))
 
 
-(defn index
-  "Takes a key and map, uses the key to
-   extract an index from the map, if it
-   exists, returns a map with the index
-   as key and the map as value, otherwise
-   returns an empty map."
-  [k m]
-  (if-let [i (get m k)]
-    {i m}
-    {}))
-
-
 (defn constrained-string?
   "Takes a number and a string, and returns
    a boolean indication that the string has

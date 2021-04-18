@@ -47,8 +47,6 @@
 
   (user/fetch-all)
 
-  (authorisation/fetch (authorisation/id (user/id "k.suzukawa@gmail.com") "paste-work-belief"))
-
   (authorisation/fetch-all)
 
   )

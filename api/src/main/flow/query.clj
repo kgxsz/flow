@@ -1,8 +1,6 @@
 (ns flow.query
   (:require [flow.entity.user :as user]
-            [flow.entity.authorisation :as authorisation]
-            [flow.utils :as u]
-            [taoensso.faraday :as faraday]))
+            [flow.entity.authorisation :as authorisation]))
 
 
 (defmulti handle (fn [method payload metadata] method))
@@ -10,32 +8,22 @@
 
 (defmethod handle :current-user
   [_ _ {:keys [current-user]}]
-  {:users (->> current-user
-               (user/filter-sanctioned-keys current-user)
-               (u/index :user/id))})
+  {:users (user/index-user current-user)})
 
 
 (defmethod handle :users
-  [_ _ {:keys [current-user]}]
-  {:users (->> (user/fetch-all)
-               (map (partial user/filter-sanctioned-keys current-user))
-               (map (partial u/index :user/id))
-               (into {}))})
+  [_ _ _]
+  {:users (user/index-users (user/fetch-all))})
 
 
 (defmethod handle :user
-  [_ {:keys [user/id]} {:keys [current-user]}]
-  {:users (->> (user/fetch id)
-               (user/filter-sanctioned-keys current-user)
-               (u/index :user/id))})
+  [_ {:keys [user/id]} _]
+  {:users (user/index-user (user/fetch id))})
 
 
 (defmethod handle :authorisations
-  [_ _ {:keys [current-user]}]
-  {:authorisations (->> (authorisation/fetch-all)
-                        (map (partial authorisation/filter-sanctioned-keys current-user))
-                        (map (partial u/index :authorisation/id))
-                        (into {}))})
+  [_ _ _]
+  {:authorisations (authorisation/index-authorisations (authorisation/fetch-all))})
 
 
 (defmethod handle :default
