@@ -15,19 +15,19 @@
 
 
 (defn fetch
-  "Fetches the authorisation at the given id."
+  "Authorisation entity specific wrapper."
   [id]
   (db/fetch-entity :authorisation id))
 
 
 (defn fetch-all
-  "Fetches all authorisations."
+  "Authorisation entity specific wrapper."
   []
   (db/fetch-entities :authorisation))
 
 
 (defn create!
-  "Creates a new authorisation."
+  "Creates a new authorisation entity."
   [user-id phrase]
   (let [now (t.coerce/to-date (t/now))
         id (id user-id phrase)]
@@ -42,41 +42,39 @@
 
 
 (defn mutate!
-  "Mutates the authorisation at the given id by applying the given function."
+  "Authorisation entity specific wrapper."
   [id f]
   (db/mutate-entity! :authorisation id f))
 
 
 (defn index-authorisation
-  "Returns a map with key equal to the id of the provided authorisation,
-   and value equal to the authorisation itself."
+  "Authorisation entity specific wrapper."
   [authorisation]
   (u/index-entity :authorisation/id authorisation))
 
 
 (defn index-authorisations
-  "Returns a map with keys equal to the ids of the provided authorisations,
-   and values equal to the authorisations themselves."
+  "Authorisation entity specific wrapper."
   [authorisations]
   (u/index-entities :authorisation/id authorisations))
 
 
 (defn select-default-accessible-keys
-  "Returns the provided authorisation with only the default accessible keys present."
+  "Authorisation entity specific wrapper."
   [authorisation]
   (let [keys []]
     (u/select-default-accessible-keys keys authorisation)))
 
 
 (defn select-owner-accessible-keys
-  "Returns the provided authorisation with only the owner accessible keys present."
+  "Authorisation entity specific wrapper."
   [current-user authorisation]
   (let [keys []]
     (u/select-owner-accessible-keys keys current-user authorisation)))
 
 
 (defn select-role-accessible-keys
-  "Returns the provided authorisation with only the role accessible keys present."
+  "Authorisation entity specific wrapper."
   [current-user authorisation]
   (let [keys {:admin [:authorisation/id
                       :user/id

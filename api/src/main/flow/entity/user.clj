@@ -14,19 +14,19 @@
 
 
 (defn fetch
-  "Fetches the user at the given id."
+  "User entity specific wrapper."
   [id]
   (db/fetch-entity :user id))
 
 
 (defn fetch-all
-  "Fetches all users."
+  "User entity specific wrapper."
   []
   (db/fetch-entities :user))
 
 
-(defn create !
-  "Creates a new user."
+(defn create!
+  "Creates a new user entity."
   [email-address name roles]
   (let [now (t.coerce/to-date (t/now))
         id (id email-address)]
@@ -42,34 +42,32 @@
 
 
 (defn mutate!
-  "Mutates the user at the given id by applying the given function."
+  "User entity specific wrapper."
   [id f]
   (db/mutate-entity! :user id f))
 
 
 (defn index-user
-  "Returns a map with key equal to the id of the provided user,
-   and value equal to the user itself."
+  "User entity specific wrapper."
   [user]
   (u/index-entity :user/id user))
 
 
 (defn index-users
-  "Returns a map with keys equal to the ids of the provided users,
-   and values equal to the users themselves."
+  "User entity specific wrapper."
   [users]
   (u/index-entities :user/id users))
 
 
 (defn select-default-accessible-keys
-  "Returns the provided user with only the default accessible keys present."
+  "User entity specific wrapper."
   [user]
   (let [keys []]
     (u/select-default-accessible-keys keys user)))
 
 
 (defn select-owner-accessible-keys
-  "Returns the provided user with only the owner accessible keys present."
+  "User entity specific wrapper."
   [current-user user]
   (let [keys [:user/id
               :user/email-address
@@ -81,7 +79,7 @@
 
 
 (defn select-role-accessible-keys
-  "Returns the provided user with only the role accessible keys present."
+  "User entity specific wrapper."
   [current-user user]
   (let [keys {:admin [:user/id
                       :user/email-address
