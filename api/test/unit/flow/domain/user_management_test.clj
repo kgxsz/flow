@@ -38,12 +38,3 @@
 
   (testing "Returns false when the current user does not exist."
     (is (false? (admin? nil)))))
-
-
-(deftest test-exists?
-
-  (testing "Returns true when the current user has an admin role."
-    (is (true? (admin? {:user/roles #{:admin}}))))
-
-  (testing "Returns false when the current user does not exist."
-    (is (false? (admin? nil)))))
