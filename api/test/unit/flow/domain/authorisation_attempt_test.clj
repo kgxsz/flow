@@ -60,3 +60,30 @@
           authorisation' (assoc authorisation :authorisation/created-at before)]
       (with-redefs [t/now (constantly now)]
         (is (true? (grantable? authorisation')))))))
+
+
+(deftest test-generate-phrase
+
+  (testing "Returns a phrase with three hyphenated random words."
+    (is (= 3 (->> (generate-phrase) (re-seq #"[a-z]+") (count))))))
+
+
+(deftest test-email
+
+  (testing "Returns an email with a relevant subject line."
+    (is (= "Complete your sign in"
+           (:subject (email "hello-there-world")))))
+
+  (testing "Returns an email with body html containing the provided phrase."
+    (is (= "hello-there-world"
+           (->> (email "hello-there-world")
+                (:body)
+                (:html)
+                (re-find #"hello-there-world")))))
+
+  (testing "Returns an email with body text containing the provided phrase."
+    (is (= "hello-there-world"
+           (->> (email "hello-there-world")
+                (:body)
+                (:text)
+                (re-find #"hello-there-world"))))))
