@@ -1,6 +1,5 @@
 (ns flow.entity.utils
   (:require [medley.core :as medley]
-            [clojure.spec.alpha :as s]
             [expound.alpha :as expound]))
 
 

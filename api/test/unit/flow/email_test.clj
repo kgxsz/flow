@@ -1,5 +1,6 @@
 (ns flow.email-test
   (:require [flow.email :refer :all]
+            [flow.specifications :as s]
             [ses-mailer.core :as mailer]
             [clojure.test :refer :all]))
 

@@ -1,5 +1,6 @@
 (ns flow.entity.utils-test
   (:require [flow.entity.utils :refer :all]
+            [flow.specifications :as s]
             [clojure.test :refer :all]))
 
 

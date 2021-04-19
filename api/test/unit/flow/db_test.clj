@@ -1,5 +1,6 @@
 (ns flow.db-test
   (:require [flow.db :refer :all]
+            [flow.specifications :as s]
             [taoensso.faraday :as faraday]
             [clojure.test :refer :all]))
 
