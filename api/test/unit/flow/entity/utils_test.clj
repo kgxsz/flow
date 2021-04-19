@@ -15,7 +15,7 @@
 
 (deftest test-index-entities
 
-  (testing "Returns the indexed entities when the key and entity exist."
+  (testing "Returns the indexed entities that contain the provided key."
     (is (= {1 {:entity/x 1}
             2 {:entity/x 2}
             3 {:entity/x 3}}
@@ -23,9 +23,7 @@
             :entity/x
             [{:entity/x 1}
              {:entity/x 2}
-             {:entity/x 3}]))))
-
-  (testing "Omits any entity when its key doesn't exist."
+             {:entity/x 3}])))
     (is (= {1 {:entity/x 1}
             3 {:entity/x 3}}
            (index-entities
@@ -40,8 +38,7 @@
              {:entity/y 2}
              {:entity/y 3}]))))
 
-
-  (testing "Omits any entity that doesn't exist."
+  (testing "Returns the indexed entities that are non nil."
     (is (= {1 {:entity/x 1}
             3 {:entity/x 3}}
            (index-entities
@@ -59,7 +56,7 @@
 
 (deftest test-select-default-accessible-keys
 
-  (testing "Selects the defauls accessible keys provided."
+  (testing "Returns the entity with only the default accessible keys selected."
     (is (= {:entity/x "x" :entity/y "y"}
            (select-default-accessible-keys
             [:entity/x :entity/y]
@@ -74,7 +71,8 @@
 
 (deftest test-select-owner-accessible-keys
 
-  (testing "Selects the owner accessible keys when the current user owns the entity."
+  (testing "Returns the entity with only the owner accessible keys selected when
+            the current user owns the entity."
     (is (= {:entity/x "x" :entity/y "y"}
            (select-owner-accessible-keys
             [:entity/x :entity/y]
@@ -98,7 +96,8 @@
 
 (deftest test-select-role-accessible-keys
 
-  (testing "Selects the role accessible keys corresponding to the current user's roles."
+  (testing "Returns the entity with only the role accessible keys selected for
+            each of the current user's roles."
     (is (= {:entity/x "x" :entity/y "y"}
            (select-role-accessible-keys
             {:a [:entity/x] :b [:entity/y]}
