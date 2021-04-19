@@ -8,22 +8,22 @@
 
 (defmethod handle :current-user
   [_ _ {:keys [current-user]}]
-  {:users (user/index-user current-user)})
+  {:users (user/index current-user)})
 
 
 (defmethod handle :users
   [_ _ _]
-  {:users (user/index-users (user/fetch-all))})
+  {:users (apply user/index (user/fetch-all))})
 
 
 (defmethod handle :user
   [_ {:keys [user/id]} _]
-  {:users (user/index-user (user/fetch id))})
+  {:users (user/index (user/fetch id))})
 
 
 (defmethod handle :authorisations
   [_ _ _]
-  {:authorisations (authorisation/index-authorisations (authorisation/fetch-all))})
+  {:authorisations (apply authorisation/index (authorisation/fetch-all))})
 
 
 (defmethod handle :default

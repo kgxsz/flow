@@ -47,15 +47,9 @@
   (db/mutate-entity! :user id f))
 
 
-(defn index-user
+(defn index
   "User entity specific wrapper."
-  [user]
-  (u/index-entity :user/id user))
-
-
-(defn index-users
-  "User entity specific wrapper."
-  [users]
+  [& users]
   (u/index-entities :user/id users))
 
 

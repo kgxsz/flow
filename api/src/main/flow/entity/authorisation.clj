@@ -47,15 +47,9 @@
   (db/mutate-entity! :authorisation id f))
 
 
-(defn index-authorisation
+(defn index
   "Authorisation entity specific wrapper."
-  [authorisation]
-  (u/index-entity :authorisation/id authorisation))
-
-
-(defn index-authorisations
-  "Authorisation entity specific wrapper."
-  [authorisations]
+  [& authorisations]
   (u/index-entities :authorisation/id authorisations))
 
 

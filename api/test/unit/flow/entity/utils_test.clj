@@ -13,18 +13,6 @@
                    :user/roles #{:a :b}})
 
 
-(deftest test-index-entity
-
-  (testing "Returns the indexed entity when the key and entity exist."
-    (is (= {"x" entity} (index-entity :entity/x entity))))
-
-  (testing "Returns an empty map when the key doesn't exist."
-    (is (= {} (index-entity :entity/w entity))))
-
-  (testing "Returns an empty map when the entity doesn't exist."
-    (is (= {} (index-entity :entity/x nil)))))
-
-
 (deftest test-index-entities
 
   (testing "Returns the indexed entities when the key and entity exist."

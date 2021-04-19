@@ -3,20 +3,10 @@
             [expound.alpha :as expound]))
 
 
-(defn index-entity
-  "Returns a map with key equal to the id of the provided entity,
-   and value equal to the entity itself. If the entity does not
-   contain the key, then an empty map is returned."
-  [key entity]
-  (if (contains? entity key)
-    {(get entity key) entity}
-    {}))
-
-
 (defn index-entities
   "Returns a map with keys equal to the ids of the provided entities,
    and values equal to the entities themselves. If any keys are nil,
-   both the key and value will be removed from the map."
+   both the key and value will be removed from the resulting map."
   [key entities]
   (->> entities
        (medley/index-by key)
