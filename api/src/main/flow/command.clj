@@ -1,6 +1,7 @@
 (ns flow.command
   (:require [flow.entity.user :as user]
             [flow.entity.authorisation :as authorisation]
+            [flow.email :as email]
             [flow.domain.user-management :as user-management]
             [flow.domain.authorisation-attempt :as authorisation-attempt]))
 
@@ -18,7 +19,7 @@
     (if (and (some? user) (nil? deleted-at))
       (let [phrase (authorisation-attempt/generate-phrase)]
         (authorisation/create! id phrase)
-        (authorisation-attempt/send-phrase! email-address phrase)
+        (email/send-email! email-address (authorisation-attempt/email phrase))
         {})
       {})))
 
@@ -31,7 +32,9 @@
         authorisation (authorisation/fetch (authorisation/id (:user/id user) phrase))]
     (if (and (some? authorisation) (authorisation-attempt/grantable? authorisation))
       (do
-        (authorisation-attempt/grant! (:authorisation/id authorisation))
+        (authorisation/mutate!
+         (:authorisation/id authorisation)
+         authorisation-attempt/grant)
         {:metadata {:current-user user}})
       {})))
 

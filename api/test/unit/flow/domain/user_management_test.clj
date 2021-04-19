@@ -18,14 +18,17 @@
 
   (testing "Returns the user with the deleted-at field updated from nil to
             an instant representing now."
-    (let [now (t.coerce/to-date (t/now))
-          user' (assoc user :user/deleted-at now)]
-      (is (= user' (delete user)))))
+    (let [now (t/date-time 2021 4 20)
+          user' (assoc user :user/deleted-at (t.coerce/to-date now))]
+      (with-redefs [t/now (constantly now)]
+        (is (= user' (delete user))))))
 
   (testing "Returns the user unchanged if the user was previously deleted."
-    (let [before #inst "2000-01-01T00:00:00.000-00:00"
+    (let [now (t/date-time 2021 4 20)
+          before #inst "2021-04-10T00:00:00.000-00:00"
           user' (assoc user :user/deleted-at before)]
-      (is (= user' (delete user'))))))
+      (with-redefs [t/now (constantly now)]
+        (is (= user' (delete user')))))))
 
 
 (deftest test-admin?

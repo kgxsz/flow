@@ -6,11 +6,11 @@
 (defn send-email!
   "Sends and email with the body and subject
    provided to the email address provided."
-  [email-address subject {:keys [html text]}]
+  [email-address {:keys [subject body]}]
   (mailer/send-email
    {}
    "Flow <noreply@flow.keigo.io>"
    (u/validate :email/email-address email-address)
    (u/validate :email/subject subject)
-   {:html-body (u/validate :email/html html)
-    :text-body (u/validate :email/text text)}))
+   {:html-body (u/validate :email/html (:html body))
+    :text-body (u/validate :email/text (:text body))}))
