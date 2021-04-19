@@ -64,27 +64,27 @@
       (is (= [user user] (fetch-entities :user))))))
 
 
-(deftest test-put-entity!
+(deftest test-create-entity!
 
   (testing "Throws an exception when the entity provided already exists."
     (with-redefs [faraday/get-item (constantly {:entity user})
                   faraday/put-item (constantly nil)]
       (is (thrown? IllegalStateException
-                   (put-entity! :user (:user/id user) user)))))
+                   (create-entity! :user (:user/id user) user)))))
 
   (testing "Throws an exception when the entity type provided violates specification."
     (with-redefs [faraday/get-item (constantly nil)
                   faraday/put-item (constantly nil)]
       (is (thrown? IllegalStateException
-                   (put-entity! :hello-world (:authorisation/id authorisation) authorisation)))))
+                   (create-entity! :hello-world (:authorisation/id authorisation) authorisation)))))
 
   (testing "Throws an exception when the entity provided violates specification."
     (with-redefs [faraday/get-item (constantly nil)
                   faraday/put-item (constantly nil)]
       (is (thrown? IllegalStateException
-                   (put-entity! :user (:authorisation/id user) {})))
+                   (create-entity! :user (:authorisation/id user) {})))
       (is (thrown? IllegalStateException
-                   (put-entity! :user (:authorisation/id authorisation) authorisation)))))
+                   (create-entity! :user (:authorisation/id authorisation) authorisation)))))
 
   (testing "Returns the entity ID when the operation is executed successfully."
     (with-redefs [faraday/get-item (constantly nil)

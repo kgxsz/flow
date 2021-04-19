@@ -43,8 +43,8 @@
     (mapv :entity result)))
 
 
-(defn put-entity!
-  "Puts an entity into DynamoDB if and only if the entity doesn't
+(defn create-entity!
+  "Creates an entity into DynamoDB if and only if the entity doesn't
    already exist. On success, returns the entity's id."
   [entity-type entity-id entity]
   (if (nil? (fetch-entity entity-type entity-id))

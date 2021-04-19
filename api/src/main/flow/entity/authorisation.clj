@@ -31,7 +31,7 @@
   [user-id phrase]
   (let [now (t.coerce/to-date (t/now))
         id (id user-id phrase)]
-    (db/put-entity!
+    (db/create-entity!
      :authorisation
      id
      {:authorisation/id id

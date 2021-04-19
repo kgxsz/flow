@@ -30,7 +30,7 @@
   [email-address name roles]
   (let [now (t.coerce/to-date (t/now))
         id (id email-address)]
-    (db/put-entity!
+    (db/create-entity!
      :user
      id
      {:user/id id
