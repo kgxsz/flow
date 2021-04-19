@@ -4,25 +4,17 @@
             [clj-time.core :as t]))
 
 
-(defn delete!
-  "Marks the user at the given id as deleted.
-   Doesn't actually remove the entity."
-  [id]
-  (user/mutate!
-   id
-   #(cond-> %
-      (nil? (:user/deleted-at %))
-      (assoc :user/deleted-at (t.coerce/to-date (t/now))))))
+(defn delete
+  "Marks the user as deleted by specifying the
+   time of deletion as now, if and only if
+   the user has not previously been deleted."
+  [{:keys [user/deleted-at] :as user}]
+  (cond-> user
+    (nil? deleted-at)
+    (assoc :user/deleted-at (t.coerce/to-date (t/now)))))
 
 
 (defn admin?
   "Given a user, determines if it is an admin."
   [{:keys [user/roles]}]
   (contains? roles :admin))
-
-
-(defn exists?
-  "Given an id, determines if a user
-   with that email address already exists."
-  [id]
-  (some? (user/fetch id)))
