@@ -89,7 +89,7 @@
   (testing "Returns the entity ID when the operation is executed successfully."
     (with-redefs [faraday/get-item (constantly nil)
                   faraday/put-item (constantly nil)]
-      (is (= (:user/id user) (put-entity! :user (:user/id user) user))))))
+      (is (= (:user/id user) (create-entity! :user (:user/id user) user))))))
 
 
 (deftest test-mutate-entity!
