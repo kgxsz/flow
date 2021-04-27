@@ -65,6 +65,8 @@
 ## Testing
 
 ### Unit
+- In `api/` setup the environment variables:
+  - `CORS_ORIGIN` as `https://localhost:8080`.
 - In `api/` run the unit tests with `clj -A:test/unit`.
 - Alternatively, in the api's Clojure REPL, run `(kaocha/run :unit)`.
 
