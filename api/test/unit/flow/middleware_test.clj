@@ -1,21 +1,70 @@
 (ns flow.middleware-test
   (:require [flow.middleware :refer :all]
             [flow.specifications :as s]
+            [muuntaja.core :as muuntaja]
             [clojure.test :refer :all]))
 
 
 (def request
   {:request-method :post
    :uri "/"
-   :headers {"origin" "https://localhost:8080",
-             "access-control-request-method" "POST"}})
+   :body "[\"^ \",\"~:hello\",\"world\"]"
+   :headers {"origin" "https://localhost:8080"
+             "access-control-request-method" "POST"
+             "content-type" "application/transit+json"
+             "accept" "application/transit+json"}})
 
 (def response
   {:status 200
    :headers {}
-   :body "{\"hello\": \"world\"}"})
+   :body {:hello "world"}})
 
 (def handler (constantly response))
+
+
+(deftest test-wrap-content-type
+
+  (testing "The wrapped handler throws an exception when the request's content type header isn't
+            transit."
+    (let [handler' (wrap-content-type handler)]
+      (is (thrown? IllegalArgumentException
+                   (handler' (assoc-in request [:headers "content-type"] "application/json"))))
+      (is (thrown? IllegalArgumentException
+                   (handler' (update request :headers dissoc "content-type"))))))
+
+  (testing "The wrapped handler throws an exception when the request's body cannot be decoded using
+            the content type."
+    (let [handler' (wrap-content-type handler)]
+      (is (thrown? IllegalArgumentException
+                   (handler' (assoc-in request [:headers "content-type"] "application/json"))))
+      (is (thrown? IllegalArgumentException
+                   (handler' (assoc request :body "hello world"))))))
+
+  (testing "The wrapped handler returns the response body encoded with request's accept header."
+    (let [handler' (wrap-content-type handler)]
+      (is (= "[\"^ \",\"~:hello\",\"world\"]"
+             (-> (handler' request) (:body) (slurp))))))
+
+  (testing "The wrapped handler returns the response headers with content type equivalent to the
+            request's accept header."
+    (let [handler' (wrap-content-type handler)]
+      (is (= {"Content-Type" "application/transit+json; charset=utf-8"}
+             (:headers (handler' request)))))
+    (let [handler' (wrap-content-type handler)]
+      (is (= {"Content-Type" "application/json; charset=utf-8"}
+             (:headers (handler' (assoc-in request [:headers "accept"] "application/json")))))))
+
+  (testing "The wrapped handler returns the response body as is if it cannot be encoded with
+            request's accept header."
+    (let [handler' (wrap-content-type (constantly {:status 200 :headers {} :body "hello-world"}))]
+      (is (= "hello-world"
+             (:body (handler' request))))))
+
+  (testing "The wrapped handler returns the response with no contenty type header if it cannot
+            encode the response body with request's accept header."
+    (let [handler' (wrap-content-type (constantly {:status 200 :headers {} :body "hello-world"}))]
+      (is (= {}
+             (:headers (handler' request)))))))
 
 
 (deftest test-wrap-request-path
@@ -74,7 +123,8 @@
 
 (deftest test-wrap-cors
 
-  (testing "The wrapped handler returns the preflight with CORS headers when the request method is OPTIONS."
+  (testing "The wrapped handler returns a successful preflight response with CORS headers when the
+            request method is OPTIONS."
     (let [handler' (wrap-cors handler)]
       (is (= {:body "preflight complete",
               :headers {"Access-Control-Allow-Credentials" "true",
@@ -84,23 +134,26 @@
               :status 200}
              (handler' (assoc request :request-method :options))))))
 
-  (testing "The wrapped handler returns no preflight with CORS headers when the origin isn't allowed."
+  (testing "The wrapped handler returns a non-preflight response, and no CORS headers when the request
+            method is OPTIONS, but origin isn't allowed."
     (let [handler' (wrap-cors handler)]
       (is (= response
              (handler' (-> request
                            (assoc :request-method :options)
                            (assoc-in [:headers "origin"] "hello-world")))))))
 
-  (testing "The wrapped handler returns the response without CORS headers when the request method isn't allowed."
+  (testing "The wrapped handler returns the response without CORS headers when the request method
+            isn't one of methods with access control."
     (let [handler' (wrap-cors handler)]
       (is (= response
-             (handler' (assoc request :request-method :get))))))
+             (handler' (assoc request :request-method :get))))
+      (is (= response
+             (handler' (assoc request :request-method :head))))))
 
-  (testing "The wrapped handler returns the response with CORS headers when the request method is allowed."
+  (testing "The wrapped handler returns the response with CORS headers when the request method has
+            access control."
     (let [handler' (wrap-cors handler)]
-      (is (= {:body "{\"hello\": \"world\"}"
-              :headers {"Access-Control-Allow-Credentials" "true"
-                        "Access-Control-Allow-Methods" "OPTIONS, POST"
-                        "Access-Control-Allow-Origin" "https://localhost:8080"}
-              :status 200}
-             (handler' request))))))
+      (is (= {"Access-Control-Allow-Credentials" "true"
+              "Access-Control-Allow-Methods" "OPTIONS, POST"
+              "Access-Control-Allow-Origin" "https://localhost:8080"}
+             (:headers (handler' request)))))))
