@@ -6,7 +6,9 @@
 
 (def request
   {:request-method :post
-   :uri ""})
+   :uri "/"
+   :headers {"origin" "https://localhost:8080",
+             "access-control-request-method" "POST"}})
 
 (def response
   {:status 200
@@ -26,7 +28,7 @@
   (testing "The wrapped handler returns the response when the request path is the root."
     (let [handler' (wrap-request-path handler)]
       (is (= response (handler' request)))
-      (is (= response (handler' (assoc request :uri "/")))))))
+      (is (= response (handler' (assoc request :uri "")))))))
 
 
 (deftest test-wrap-request-method
@@ -68,3 +70,37 @@
   (testing "The wrapped handler returns the response when no exceptions are thrown."
     (let [handler' (wrap-exception handler)]
       (is (= response (handler' request))))))
+
+
+(deftest test-wrap-cors
+
+  (testing "The wrapped handler returns the preflight with CORS headers when the request method is OPTIONS."
+    (let [handler' (wrap-cors handler)]
+      (is (= {:body "preflight complete",
+              :headers {"Access-Control-Allow-Credentials" "true",
+                        "Access-Control-Allow-Headers" "Content-Type",
+                        "Access-Control-Allow-Methods" "OPTIONS, POST",
+                        "Access-Control-Allow-Origin" "https://localhost:8080"},
+              :status 200}
+             (handler' (assoc request :request-method :options))))))
+
+  (testing "The wrapped handler returns no preflight with CORS headers when the origin isn't allowed."
+    (let [handler' (wrap-cors handler)]
+      (is (= response
+             (handler' (-> request
+                           (assoc :request-method :options)
+                           (assoc-in [:headers "origin"] "hello-world")))))))
+
+  (testing "The wrapped handler returns the response without CORS headers when the request method isn't allowed."
+    (let [handler' (wrap-cors handler)]
+      (is (= response
+             (handler' (assoc request :request-method :get))))))
+
+  (testing "The wrapped handler returns the response with CORS headers when the request method is allowed."
+    (let [handler' (wrap-cors handler)]
+      (is (= {:body "{\"hello\": \"world\"}"
+              :headers {"Access-Control-Allow-Credentials" "true"
+                        "Access-Control-Allow-Methods" "OPTIONS, POST"
+                        "Access-Control-Allow-Origin" "https://localhost:8080"}
+              :status 200}
+             (handler' request))))))
