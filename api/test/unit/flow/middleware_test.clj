@@ -1,6 +1,7 @@
 (ns flow.middleware-test
   (:require [flow.middleware :refer :all]
             [flow.specifications :as s]
+            [flow.utils :as u]
             [muuntaja.core :as muuntaja]
             [clojure.test :refer :all]))
 
@@ -8,7 +9,7 @@
 (def request
   {:request-method :post
    :uri "/"
-   :body "[\"^ \",\"~:hello\",\"world\"]"
+   :body "[\"^ \",\"~:query\",[\"^ \",\"~:users\",[\"^ \"]]]"
    :headers {"origin" "https://localhost:8080"
              "access-control-request-method" "POST"
              "content-type" "application/transit+json"
@@ -17,9 +18,33 @@
 (def response
   {:status 200
    :headers {}
-   :body {:hello "world"}})
+   :body {:users {}}})
 
 (def handler (constantly response))
+
+
+(deftest test-wrap-content-validation
+
+  (testing "The wrapped handler throws an exception when the request's content is invalid."
+    (let [handler' (wrap-content-validation handler)]
+      (is (thrown? IllegalArgumentException
+                   (handler' (assoc request :body-params {:hello "world"}))))
+      (is (thrown? IllegalArgumentException
+                   (handler' (assoc request :body-params ""))))
+      (is (thrown? IllegalArgumentException
+                   (handler' request)))))
+
+  (testing "The wrapped handler throws an exception when the response's content is invalid."
+    (let [handler' (wrap-content-validation handler)]
+      (with-redefs [u/validate (fn [_ _] (throw (IllegalStateException. "hello world")))]
+        (is (thrown? IllegalStateException
+                     (handler' (assoc request :body-params {:query {:users {}}})))))))
+
+  (testing "The wrapped handler returns the response when both request and response content are valid."
+    (let [handler' (wrap-content-validation handler)]
+      (with-redefs [u/validate (constantly (:body response))]
+        (is (= response
+               (handler' (assoc request :body-params {:query {:users {}}}))))))))
 
 
 (deftest test-wrap-content-type
@@ -42,7 +67,7 @@
 
   (testing "The wrapped handler returns the response body encoded with request's accept header."
     (let [handler' (wrap-content-type handler)]
-      (is (= "[\"^ \",\"~:hello\",\"world\"]"
+      (is (= "[\"^ \",\"~:users\",[\"^ \"]]"
              (-> (handler' request) (:body) (slurp))))))
 
   (testing "The wrapped handler returns the response headers with content type equivalent to the
@@ -98,19 +123,19 @@
 (deftest test-wrap-exception
 
   (testing "The wrapped handler returns a 400 response when an illegal argument exception is thrown."
-    (let [handler' (wrap-exception (fn [r] (throw (IllegalArgumentException. "hello world"))))]
+    (let [handler' (wrap-exception (fn [_] (throw (IllegalArgumentException. "hello world"))))]
       (is (= {:body "{\"error\": \"hello world\"}",
               :headers {"Content-Type" "application/json; charset=utf-8"},
               :status 400}
              (handler' request)))))
 
   (testing "The wrapped handler returns a 500 response when any other exception is thrown."
-    (let [handler' (wrap-exception (fn [r] (throw (IllegalStateException. "hello world"))))]
+    (let [handler' (wrap-exception (fn [_] (throw (IllegalStateException. "hello world"))))]
       (is (= {:body "{\"error\": \"Internal error detected.\"}",
               :headers {"Content-Type" "application/json; charset=utf-8"},
               :status 500}
              (handler' request))))
-    (let [handler' (wrap-exception (fn [r] (throw (Exception. "hello world"))))]
+    (let [handler' (wrap-exception (fn [_] (throw (Exception. "hello world"))))]
       (is (= {:body "{\"error\": \"Internal error detected.\"}",
               :headers {"Content-Type" "application/json; charset=utf-8"},
               :status 500}
