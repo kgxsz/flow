@@ -23,6 +23,17 @@
 (def handler (constantly response))
 
 
+(deftest test-wrap-session
+
+  (testing "The wrapped handler returns a response with a cookie header when the session is non nil."
+    (let [handler' (wrap-session (constantly (assoc response :session {:hello "world"})))]
+      (is (some? (get-in (handler' request) [:headers "Set-Cookie"])))))
+
+  (testing "The wrapped handler returns a response without a cookie header when the session is nil."
+    (let [handler' (wrap-session (constantly (assoc response :session nil)))]
+      (is (nil? (get-in (handler' request) [:headers "Set-Cookie"]))))))
+
+
 (deftest test-wrap-content-validation
 
   (testing "The wrapped handler throws an exception when the request's content is invalid."
