@@ -2,21 +2,21 @@
  :deps {org.clojure/clojure {:mvn/version "1.10.1"}
         org.clojure/core.match {:mvn/version "1.0.0"}
         ring/ring-core {:mvn/version "1.8.0"}
-        ring-cors {:mvn/version "0.1.13"}
-        medley {:mvn/version "1.2.0"}
+        ring-cors/ring-cors {:mvn/version "0.1.13"}
+        medley/medley {:mvn/version "1.2.0"}
         metosin/muuntaja {:mvn/version "0.6.6"}
         com.amazonaws/aws-lambda-java-core {:mvn/version "1.1.0"}
-        ses-mailer {:mvn/version "0.0.4"}
-        hiccup {:mvn/version "1.0.5"}
-        clj-time {:mvn/version "0.15.2"}
+        ses-mailer/ses-mailer {:mvn/version "0.0.4"}
+        hiccup/hiccup {:mvn/version "1.0.5"}
+        clj-time/clj-time {:mvn/version "0.15.2"}
         danlentz/clj-uuid {:mvn/version "0.1.9"}
         com.taoensso/faraday {:mvn/version "1.11.1"}
-        expound {:mvn/version "0.8.9"}}
+        expound/expound {:mvn/version "0.8.9"}}
  :aliases {:repl {:extra-paths ["src/dev" "test/unit"]
                   :extra-deps {ring/ring-jetty-adapter {:mvn/version "1.8.0"}
                                lambdaisland/kaocha {:mvn/version "1.0.829"}
-                               refactor-nrepl {:mvn/version "2.5.0"}
-                               cider/cider-nrepl {:mvn/version "0.25.4"}}
+                               refactor-nrepl/refactor-nrepl {:mvn/version "2.5.0"}
+                               cider/cider-nrepl {:mvn/version "0.26.0"}}
                   :main-opts ["--main"
                               "nrepl.cmdline"
                               "--middleware"
