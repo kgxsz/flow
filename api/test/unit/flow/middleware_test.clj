@@ -25,12 +25,34 @@
 
 (deftest test-wrap-session
 
-  (testing "The wrapped handler returns a response with a cookie header when the session is non nil."
-    (let [handler' (wrap-session (constantly (assoc response :session {:hello "world"})))]
+  (testing "The wrapped handler returns a response with a session when the body includes a non empty session."
+    (let [handler' (wrap-session (constantly (assoc-in response [:body :session] {:hello "world"})))]
+      (is (= {:hello "world"}
+             (:session (handler' request))))))
+
+  (testing "The wrapped handler returns a response with a nil session when the body includes an empty session."
+    (let [handler' (wrap-session (constantly (assoc-in response [:body :session] {})))]
+      (is (nil? (:session (handler' request))))))
+
+  (testing "The wrapped handler returns a response with nil session when the body includes no session."
+    (let [handler' (wrap-session (constantly (assoc-in response [:body :session] nil)))]
+      (is (nil? (:session (handler' request)))))
+    (let [handler' (wrap-session (constantly response))]
+      (is (nil? (:session (handler' request)))))))
+
+
+(deftest test-wrap-session-persistence
+
+  (testing "The wrapped handler returns a response with a cookie header when the session is non empty."
+    (let [handler' (wrap-session-persistence (constantly (assoc response :session {:hello "world"})))]
+      (is (some? (get-in (handler' request) [:headers "Set-Cookie"])))))
+
+  (testing "The wrapped handler returns a response with a cookie header when the session is empty."
+    (let [handler' (wrap-session-persistence (constantly (assoc response :session {})))]
       (is (some? (get-in (handler' request) [:headers "Set-Cookie"])))))
 
   (testing "The wrapped handler returns a response without a cookie header when the session is nil."
-    (let [handler' (wrap-session (constantly (assoc response :session nil)))]
+    (let [handler' (wrap-session-persistence (constantly (assoc response :session nil)))]
       (is (nil? (get-in (handler' request) [:headers "Set-Cookie"]))))))
 
 

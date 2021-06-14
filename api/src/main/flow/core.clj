@@ -101,6 +101,7 @@
       (middleware/wrap-access-control)
       (middleware/wrap-current-user)
       (middleware/wrap-session)
+      (middleware/wrap-session-persistence)
       (middleware/wrap-content-validation)
       (middleware/wrap-content-type)
       (middleware/wrap-request-path)

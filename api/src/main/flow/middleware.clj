@@ -39,27 +39,36 @@
 
 (defn wrap-current-user
   "For inbound requests, takes the current user id found in the session and fetches
-   the current user, then attaches it to the metadata. For outbound responses, checks
-   whether the current user has been updated or removed, and acts accordingly by updating
-   or removing the current user id in the session. Ensures that every response includes
-   metadata with the current user id, nil or otherwise."
+   the current user, then attaches it to the session. For outbound responses, updates
+   the current user id in the session while removing the current user itself."
   [handler]
-  (fn [{:keys [session] :as request}]
-    (let [{:keys [user/id]} session
+  (fn [request]
+    (let [id (get-in request [:body-params :session :current-user-id])
+          ;; TODO - eventually place this in a session map, not metadata
           request (assoc-in request [:body-params :metadata :current-user] (user/fetch id))
           {:keys [body] :as response} (handler request)]
-      (if-let [id (get-in response [:body :metadata :current-user :user/id])]
+      ;; TODO - eventually get this out of a session map, not metadata
+      (let [id (get-in response [:body :metadata :current-user :user/id])]
         (-> response
-            (assoc-in [:session :user/id] id)
-            (assoc-in [:body :metadata :current-user-id] id)
-            (update-in [:body :metadata] dissoc :current-user))
-        (-> response
-            (assoc-in [:session] nil)
-            (assoc-in [:body :metadata :current-user-id] nil)
-            (update-in [:body :metadata] dissoc :current-user))))))
+            (assoc-in [:body :session :current-user-id] id)
+            (update-in [:body :session] dissoc :current-user))))))
 
 
 (defn wrap-session
+  "For the inbound requests, takes the session and puts it into the body params for
+   use directly in the query/command. For the outbound response, ensures that the
+   session in the body is only passed on if it is non empty."
+  [handler]
+  (fn [{:keys [session] :as request}]
+    (let [request (assoc-in request [:body-params :session] session)
+          response (handler request)
+          session (get-in response [:body :session])]
+      (if (empty? session)
+        (assoc response :session nil)
+        (assoc response :session session)))))
+
+
+(defn wrap-session-persistence
   "Ensures that sessions are persisted in an encrypted cookie on the client."
   [handler]
   (session.middleware/wrap-session

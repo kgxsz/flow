@@ -73,8 +73,11 @@
 
 
 ;; Metadata
-(s/def :metadata/current-user-id (s/nilable :user/id))
 (s/def :metadata/id-resolution (s/map-of :user/id :user/id))
+
+
+;; Session
+(s/def :session/current-user-id (s/nilable :user/id))
 
 
 ;; Request
@@ -100,8 +103,8 @@
 
 
 ;; Response
-(s/def :response/metadata (s/keys :req-un[:metadata/current-user-id]
-                                  :opt-un [:metadata/id-resolution]))
+(s/def :response/metadata (s/keys :opt-un [:metadata/id-resolution]))
+(s/def :response/session (s/keys :req-un [:session/current-user-id]))
 (s/def :response/users (s/map-of :user/id
                                  (s/keys :opt [:user/id
                                                :user/name
@@ -116,5 +119,6 @@
                                                         :authorisation/created-at
                                                         :authorisation/granted-at])))
 (s/def :response/body (s/keys :req-un [:response/metadata
+                                       :response/session
                                        :response/users
                                        :response/authorisations]))
