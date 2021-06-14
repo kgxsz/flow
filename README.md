@@ -55,6 +55,7 @@
 ### Local app development setup
 - In `app/` setup the environment variables:
   - `KEYSTORE_PASSWORD` as determined above.
+- In `app/` run `npm install` to prepare some dependencies.
 - In `app/` start the auto JS compilation with `clj -M:dev/js`.
 - In `app/` start the auto CSS compilation with `clj -M:dev/css`.
 - Connect to the app's Clojure REPL, and start the Clojurescript REPL with `(repl)`.
@@ -82,6 +83,7 @@
 ### Deploy the infrastructure and assets
 - In `infrastructure/` setup the environment variables:
   - `TF_VAR_cookie_store_key` as the 16 byte secret key set in production.
+- In `infrastructure/` initialise terraform if required using `terraform init`.
 - In `infrastructure/` update the remote assets with `terraform apply`.
 
 ## Tear down
