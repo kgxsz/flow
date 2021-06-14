@@ -18,8 +18,7 @@
   - URI as `api.localhost`.
   - DNS name as `api.localhost`.
   - Empty IP Address.
-  - Choose a password, this is your keystore password.
-- Export the certificate to `api/ssl/Certificates.p12`
+- Export the certificate to `api/ssl/Certificates.p12` and choose a keystore password.
 - In `api/ssl/` generate the `keystore.jks` with: 
   `keytool -importkeystore -destkeystore keystore.jks -srcstoretype PKCS12 -srckeystore Certificates.p12`.
 - Ensure that the destination and source keystore passwords are equal to the keystore password above.
@@ -31,8 +30,7 @@
   - URI as `localhost`.
   - DNS name as `localhost`.
   - Empty IP Address.
-  - Choose a password, this is your keystore password.
-- Export the certificate to `app/ssl/Certificates.p12`
+- Export the certificate to `app/ssl/Certificates.p12` and choose a keystore password.
 - In `app/ssl/` generate the `keystore.jks` with: 
   `keytool -importkeystore -destkeystore keystore.jks -srcstoretype PKCS12 -srckeystore Certificates.p12`.
 - Ensure that the destination and source keystore passwords are equal to the keystore password above.
