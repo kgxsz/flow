@@ -37,6 +37,7 @@
 
 ### Local database setup
 - Install a local DynamoDB instance with: `brew install --cask dynamodb-local`.
+- Ensure that the correct AWS credentials are in place in `~/.aws/credentials`.
 - Start the local DynamoDB instance with: `dynamodb-local -inMemory true`.
 
 ### Local api development setup
