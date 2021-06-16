@@ -1,5 +1,6 @@
 (ns flow.middleware-test
-  (:require [flow.middleware :refer :all]
+  (:require [flow.entity.user :as user]
+            [flow.middleware :refer :all]
             [flow.specifications :as s]
             [flow.utils :as u]
             [muuntaja.core :as muuntaja]
@@ -20,7 +21,57 @@
    :headers {}
    :body {:users {}}})
 
+
 (def handler (constantly response))
+
+
+(def user {:user/id #uuid "19f3c785-cf5f-530b-841d-6161400e6793"
+           :user/email-address "j.mcjohnson@gmail.com"
+           :user/name "Johnson"
+           :user/roles #{:customer}
+           :user/created-at #inst "2021-04-02T19:58:19.213-00:00"
+           :user/deleted-at nil})
+
+
+(deftest test-wrap-current-user
+
+  (testing "The wrapped handler throws an exception when the current user cannot be fetched."
+    (let [handler' (wrap-current-user (constantly response))]
+      (with-redefs [user/fetch (constantly nil)]
+        (is (thrown? IllegalStateException (handler' request))))))
+
+  (testing "The wrapped handler returns a response with the current user and current user id removed
+            from the body session when the current user isn't given in the body session."
+    (with-redefs [user/fetch (constantly user)]
+      (let [response (assoc-in response [:body :session] {:current-user nil :current-user-id "hello"})
+            handler' (wrap-current-user (constantly response))]
+        (is (= {:status 200
+                :headers {}
+                :body {:users {} :session {}}}
+               (handler' request))))
+      (let [response (assoc-in response [:body :session] {:current-user {} :current-user-id "hello"})
+            handler' (wrap-current-user (constantly response))]
+        (is (= {:status 200
+                :headers {}
+                :body {:users {} :session {}}}
+               (handler' request))))
+      (let [response (assoc-in response [:body :session] {:current-user-id "hello"})
+            handler' (wrap-current-user (constantly response))]
+        (is (= {:status 200
+                :headers {}
+                :body {:users {} :session {}}}
+               (handler' request))))))
+
+(testing "The wrapped handler returns a response with the current user removed from the body session,
+          and the current user id updated in the body session to match the id given in the body
+          session's current user."
+    (with-redefs [user/fetch (constantly user)]
+      (let [response (assoc-in response [:body :session] {:current-user user :current-user-id "hello"})
+            handler' (wrap-current-user (constantly response))]
+        (is (= {:status 200
+                :headers {}
+                :body {:users {} :session {:current-user-id (:user/id user)}}}
+               (handler' request)))))) )
 
 
 (deftest test-wrap-session
@@ -30,15 +81,15 @@
       (is (= {:hello "world"}
              (:session (handler' request))))))
 
-  (testing "The wrapped handler returns a response with a nil session when the body includes an empty session."
+  (testing "The wrapped handler returns a response with no session when the body includes an empty session."
     (let [handler' (wrap-session (constantly (assoc-in response [:body :session] {})))]
-      (is (nil? (:session (handler' request))))))
+      (is (= response (handler' request)))))
 
-  (testing "The wrapped handler returns a response with nil session when the body includes no session."
+  (testing "The wrapped handler returns a response with no session when the body includes no session."
     (let [handler' (wrap-session (constantly (assoc-in response [:body :session] nil)))]
-      (is (nil? (:session (handler' request)))))
+      (is (= response (handler' request))))
     (let [handler' (wrap-session (constantly response))]
-      (is (nil? (:session (handler' request)))))))
+      (is (= response (handler' request))))))
 
 
 (deftest test-wrap-session-persistence
@@ -118,7 +169,7 @@
       (is (= "hello-world"
              (:body (handler' request))))))
 
-  (testing "The wrapped handler returns the response with no contenty type header if it cannot
+  (testing "The wrapped handler returns the response with no content type header if it cannot
             encode the response body with request's accept header."
     (let [handler' (wrap-content-type (constantly {:status 200 :headers {} :body "hello-world"}))]
       (is (= {}

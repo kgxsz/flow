@@ -44,7 +44,8 @@
   [handler]
   (fn [request]
     (let [id (get-in request [:body-params :session :current-user-id])
-          request (assoc-in request [:body-params :session :current-user] (user/fetch id))
+          current-user (u/validate :db/user (user/fetch id))
+          request (assoc-in request [:body-params :session :current-user] current-user)
           {:keys [body] :as response} (handler request)]
       (if-let [id (get-in response [:body :session :current-user :user/id])]
         (-> response
@@ -65,7 +66,9 @@
           response (handler request)
           session (get-in response [:body :session])]
       (if (empty? session)
-        (assoc response :session nil)
+        (-> response
+            (update :body dissoc :session)
+            (dissoc :session))
         (assoc response :session session)))))
 
 
