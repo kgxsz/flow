@@ -6,11 +6,11 @@
             [flow.domain.authorisation-attempt :as authorisation-attempt]))
 
 
-(defmulti handle (fn [method payload metadata] method))
+(defmulti handle (fn [method payload metadata session] method))
 
 
 (defmethod handle :initialise-authorisation-attempt
-  [_ {:keys [user/email-address]} _]
+  [_ {:keys [user/email-address]} _ _]
   "If the user with the given email address exists and has not been deleted,
    then a phrase will be generated, an authorisation will be created, and an
    email containing the phrase will be sent to the user such that they may
@@ -25,7 +25,7 @@
 
 
 (defmethod handle :finalise-authorisation-attempt
-  [_ {:keys [user/email-address authorisation/phrase]} _]
+  [_ {:keys [user/email-address authorisation/phrase]} _ _]
   "If a grantable authorisation is found to match the given email address and phrase,
    then the authorisation will be marked as granted, and a session will be created."
   (let [user (user/fetch (user/id email-address))
@@ -35,18 +35,18 @@
         (authorisation/mutate!
          (:authorisation/id authorisation)
          authorisation-attempt/grant)
-        {:metadata {:current-user user}})
+        {:session {:current-user user}})
       {})))
 
 
 (defmethod handle :deauthorise
-  [_ _ _]
+  [_ _ _ _]
   "The current user will be deauthorised."
-  {:metadata {:current-user nil}})
+  {:session {:current-user nil}})
 
 
 (defmethod handle :add-user
-  [_ {:user/keys [id email-address name roles]} {:keys [current-user]}]
+  [_ {:user/keys [id email-address name roles]} _ {:keys [current-user]}]
   "If the current user is an admin, and the given user doesn't
    already exist, then the given user will be created."
   (if (and (user-management/admin? current-user)
@@ -58,7 +58,7 @@
 
 
 (defmethod handle :delete-user
-  [_ {:keys [user/id]} {:keys [current-user]}]
+  [_ {:keys [user/id]} _ {:keys [current-user]}]
   "If the current user is an admin, and the given user exists,
    then that user will be deleted."
   (if (and (user-management/admin? current-user)
@@ -70,5 +70,5 @@
 
 
 (defmethod handle :default
-  [_ _ _]
+  [_ _ _ _]
   (throw (IllegalArgumentException. "Unsupported command method.")))

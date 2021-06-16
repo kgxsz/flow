@@ -58,13 +58,15 @@
 
 (defn handle-command
   "Fulfills each command method and merges the outcomes into a result.
-   Outputs a map containing the yet to be fulfilled query, and the metadata
-   provided merged with any metadata present in the command result."
-  [{:keys [query command metadata]}]
-  (let [handle (fn [[method payload]] (command/handle method payload metadata))
+   Outputs a map containing the yet to be fulfilled query, the metadata,
+   and the session provided merged with any metadata and session present
+   in the command result."
+  [{:keys [query command metadata session]}]
+  (let [handle (fn [[method payload]] (command/handle method payload metadata session))
         result (apply medley/deep-merge (map handle command))]
     {:query query
-     :metadata (medley/deep-merge metadata (get result :metadata {}))}))
+     :metadata (medley/deep-merge metadata (get result :metadata {}))
+     :session (medley/deep-merge session (get result :session {}))}))
 
 
 (defn resolve-ids
@@ -72,23 +74,26 @@
    temporary ID in the query with its counterpart non temporary ID produced
    in the command. This is needed because the app cannot know an entity's ID
    before it is created, so it provides a temporary one that requires resolving."
-  [{:keys [query metadata]}]
+  [{:keys [query metadata session]}]
   {:query (clojure.walk/postwalk
            #(get (:id-resolution metadata) % %)
            query)
-   :metadata metadata})
+   :metadata metadata
+   :session session})
 
 
 (defn handle-query
   "Fulfills each query method and merges the outcomes into a result.
-   Outputs a map containing each entity, and the metadata provided
-   merged with any metadata present in the query result."
-  [{:keys [query metadata]}]
-  (let [handle (fn [[method payload]] (query/handle method payload metadata))
+   Outputs a map containing each entity, the metadata, and the session
+   provided merged with any metadata or session present in the query
+   result."
+  [{:keys [query metadata session]}]
+  (let [handle (fn [[method payload]] (query/handle method payload metadata session))
         result (apply medley/deep-merge (map handle query))]
     {:users (get result :users {})
      :authorisations (get result :authorisations {})
-     :metadata (medley/deep-merge metadata (get result :metadata {}))}))
+     :metadata (medley/deep-merge metadata (get result :metadata {}))
+     :session (medley/deep-merge session (get result :session {}))}))
 
 
 (def handler

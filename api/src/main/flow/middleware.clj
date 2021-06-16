@@ -44,11 +44,9 @@
   [handler]
   (fn [request]
     (let [id (get-in request [:body-params :session :current-user-id])
-          ;; TODO - eventually place this in a session map, not metadata
-          request (assoc-in request [:body-params :metadata :current-user] (user/fetch id))
+          request (assoc-in request [:body-params :session :current-user] (user/fetch id))
           {:keys [body] :as response} (handler request)]
-      ;; TODO - eventually get this out of a session map, not metadata
-      (let [id (get-in response [:body :metadata :current-user :user/id])]
+      (let [id (get-in response [:body :session :current-user :user/id])]
         (-> response
             (assoc-in [:body :session :current-user-id] id)
             (update-in [:body :session] dissoc :current-user))))))
