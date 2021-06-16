@@ -39,8 +39,9 @@
 
 (defn wrap-current-user
   "For inbound requests, takes the current user id found in the session and fetches
-   the current user, then attaches it to the session. For outbound responses, updates
-   the current user id in the session while removing the current user itself."
+   the current user, then attaches it to the session. If the current user cannot be
+   fetched, then an exception is raised. For outbound responses, updates the current
+   user id in the session while removing the current user itself."
   [handler]
   (fn [request]
     (let [id (get-in request [:body-params :session :current-user-id])
