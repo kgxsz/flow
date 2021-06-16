@@ -46,9 +46,12 @@
     (let [id (get-in request [:body-params :session :current-user-id])
           request (assoc-in request [:body-params :session :current-user] (user/fetch id))
           {:keys [body] :as response} (handler request)]
-      (let [id (get-in response [:body :session :current-user :user/id])]
+      (if-let [id (get-in response [:body :session :current-user :user/id])]
         (-> response
             (assoc-in [:body :session :current-user-id] id)
+            (update-in [:body :session] dissoc :current-user))
+        (-> response
+            (update-in [:body :session] dissoc :current-user-id)
             (update-in [:body :session] dissoc :current-user))))))
 
 
