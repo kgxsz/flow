@@ -118,7 +118,7 @@
                                                         :authorisation/phrase
                                                         :authorisation/created-at
                                                         :authorisation/granted-at])))
-(s/def :response/body (s/keys :req-un [:response/metadata
-                                       :response/session
-                                       :response/users
-                                       :response/authorisations]))
+(s/def :response/body (s/keys :req-un [:response/users
+                                       :response/authorisations]
+                              :opt-un [:response/session
+                                       :respone/metadata]))

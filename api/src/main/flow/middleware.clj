@@ -21,7 +21,10 @@
   [handler]
   (fn [request]
     (let [response (handler request)
-          current-user (get-in response [:body :metadata :current-user])]
+          ;; NOTE - the current user may be stale during the outbound portion
+          ;; of this middleware. This is okay though since the fields used
+          ;; to determine access control aren't mutable by commands.
+          current-user (get-in response [:body :session :current-user])]
       (-> response
           (update-in [:body :users]
            #(medley/deep-merge
@@ -44,9 +47,12 @@
    user id in the session while removing the current user itself."
   [handler]
   (fn [request]
-    (let [id (get-in request [:body-params :session :current-user-id])
-          current-user (u/validate :db/user (user/fetch id))
-          request (assoc-in request [:body-params :session :current-user] current-user)
+    (let [current-user (some->> (get-in request [:body-params :session :current-user-id])
+                                (user/fetch)
+                                (u/validate :db/user))
+          request (cond-> request
+                    (some? current-user)
+                    (assoc-in [:body-params :session :current-user] current-user))
           {:keys [body] :as response} (handler request)]
       (if-let [id (get-in response [:body :session :current-user :user/id])]
         (-> response
@@ -57,12 +63,25 @@
             (update-in [:body :session] dissoc :current-user))))))
 
 
+(defn wrap-metadata
+  "For the inbound requests does nothing. For the outbound response,
+   ensures that the metadata is only passed on if it is non empty."
+  [handler]
+  (fn [{:keys [session] :as request}]
+    (let [response (handler request)
+          metadata (get-in response [:body :metadata])]
+      (cond-> response
+        (empty? metadata)
+        (update :body dissoc :metadata)))))
+
+
 (defn wrap-session
   "For the inbound requests, takes the session and puts it into the body params for
    use directly in the query/command. For the outbound response, ensures that the
    session in the body is only passed on if it is non empty."
   [handler]
   (fn [{:keys [session] :as request}]
+    ;; TODO - only add session in the body params if there's reason to
     (let [request (assoc-in request [:body-params :session] session)
           response (handler request)
           session (get-in response [:body :session])]
