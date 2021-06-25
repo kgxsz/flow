@@ -3,6 +3,7 @@
             [flow.middleware :refer :all]
             [flow.specifications :as s]
             [flow.utils :as u]
+            [medley.core :as medley]
             [muuntaja.core :as muuntaja]
             [clojure.test :refer :all]))
 
@@ -19,7 +20,8 @@
 (def response
   {:status 200
    :headers {}
-   :body {:users {}}})
+   :body {:users {}
+          :authorisations {}}})
 
 
 (def handler (constantly response))
@@ -33,11 +35,64 @@
            :user/deleted-at nil})
 
 
+(def authorisations [{:authorisation/id #uuid "22a3c785-0f5f-530b-841d-7761400e6793"
+                      :user/id #uuid "19f3c785-cf5f-530b-841d-6161400e6793"
+                      :authorisation/phrase "amount-addition-harbor",
+                      :authorisation/created-at #inst "2021-04-03T11:21:46.894-00:00",
+                      :authorisation/granted-at nil}
+                     {:authorisation/id #uuid "31f3c785-0f5f-530b-841d-7761400e6793"
+                      :user/id #uuid "00f3c785-cf5f-530b-841d-6161400e6793"
+                      :authorisation/phrase "concrete-tree-bridge",
+                      :authorisation/created-at #inst "2021-04-03T11:21:46.894-00:00",
+                      :authorisation/granted-at nil}])
+
+
+(deftest test-wrap-access-control
+
+  (testing "The wrapped handler returns the response with the correct access control applied to the entities."
+    (let [response (-> response
+                       (assoc-in [:body :users (:user/id user)] user)
+                       (assoc-in [:body :authorisations (:authorisation/id (first authorisations))]
+                                 (first authorisations))
+                       (assoc-in [:body :authorisations (:authorisation/id (second authorisations))]
+                                 (second authorisations)))
+          handler' (wrap-access-control (constantly response))]
+      (is (= {:status 200
+              :headers {}
+              :body {:users {}
+                     :authorisations {}}}
+             (handler' request))))
+    (let [response (-> response
+                       (assoc-in [:body :users (:user/id user)] user)
+                       (assoc-in [:body :authorisations] (medley/index-by :authorisation/id authorisations))
+                       (assoc-in [:body :session :current-user] user))
+          handler' (wrap-access-control (constantly response))]
+      (is (= {:status 200
+              :headers {}
+              :body {:users {(:user/id user) user}
+                     :authorisations {}
+                     :session {:current-user user}}}
+             (handler' request))))
+    (let [current-user (assoc user :user/roles #{:customer :admin})
+          response (-> response
+                       (assoc-in [:body :users (:user/id user)] user)
+                       (assoc-in [:body :authorisations] (medley/index-by :authorisation/id authorisations))
+                       (assoc-in [:body :session :current-user] current-user))
+          handler' (wrap-access-control (constantly response))]
+      (is (= {:status 200
+              :headers {}
+              :body {:users {(:user/id user) user}
+                     :authorisations (medley/index-by :authorisation/id authorisations)
+                     :session {:current-user current-user}}}
+             (handler' request))))))
+
+
 (deftest test-wrap-current-user
 
   (testing "The wrapped handler throws an exception when the current user cannot be fetched."
-    (let [handler' (wrap-current-user (constantly response))]
-      (with-redefs [user/fetch (constantly nil)]
+    (let [handler' (wrap-current-user (constantly response))
+          request (assoc-in request [:body-params :session :current-user-id] "hello")]
+      (with-redefs [user/fetch (constantly {})]
         (is (thrown? IllegalStateException (handler' request))))))
 
   (testing "The wrapped handler returns a response with the current user and current user id removed
@@ -47,31 +102,62 @@
             handler' (wrap-current-user (constantly response))]
         (is (= {:status 200
                 :headers {}
-                :body {:users {} :session {}}}
+                :body {:users {}
+                       :authorisations {}
+                       :session {}}}
                (handler' request))))
       (let [response (assoc-in response [:body :session] {:current-user {} :current-user-id "hello"})
             handler' (wrap-current-user (constantly response))]
         (is (= {:status 200
                 :headers {}
-                :body {:users {} :session {}}}
+                :body {:users {}
+                       :authorisations {}
+                       :session {}}}
                (handler' request))))
       (let [response (assoc-in response [:body :session] {:current-user-id "hello"})
             handler' (wrap-current-user (constantly response))]
         (is (= {:status 200
                 :headers {}
-                :body {:users {} :session {}}}
+                :body {:users {}
+                       :authorisations {}
+                       :session {}}}
                (handler' request))))))
 
-(testing "The wrapped handler returns a response with the current user removed from the body session,
-          and the current user id updated in the body session to match the id given in the body
-          session's current user."
+  (testing "The wrapped handler returns a response with the current user removed from the body session,
+            and the current user id updated in the body session to match the id given in the body
+            session's current user."
     (with-redefs [user/fetch (constantly user)]
       (let [response (assoc-in response [:body :session] {:current-user user :current-user-id "hello"})
             handler' (wrap-current-user (constantly response))]
         (is (= {:status 200
                 :headers {}
-                :body {:users {} :session {:current-user-id (:user/id user)}}}
+                :body {:users {}
+                       :authorisations {}
+                       :session {:current-user-id (:user/id user)}}}
                (handler' request)))))) )
+
+
+(deftest test-wrap-metadata
+
+  (testing "The wrapped handler returns a response with metadata when it's non empty."
+    (let [response (assoc-in response [:body :metadata] {:hello "world"})
+          handler' (wrap-metadata (constantly response))]
+      (is (= {:status 200
+              :headers {}
+              :body {:users {}
+                     :authorisations {}
+                     :metadata {:hello "world"}}}
+             (handler' request)))))
+
+  (testing "The wrapped handler returns a response with the metadata removed when it's  empty."
+    (let [handler' (wrap-metadata (constantly (assoc-in response [:body :metadata] {})))]
+      (is (= response (handler' request)))))
+
+  (testing "The wrapped handler returns a response with no metadata when it isn't provided."
+    (let [handler' (wrap-metadata (constantly (assoc-in response [:body :metadata] nil)))]
+      (is (= response (handler' request))))
+    (let [handler' (wrap-metadata (constantly response))]
+      (is (= response (handler' request))))))
 
 
 (deftest test-wrap-session
@@ -151,7 +237,7 @@
 
   (testing "The wrapped handler returns the response body encoded with request's accept header."
     (let [handler' (wrap-content-type handler)]
-      (is (= "[\"^ \",\"~:users\",[\"^ \"]]"
+      (is (= "[\"^ \",\"~:users\",[\"^ \"],\"~:authorisations\",[\"^ \"]]"
              (-> (handler' request) (:body) (slurp))))))
 
   (testing "The wrapped handler returns the response headers with content type equivalent to the
