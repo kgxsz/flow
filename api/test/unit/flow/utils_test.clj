@@ -68,10 +68,16 @@
            (validate
             :email/email-address
             "hello@world.com")))
-    (is (= {:query {:current-user {}}}
+    (is (= {:query {:current-user {}}
+            :command {}
+            :metadata {}
+            :session {}}
            (validate
             :request/body-params
-            {:query {:current-user {}}}))))
+            {:query {:current-user {}}
+             :command {}
+             :metadata {}
+             :session {}}))))
 
   (testing "Throws an exception when the data provided violates specification."
     (is (thrown? IllegalStateException

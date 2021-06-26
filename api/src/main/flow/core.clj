@@ -105,7 +105,6 @@
             (response/response)))
       (middleware/wrap-access-control)
       (middleware/wrap-current-user)
-      (middleware/wrap-metadata)
       (middleware/wrap-session)
       (middleware/wrap-session-persistence)
       (middleware/wrap-content-validation)

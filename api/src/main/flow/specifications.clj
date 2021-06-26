@@ -81,30 +81,25 @@
 
 
 ;; Request
+(s/def :request/command (s/keys :opt-un [:command/initialise-authorisation-attempt
+                                         :command/finalise-authorisation-attempt
+                                         :command/deauthorise
+                                         :command/add-user
+                                         :command/delete-user]))
+(s/def :request/query (s/keys :opt-un [:query/current-user
+                                       :query/users
+                                       :query/user
+                                       :query/authorisations]))
 (s/def :request/metadata (s/and map? empty?))
-(s/def :request/command (s/and
-                         (comp pos? count)
-                         (s/keys :opt-un [:command/initialise-authorisation-attempt
-                                          :command/finalise-authorisation-attempt
-                                          :command/deauthorise
-                                          :command/add-user
-                                          :command/delete-user])))
-(s/def :request/query (s/and
-                       (comp pos? count)
-                       (s/keys :opt-un [:query/current-user
-                                        :query/users
-                                        :query/user
-                                        :query/authorisations])))
-(s/def :request/body-params (s/and
-                             #(or (contains? % :command) (contains? % :query))
-                             (s/keys :opt-un [:request/metadata
-                                              :request/command
-                                              :request/query])))
+(s/def :request/session (s/and map? empty?))
+(s/def :request/body-params (s/and (s/map-of #{:command :query :metadata :session} any?)
+                                   (s/keys :req-un [:request/command
+                                                    :request/query
+                                                    :request/session
+                                                    :request/metadata])))
 
 
 ;; Response
-(s/def :response/metadata (s/keys :opt-un [:metadata/id-resolution]))
-(s/def :response/session (s/keys :req-un [:session/current-user-id]))
 (s/def :response/users (s/map-of :user/id
                                  (s/keys :opt [:user/id
                                                :user/name
@@ -118,7 +113,10 @@
                                                         :authorisation/phrase
                                                         :authorisation/created-at
                                                         :authorisation/granted-at])))
-(s/def :response/body (s/keys :req-un [:response/users
-                                       :response/authorisations]
-                              :opt-un [:response/session
-                                       :respone/metadata]))
+(s/def :response/metadata (s/keys :opt-un [:metadata/id-resolution]))
+(s/def :response/session (s/keys :req-un [:session/current-user-id]))
+(s/def :response/body (s/and (s/map-of #{:users :authorisations :metadata :session} any?)
+                             (s/keys :req-un [:response/users
+                                              :response/authorisations
+                                              :respone/metadata
+                                              :response/session])))

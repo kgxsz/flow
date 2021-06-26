@@ -50,46 +50,29 @@
     (let [current-user (some->> (get-in request [:body-params :session :current-user-id])
                                 (user/fetch)
                                 (u/validate :db/user))
-          request (cond-> request
-                    (some? current-user)
-                    (assoc-in [:body-params :session :current-user] current-user))
+          request (-> request
+                      (update-in [:body-params :session] dissoc :current-user-id)
+                      (assoc-in [:body-params :session :current-user] current-user))
           {:keys [body] :as response} (handler request)]
-      (if-let [id (get-in response [:body :session :current-user :user/id])]
+      (let [id (get-in response [:body :session :current-user :user/id])]
         (-> response
             (assoc-in [:body :session :current-user-id] id)
-            (update-in [:body :session] dissoc :current-user))
-        (-> response
-            (update-in [:body :session] dissoc :current-user-id)
             (update-in [:body :session] dissoc :current-user))))))
 
 
-(defn wrap-metadata
-  "For the inbound requests does nothing. For the outbound response,
-   ensures that the metadata is only passed on if it is non empty."
-  [handler]
-  (fn [{:keys [session] :as request}]
-    (let [response (handler request)
-          metadata (get-in response [:body :metadata])]
-      (cond-> response
-        (empty? metadata)
-        (update :body dissoc :metadata)))))
-
-
 (defn wrap-session
-  "For the inbound requests, takes the session and puts it into the body params for
-   use directly in the query/command. For the outbound response, ensures that the
-   session in the body is only passed on if it is non empty."
+  "For the inbound requests, takes the persisted session and puts it into the body params
+   for use directly in the query/command. For the outbound response, ensures that the
+   session is present in the body is placed in the request so as to be persisted."
   [handler]
   (fn [{:keys [session] :as request}]
-    ;; TODO - only add session in the body params if there's reason to
+    ;; TODO - carefully merge any session update suggestions from the client
     (let [request (assoc-in request [:body-params :session] session)
           response (handler request)
           session (get-in response [:body :session])]
-      (if (empty? session)
-        (-> response
-            (update :body dissoc :session)
-            (dissoc :session))
-        (assoc response :session session)))))
+      (if session
+        (assoc response :session session)
+        (throw (IllegalStateException. "Session missing from response body."))))))
 
 
 (defn wrap-session-persistence
@@ -108,11 +91,10 @@
 
 
 (defn wrap-content-validation
-  "Determines the validity of the content provided by the client, and the validity of
-   the content returned to the client."
+  "Determines the validity of the content for both inbound request and outbound responses."
   [handler]
-  (fn [{:keys [body-params] :as request}]
-    (if (s/valid? :request/body-params body-params)
+  (fn [request]
+    (if (s/valid? :request/body-params (:body-params request))
       (update (handler request) :body (partial u/validate :response/body))
       (throw (IllegalArgumentException. "Invalid request content.")))))
 

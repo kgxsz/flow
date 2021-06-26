@@ -35,7 +35,7 @@
  (fn [parameters]
    ;; TODO - fix all this soon
    (ajax/POST (utils/make-url)
-              {:params parameters
+              {:params (medley/deep-merge parameters {:command {} :query {} :metadata {} :session {}})
                :with-credentials true
                :handler (fn [response]
                           (re-frame/dispatch [:handle-api-success parameters response]))
