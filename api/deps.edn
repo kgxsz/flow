@@ -24,6 +24,9 @@
            :test/unit {:extra-paths ["test/unit"]
                        :extra-deps {lambdaisland/kaocha {:mvn/version "1.0.829"}}
                        :main-opts ["--main" "kaocha.runner" "--focus" "unit"]}
+           :test/feature {:extra-paths ["test/feature"]
+                          :extra-deps {lambdaisland/kaocha {:mvn/version "1.0.829"}}
+                          :main-opts ["--main" "kaocha.runner" "--focus" "feature"]}
            :compile {:extra-paths ["src/main" "classes"]
                      :main-opts ["-e" "(compile,'flow.core)"]}
            :zip {:extra-deps {pack/pack.alpha {:git/url "https://github.com/juxt/pack.alpha.git"

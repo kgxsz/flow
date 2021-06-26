@@ -1,12 +1,7 @@
 (ns flow.core-test
-  (:require [flow.entity.user :as user]
-            [flow.core :refer :all]
+  (:require [flow.core :refer :all]
             [flow.query :as query]
             [flow.command :as command]
-            [flow.specifications :as s]
-            [flow.utils :as u]
-            [medley.core :as medley]
-            [muuntaja.core :as muuntaja]
             [clojure.test :refer :all]))
 
 

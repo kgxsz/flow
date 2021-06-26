@@ -1,1 +1,4 @@
-#kaocha/v1 {:tests [{:id :unit}]}
+#kaocha/v1 {:tests [{:id :unit
+                     :test-paths ["test/unit"]}
+                    {:id :feature
+                     :test-paths ["test/feature"]}]}

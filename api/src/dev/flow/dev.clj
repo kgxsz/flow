@@ -39,6 +39,8 @@
 
   (kaocha/run :unit)
 
+  (kaocha/run :feature)
+
   (user/create! "k.suzukawa@gmail.com" "Keigo" #{:admin :customer})
 
   (user/create! "ksarnecka50@gmail.com" "Kasia" #{:customer})

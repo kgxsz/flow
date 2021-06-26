@@ -70,6 +70,12 @@
 - In `api/` run the unit tests with `clj -M:test/unit`.
 - Alternatively, in the api's Clojure REPL, run `(kaocha/run :unit)`.
 
+### Feature
+- In `api/` setup the environment variables:
+  - `CORS_ORIGIN` as `https://localhost:8080`.
+- In `api/` run the feature tests with `clj -M:test/feature`.
+- Alternatively, in the api's Clojure REPL, run `(kaocha/run :feature)`.
+
 
 ## Remote deployment
 
