@@ -63,6 +63,11 @@
                                        :user/email-address
                                        :user/roles]))
 (s/def :command/delete-user (s/keys :req [:user/id]))
+(s/def :command/method #{:initialise-authorisation-attempt
+                         :finalise-authoirsation-attempt
+                         :deauthorise
+                         :add-user
+                         :delete-user})
 
 
 ;; Query
@@ -70,6 +75,10 @@
 (s/def :query/users (s/and map? empty?))
 (s/def :query/user (s/keys :req [:user/id]))
 (s/def :query/authorisations (s/and map? empty?))
+(s/def :query/method #{:current-user
+                      :users
+                      :user
+                      :authorisations})
 
 
 ;; Metadata
@@ -81,15 +90,17 @@
 
 
 ;; Request
-(s/def :request/command (s/keys :opt-un [:command/initialise-authorisation-attempt
-                                         :command/finalise-authorisation-attempt
-                                         :command/deauthorise
-                                         :command/add-user
-                                         :command/delete-user]))
-(s/def :request/query (s/keys :opt-un [:query/current-user
-                                       :query/users
-                                       :query/user
-                                       :query/authorisations]))
+(s/def :request/command (s/and (s/map-of :command/method any?)
+                               (s/keys :opt-un [:command/initialise-authorisation-attempt
+                                                :command/finalise-authorisation-attempt
+                                                :command/deauthorise
+                                                :command/add-user
+                                                :command/delete-user])))
+(s/def :request/query (s/and (s/map-of :query/method any?)
+                             (s/keys :opt-un [:query/current-user
+                                              :query/users
+                                              :query/user
+                                              :query/authorisations])))
 (s/def :request/metadata (s/and map? empty?))
 (s/def :request/session (s/and map? empty?))
 (s/def :request/body-params (s/and (s/map-of #{:command :query :metadata :session} any?)

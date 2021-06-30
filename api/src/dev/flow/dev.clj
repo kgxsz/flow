@@ -41,6 +41,10 @@
 
   (kaocha/run :feature)
 
+  (kaocha/run 'flow.command-handling-test)
+
+  (kaocha/run 'flow.email-test)
+
   (user/create! "k.suzukawa@gmail.com" "Keigo" #{:admin :customer})
 
   (user/create! "ksarnecka50@gmail.com" "Kasia" #{:customer})

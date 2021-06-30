@@ -1,6 +1,7 @@
 (ns flow.query
   (:require [flow.entity.user :as user]
-            [flow.entity.authorisation :as authorisation]))
+            [flow.entity.authorisation :as authorisation]
+            [flow.utils :as u]))
 
 
 (defmulti handle (fn [method payload metadata session] method))
@@ -27,5 +28,5 @@
 
 
 (defmethod handle :default
-  [_ _ _ _]
-  (throw (IllegalArgumentException. "Unsupported query method.")))
+  [method _ _ _]
+  (u/report :internal-error (str "The query method" method " does not exist.")))

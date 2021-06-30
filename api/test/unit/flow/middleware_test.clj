@@ -4,8 +4,9 @@
             [flow.specifications :as s]
             [flow.utils :as u]
             [medley.core :as medley]
-            [muuntaja.core :as muuntaja]
-            [clojure.test :refer :all]))
+            [slingshot.slingshot :as slingshot]
+            [clojure.test :refer :all]
+            [slingshot.test :refer :all]))
 
 
 (def request
@@ -21,7 +22,9 @@
   {:status 200
    :headers {}
    :body {:users {}
-          :authorisations {}}})
+          :authorisations {}
+          :metadata {}
+          :session {}}})
 
 
 (def handler (constantly response))
@@ -60,7 +63,9 @@
       (is (= {:status 200
               :headers {}
               :body {:users {}
-                     :authorisations {}}}
+                     :authorisations {}
+                     :metadata {}
+                     :session {}}}
              (handler' request))))
     (let [response (-> response
                        (assoc-in [:body :users (:user/id user)] user)
@@ -71,6 +76,7 @@
               :headers {}
               :body {:users {(:user/id user) user}
                      :authorisations {}
+                     :metadata {}
                      :session {:current-user user}}}
              (handler' request))))
     (let [current-user (assoc user :user/roles #{:customer :admin})
@@ -83,6 +89,7 @@
               :headers {}
               :body {:users {(:user/id user) user}
                      :authorisations (medley/index-by :authorisation/id authorisations)
+                     :metadata {}
                      :session {:current-user current-user}}}
              (handler' request))))))
 
@@ -93,7 +100,8 @@
     (let [handler' (wrap-current-user (constantly response))
           request (assoc-in request [:body-params :session :current-user-id] "hello")]
       (with-redefs [user/fetch (constantly {})]
-        (is (thrown? IllegalStateException (handler' request))))))
+        (is (thrown+? [:type :flow/internal-error]
+                      (handler' request))))))
 
   (testing "The wrapped handler returns a response with the current user removed and the current
             user id added to the body session no matter what the current user is.."
@@ -105,6 +113,7 @@
                 :headers {}
                 :body {:users {}
                        :authorisations {}
+                       :metadata {}
                        :session {:current-user-id nil}}}
                (handler' request))))
       (let [response (assoc-in response [:body :session] {:current-user {}})
@@ -114,6 +123,7 @@
                 :headers {}
                 :body {:users {}
                        :authorisations {}
+                       :metadata {}
                        :session {:current-user-id nil}}}
                (handler' request))))
       (let [response (assoc-in response [:body :session] {:current-user user})
@@ -123,6 +133,7 @@
                 :headers {}
                 :body {:users {}
                        :authorisations {}
+                       :metadata {}
                        :session {:current-user-id (:user/id user)}}}
                (handler' request)))))))
 
@@ -135,6 +146,7 @@
               :headers {}
               :body {:users {}
                      :authorisations {}
+                     :metadata {}
                      :session {:hello "world"}}
               :session {:hello "world"}}
              (handler' request)))))
@@ -145,15 +157,16 @@
               :headers {}
               :body {:users {}
                      :authorisations {}
+                     :metadata {}
                      :session {}}
               :session {}}
              (handler' request)))))
 
   (testing "The wrapped handler throws an exception when body includes no session."
     (let [handler' (wrap-session (constantly (assoc-in response [:body :session] nil)))]
-      (is (thrown? IllegalStateException (handler' request))))
-    (let [handler' (wrap-session (constantly response))]
-      (is (thrown? IllegalStateException (handler' request))))))
+      (is (thrown+? [:type :flow/internal-error] (handler' request))))
+    (let [handler' (wrap-session (constantly (update response :body dissoc :session)))]
+      (is (thrown+? [:type :flow/internal-error] (handler' request))))))
 
 
 (deftest test-wrap-session-persistence
@@ -175,25 +188,24 @@
 
   (testing "The wrapped handler throws an exception when the request's content is invalid."
     (let [handler' (wrap-content-validation handler)]
-      (is (thrown? IllegalArgumentException
-                   (handler' (assoc request :body-params {:hello "world"}))))
-      (is (thrown? IllegalArgumentException
-                   (handler' (assoc request :body-params ""))))
-      (is (thrown? IllegalArgumentException
-                   (handler' (assoc request :body-params {:command {}
-                                                          :query {}
-                                                          :metadata {}
-                                                          :session {}
-                                                          :hello "world"}))))))
+      (is (thrown+? [:type :flow/unsupported-request]
+                    (handler' (assoc request :body-params {:hello "world"}))))
+      (is (thrown+? [:type :flow/unsupported-request]
+                    (handler' (assoc request :body-params ""))))
+      (is (thrown+? [:type :flow/unsupported-request]
+                    (handler' (assoc request :body-params {:command {}
+                                                           :query {}
+                                                           :metadata {}
+                                                           :session {}
+                                                           :hello "world"}))))))
 
   (testing "The wrapped handler throws an exception when the response's content is invalid."
     (let [handler' (wrap-content-validation handler)]
-      (with-redefs [u/validate (fn [_ _] (throw (IllegalStateException. "hello world")))]
-        (is (thrown? IllegalStateException
-                     (handler' (assoc request :body-params {:command {}
-                                                            :query {:users {}}
-                                                            :metadata {}
-                                                            :session {}})))))))
+      (is (thrown+? [:type :flow/internal-error]
+                    (handler' (assoc request :body-params {:command {}
+                                                           :query {:users {}}
+                                                           :metadata {}
+                                                           :session {}}))))))
 
   (testing "The wrapped handler returns the response when both request and response content are valid."
     (let [handler' (wrap-content-validation handler)]
@@ -210,22 +222,22 @@
   (testing "The wrapped handler throws an exception when the request's content type header isn't
             transit."
     (let [handler' (wrap-content-type handler)]
-      (is (thrown? IllegalArgumentException
-                   (handler' (assoc-in request [:headers "content-type"] "application/json"))))
-      (is (thrown? IllegalArgumentException
-                   (handler' (update request :headers dissoc "content-type"))))))
+      (is (thrown+? [:type :flow/unsupported-request]
+                    (handler' (assoc-in request [:headers "content-type"] "application/json"))))
+      (is (thrown+? [:type :flow/unsupported-request]
+                    (handler' (update request :headers dissoc "content-type"))))))
 
   (testing "The wrapped handler throws an exception when the request's body cannot be decoded using
             the content type."
     (let [handler' (wrap-content-type handler)]
-      (is (thrown? IllegalArgumentException
-                   (handler' (assoc-in request [:headers "content-type"] "application/json"))))
-      (is (thrown? IllegalArgumentException
-                   (handler' (assoc request :body "hello world"))))))
+      (is (thrown+? [:type :flow/unsupported-request]
+                    (handler' (assoc-in request [:headers "content-type"] "application/json"))))
+      (is (thrown+? [:type :flow/unsupported-request]
+                    (handler' (assoc request :body "hello world"))))))
 
   (testing "The wrapped handler returns the response body encoded with request's accept header."
     (let [handler' (wrap-content-type handler)]
-      (is (= "[\"^ \",\"~:users\",[\"^ \"],\"~:authorisations\",[\"^ \"]]"
+      (is (= "[\"^ \",\"~:users\",[\"^ \"],\"~:authorisations\",[\"^ \"],\"~:metadata\",[\"^ \"],\"~:session\",[\"^ \"]]"
              (-> (handler' request) (:body) (slurp))))))
 
   (testing "The wrapped handler returns the response headers with content type equivalent to the
@@ -254,8 +266,8 @@
 
   (testing "The wrapped handler throws an exception when the request path isn't the root."
     (let [handler' (wrap-request-path handler)]
-      (is (thrown? IllegalArgumentException (handler' (assoc request :uri "hello"))))
-      (is (thrown? IllegalArgumentException (handler' (assoc request :uri "world"))))))
+      (is (thrown+? [:type :flow/unsupported-request] (handler' (assoc request :uri "hello"))))
+      (is (thrown+? [:type :flow/unsupported-request] (handler' (assoc request :uri "world"))))))
 
   (testing "The wrapped handler returns the response when the request path is the root."
     (let [handler' (wrap-request-path handler)]
@@ -267,11 +279,11 @@
 
   (testing "The wrapped handler throws an exception when the request method isn't POST."
     (let [handler' (wrap-request-method handler)]
-      (is (thrown? IllegalArgumentException (handler' (assoc request :request-method :get))))
-      (is (thrown? IllegalArgumentException (handler' (assoc request :request-method :options))))
-      (is (thrown? IllegalArgumentException (handler' (assoc request :request-method :head))))
-      (is (thrown? IllegalArgumentException (handler' (assoc request :request-method :patch))))
-      (is (thrown? IllegalArgumentException (handler' (assoc request :request-method :delete))))))
+      (is (thrown+? [:type :flow/unsupported-request] (handler' (assoc request :request-method :get))))
+      (is (thrown+? [:type :flow/unsupported-request] (handler' (assoc request :request-method :options))))
+      (is (thrown+? [:type :flow/unsupported-request] (handler' (assoc request :request-method :head))))
+      (is (thrown+? [:type :flow/unsupported-request] (handler' (assoc request :request-method :patch))))
+      (is (thrown+? [:type :flow/unsupported-request] (handler' (assoc request :request-method :delete))))))
 
   (testing "The wrapped handler returns the response when the request method is POST."
     (let [handler' (wrap-request-method handler)]
@@ -280,22 +292,41 @@
 
 (deftest test-wrap-exception
 
-  (testing "The wrapped handler returns a 400 response when an illegal argument exception is thrown."
-    (let [handler' (wrap-exception (fn [_] (throw (IllegalArgumentException. "hello world"))))]
-      (is (= {:body "{\"error\": \"hello world\"}",
+  (testing "The wrapped handler returns a 400 response when an unusable request exception is thrown."
+    (let [handler' (wrap-exception
+                    (fn [_]
+                      (slingshot/throw+ {:type :flow/unsupported-request :message "Hello World."})))]
+      (is (= {:body "{\"error\": \"Hello World.\"}",
               :headers {"Content-Type" "application/json; charset=utf-8"},
               :status 400}
              (handler' request)))))
 
-  (testing "The wrapped handler returns a 500 response when any other exception is thrown."
-    (let [handler' (wrap-exception (fn [_] (throw (IllegalStateException. "hello world"))))]
-      (is (= {:body "{\"error\": \"Internal error detected.\"}",
+  (testing "The wrapped handler returns a 500 response when an internal error exception is thrown."
+    (let [handler' (wrap-exception
+                    (fn [_]
+                      (slingshot/throw+ {:type :flow/internal-error :message "Hello World."})))]
+      (is (= {:body "{\"error\": \"Hello World.\"}",
               :headers {"Content-Type" "application/json; charset=utf-8"},
+              :status 500}
+             (handler' request)))))
+
+  (testing "The wrapped handler returns a 500 response when an external error exception is thrown."
+    (let [handler' (wrap-exception
+                    (fn [_] (slingshot/throw+ {:type :flow/external-error :message "Hello World."})))]
+      (is (= {:body "{\"error\": \"External error detected.\"}",
+              :headers {"Content-Type" "application/json; charset=utf-8"},
+              :status 500}
+             (handler' request)))))
+
+  (testing "The wrapped handler returns a 500 response when any other exception is thrown."
+    (let [handler' (wrap-exception (fn [_] (slingshot/throw+ {:type :hello-world :message "Hello World."})))]
+      (is (= {:body "{\"error\": \"Unspecified error detected.\"}"
+              :headers {"Content-Type" "application/json; charset=utf-8"}
               :status 500}
              (handler' request))))
     (let [handler' (wrap-exception (fn [_] (throw (Exception. "hello world"))))]
-      (is (= {:body "{\"error\": \"Internal error detected.\"}",
-              :headers {"Content-Type" "application/json; charset=utf-8"},
+      (is (= {:body "{\"error\": \"Unspecified error detected.\"}"
+              :headers {"Content-Type" "application/json; charset=utf-8"}
               :status 500}
              (handler' request)))))
 

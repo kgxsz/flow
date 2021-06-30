@@ -1,7 +1,8 @@
 (ns flow.utils-test
   (:require [flow.utils :refer :all]
             [flow.specifications :as s]
-            [clojure.test :refer :all]))
+            [clojure.test :refer :all]
+            [slingshot.test :refer :all]))
 
 
 (deftest test-constained-string?
@@ -80,11 +81,11 @@
              :session {}}))))
 
   (testing "Throws an exception when the data provided violates specification."
-    (is (thrown? IllegalStateException
-                 (validate
-                  :email/email-address
-                  "@world.com")))
-    (is (thrown? IllegalStateException
+    (is (thrown+? [:type :flow/internal-error]
+                  (validate
+                   :email/email-address
+                   "@world.com")))
+    (is (thrown+? [:type :flow/internal-error]
                  (validate
                   :request/body-params
                   {:query {:current-user {:hello "world"}}})))))

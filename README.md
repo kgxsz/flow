@@ -44,7 +44,7 @@
 - In `api/` setup the environment variables:
   - `KEYSTORE_PASSWORD` as determined above.
   - `CORS_ORIGIN` as `https://localhost:8080`.
-  - `COOKIE_STORE_KEY` as 16 byte secret key.
+  - `COOKIE_STORE_KEY` as `1234123412341234`.
   - `DB_ENDPOINT` as `http://localhost:8000`.
 - In `api/` start the REPL with `clj -M:repl`.
 - Connect to the api's Clojure REPL, load `flow.dev`.

@@ -3,7 +3,8 @@
             [flow.entity.authorisation :as authorisation]
             [flow.email :as email]
             [flow.domain.user-management :as user-management]
-            [flow.domain.authorisation-attempt :as authorisation-attempt]))
+            [flow.domain.authorisation-attempt :as authorisation-attempt]
+            [flow.utils :as u]))
 
 
 (defmulti handle (fn [method payload metadata session] method))
@@ -70,5 +71,5 @@
 
 
 (defmethod handle :default
-  [_ _ _ _]
-  (throw (IllegalArgumentException. "Unsupported command method.")))
+  [method _ _ _]
+  (u/report :internal-error (str "The command method" method " does not exist.")))

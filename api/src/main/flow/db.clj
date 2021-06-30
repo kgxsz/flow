@@ -1,6 +1,7 @@
 (ns flow.db
   (:require [taoensso.faraday :as faraday]
-            [flow.utils :as u]))
+            [flow.utils :as u]
+            [slingshot.slingshot :as slingshot]))
 
 
 (def config {:access-key (System/getenv "ACCESS_KEY")
@@ -27,19 +28,25 @@
    If it doesn't exists, returns nil."
   [entity-type entity-id]
   (:entity
-   (faraday/get-item
-    config
-    :flow
-    {:partition (entity-partition entity-type entity-id)})))
+   (slingshot/try+
+    (faraday/get-item
+     config
+     :flow
+     {:partition (entity-partition entity-type entity-id)})
+    (catch Object _
+      (u/report :external-error "Unable to get an item from DynamoDB.")))))
 
 
 (defn fetch-entities
   "Fetches all entities of the given entity type."
   [entity-type]
-  (let [result (faraday/scan
-                config
-                :flow
-                {:attr-conds {:partition [:begins-with (name entity-type)]}})]
+  (let [result (slingshot/try+
+                (faraday/scan
+                 config
+                 :flow
+                 {:attr-conds {:partition [:begins-with (name entity-type)]}})
+                (catch Object _
+                  (u/report :external-error "Unable to scan DynamoDB.")))]
     (mapv :entity result)))
 
 
@@ -48,7 +55,7 @@
    already exist. On success, returns the entity's id."
   [entity-type entity-id entity]
   (if (nil? (fetch-entity entity-type entity-id))
-    (do
+    (slingshot/try+
       (faraday/put-item
        config
        :flow
@@ -56,10 +63,13 @@
         :entity (->> entity
                      (u/validate (entity-specification entity-type))
                      (faraday/freeze))})
-      entity-id)
-    (throw
-     (IllegalStateException.
-      (str "the " entity-type " entity with id " entity-id " already exists.")))))
+      entity-id
+      (catch [:type :flow/internal-error] _ (slingshot/throw+))
+      (catch Object _
+        (u/report :external-error "Unable to put an item into DynamoDB.")))
+    (slingshot/throw+
+     {:type :flow/internal-error
+      :message (str "the " entity-type " entity with id " entity-id " already exists.")})))
 
 
 (defn mutate-entity!
@@ -67,7 +77,7 @@
    entity exists. On success, returns the entity's id."
   [entity-type entity-id f]
   (if-let [entity (fetch-entity entity-type entity-id)]
-    (do
+    (slingshot/try+
       (faraday/update-item
        config
        :flow
@@ -78,7 +88,10 @@
                                         (u/validate (entity-specification entity-type))
                                         (faraday/freeze))}
         :return :all-new})
-      entity-id)
-    (throw
-     (IllegalStateException.
-      (str "the " entity-type " entity with id " entity-id " does not exist.")))))
+      entity-id
+      (catch [:type :flow/internal-error] _ (slingshot/throw+))
+      (catch Object _
+        (u/report :external-error "Unable to update an item in DynamoDB.")))
+    (slingshot/throw+
+     {:type :flow/internal-error
+      :message (str "the " entity-type " entity with id " entity-id " does not exist.")})))

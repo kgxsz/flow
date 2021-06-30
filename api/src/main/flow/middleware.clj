@@ -2,12 +2,14 @@
   (:require [flow.entity.user :as user]
             [flow.entity.authorisation :as authorisation]
             [flow.entity.utils :as entity.u]
+            [flow.query :as query]
             [flow.utils :as u]
             [medley.core :as medley]
             [ring.middleware.cors :as cors.middleware]
             [ring.middleware.session :as session.middleware]
             [ring.middleware.session.cookie :as cookie]
             [muuntaja.middleware :as muuntaja.middleware]
+            [slingshot.slingshot :as slingshot]
             [clojure.spec.alpha :as s]))
 
 
@@ -72,7 +74,7 @@
           session (get-in response [:body :session])]
       (if session
         (assoc response :session session)
-        (throw (IllegalStateException. "Session missing from response body."))))))
+        (u/report :internal-error "Session missing from response body.")))))
 
 
 (defn wrap-session-persistence
@@ -96,22 +98,20 @@
   (fn [request]
     (if (s/valid? :request/body-params (:body-params request))
       (update (handler request) :body (partial u/validate :response/body))
-      (throw (IllegalArgumentException. "Invalid request content.")))))
+      (u/report :unsupported-request "Invalid request content."))))
 
 
 (defn wrap-content-type
   "Formats the inbound request and outbound response based on the content type header."
   [handler]
-  (fn [{:keys [headers] :as request}]
+  (fn [request]
     (let [content-type (get-in request [:headers "content-type"])]
       (if (= content-type "application/transit+json")
-        (try
+        (slingshot/try+
           ((muuntaja.middleware/wrap-format handler) request)
-          (catch clojure.lang.ExceptionInfo e
-            (let [{:keys [type format]} (ex-data e)]
-              (when (= :muuntaja/decode type)
-                (throw (IllegalArgumentException. (str "Malformed " format " content.")))))))
-        (throw (IllegalArgumentException. "Unsupported or missing Content-Type header."))))))
+          (catch [:type :muuntaja/decode] {:keys [format]}
+            (u/report :unsupported-request (str "Malformed " format " content."))))
+        (u/report :unsupported-request "Unsupported or missing Content-Type header.")))))
 
 
 (defn wrap-request-path
@@ -120,7 +120,7 @@
   (fn [{:keys [uri] :as request}]
     (if (or (= uri "/") (= uri ""))
       (handler request)
-      (throw (IllegalArgumentException. "Unsupported request path.")))))
+      (u/report :unsupported-request "Unsupported request path."))))
 
 
 (defn wrap-request-method
@@ -129,23 +129,31 @@
   (fn [{:keys [request-method] :as request}]
     (if (= request-method :post)
       (handler request)
-      (throw (IllegalArgumentException. "Unsupported request method.")))))
+      (u/report :unsupported-request "Unsupported request method."))))
 
 
 (defn wrap-exception
   "Handles all uncaught exceptions."
   [handler]
   (fn [request]
-    (try
-      (handler request)
-      (catch IllegalArgumentException e
+    (slingshot/try+
+     (handler request)
+      (catch [:type :flow/unsupported-request] {:keys [message]}
         {:status 400
          :headers {"Content-Type" "application/json; charset=utf-8"}
-         :body (str "{\"error\": \"" (.getMessage e) "\"}")})
-      (catch Exception e
+         :body (str "{\"error\": \"" message "\"}")})
+      (catch [:type :flow/internal-error] {:keys [message]}
         {:status 500
          :headers {"Content-Type" "application/json; charset=utf-8"}
-         :body "{\"error\": \"Internal error detected.\"}"}))))
+         :body (str "{\"error\": \"" message "\"}")})
+      (catch [:type :flow/external-error] _
+        {:status 500
+         :headers {"Content-Type" "application/json; charset=utf-8"}
+         :body "{\"error\": \"External error detected.\"}"})
+      (catch Object _
+        {:status 500
+         :headers {"Content-Type" "application/json; charset=utf-8"}
+         :body "{\"error\": \"Unspecified error detected.\"}"}))))
 
 
 (defn wrap-cors

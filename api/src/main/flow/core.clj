@@ -6,7 +6,8 @@
             [flow.specifications :as specifications]
             [ring.util.response :as response]
             [clojure.java.io :as io]
-            [medley.core :as medley])
+            [medley.core :as medley]
+            [slingshot.slingshot :as slingshot])
   (:gen-class
    :implements [com.amazonaws.services.lambda.runtime.RequestStreamHandler]))
 
@@ -53,7 +54,7 @@
   {:statusCode status
    :headers (medley/remove-vals coll? headers)
    :multiValueHeaders (medley/filter-vals coll? headers)
-   :body (try (slurp body) (catch Exception e body))})
+   :body (slingshot/try+ (slurp body) (catch Object _ body))})
 
 
 (defn handle-command
@@ -111,6 +112,7 @@
       (middleware/wrap-content-type)
       (middleware/wrap-request-path)
       (middleware/wrap-request-method)
+      ;; TODO - why can't exceptions be on the outside of cors?
       (middleware/wrap-exception)
       (middleware/wrap-cors)))
 
@@ -118,17 +120,18 @@
 (defn -handleRequest
   "Handles the Lambda invokation lifecycle."
   [_ input-stream output-stream context]
-  (try
+  (slingshot/try+
     (->> input-stream
          (read-input-stream)
          (adapt-input)
          (handler)
          (adapt-output)
          (write-output-stream output-stream))
-    (catch Exception e
-      (.printStackTrace e)
+    (catch Object o
+      ;; TODO - proper logging please
+      (.printStackTrace o)
       (write-output-stream
        output-stream
        {:statusCode 500
         :headers {"Content-Type" "application/json; charset=utf-8"}
-        :body "{\"error\": \"Internal error detected.\"}"}))))
+        :body "{\"error\": \"Unspecified error detected.\"}"}))))

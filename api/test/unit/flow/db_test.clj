@@ -2,7 +2,8 @@
   (:require [flow.db :refer :all]
             [flow.specifications :as s]
             [taoensso.faraday :as faraday]
-            [clojure.test :refer :all]))
+            [clojure.test :refer :all]
+            [slingshot.test :refer :all]))
 
 
 (def user {:user/id #uuid "19f3c785-cf5f-530b-841d-6161400e6793"
@@ -69,22 +70,22 @@
   (testing "Throws an exception when the entity provided already exists."
     (with-redefs [faraday/get-item (constantly {:entity user})
                   faraday/put-item (constantly nil)]
-      (is (thrown? IllegalStateException
-                   (create-entity! :user (:user/id user) user)))))
+      (is (thrown+? [:type :flow/internal-error]
+                    (create-entity! :user (:user/id user) user)))))
 
   (testing "Throws an exception when the entity type provided violates specification."
     (with-redefs [faraday/get-item (constantly nil)
                   faraday/put-item (constantly nil)]
-      (is (thrown? IllegalStateException
-                   (create-entity! :hello-world (:authorisation/id authorisation) authorisation)))))
+      (is (thrown+? [:type :flow/internal-error]
+                    (create-entity! :hello-world (:authorisation/id authorisation) authorisation)))))
 
   (testing "Throws an exception when the entity provided violates specification."
     (with-redefs [faraday/get-item (constantly nil)
                   faraday/put-item (constantly nil)]
-      (is (thrown? IllegalStateException
-                   (create-entity! :user (:authorisation/id user) {})))
-      (is (thrown? IllegalStateException
-                   (create-entity! :user (:authorisation/id authorisation) authorisation)))))
+      (is (thrown+? [:type :flow/internal-error]
+                    (create-entity! :user (:authorisation/id user) {})))
+      (is (thrown+? [:type :flow/internal-error]
+                    (create-entity! :user (:authorisation/id authorisation) authorisation)))))
 
   (testing "Returns the entity ID when the operation is executed successfully."
     (with-redefs [faraday/get-item (constantly nil)
@@ -97,20 +98,20 @@
   (testing "Throws an exception when the entity provided does not exist."
     (with-redefs [faraday/get-item (constantly nil)
                   faraday/update-item (constantly nil)]
-      (is (thrown? IllegalStateException
-                   (mutate-entity! :user (:user/id user) identity)))))
+      (is (thrown+? [:type :flow/internal-error]
+                    (mutate-entity! :user (:user/id user) identity)))))
 
   (testing "Throws an exception when the entity type provided doesn't adhere to specification."
     (with-redefs [faraday/get-item (constantly {:entity authorisation})
                   faraday/update-item (constantly nil)]
-      (is (thrown? IllegalStateException
-                   (mutate-entity! :hello-world (:authorisation/id authorisation) identity)))))
+      (is (thrown+? [:type :flow/internal-error]
+                    (mutate-entity! :hello-world (:authorisation/id authorisation) identity)))))
 
   (testing "Throws an exception when the entity mutation doesn't adhere to specification."
     (with-redefs [faraday/get-item (constantly {:entity authorisation})
                   faraday/update-item (constantly nil)]
-      (is (thrown? IllegalStateException
-                   (mutate-entity! :authorisation (:authorisation/id authorisation) (constantly {}))))))
+      (is (thrown+? [:type :flow/internal-error]
+                    (mutate-entity! :authorisation (:authorisation/id authorisation) (constantly {}))))))
 
   (testing "Returns the entity ID when the operation is executed successfully."
     (with-redefs [faraday/get-item (constantly {:entity user})
