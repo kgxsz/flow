@@ -62,6 +62,13 @@
     (is (true? (email-address? "hello.world@hello.world.com")))))
 
 
+(deftest test-generate
+
+  (testing "Throws an exception when the data provided violates specification."
+    (is (thrown+? [:type :flow/internal-error]
+                  (generate :internal-error "hello world")))))
+
+
 (deftest test-validate?
 
   (testing "Returns the data when the data provided doesn't violate specification."

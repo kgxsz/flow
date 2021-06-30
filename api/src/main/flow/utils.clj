@@ -36,8 +36,9 @@
           (re-matches pattern s)))))
 
 
-(defn report
-  "TODO - documentation and a test please"
+(defn generate
+  "Generates and throws a custom exception with the
+   namespaced type and message provided."
   [type message]
   (slingshot/throw+
    {:type (keyword "flow" (name type))
@@ -54,4 +55,4 @@
     data
     (do
       (expound/expound specification data)
-      (report :internal-error (str "The " specification " specification was violated.")))))
+      (generate :internal-error (str "The " specification " specification was violated.")))))

@@ -72,4 +72,4 @@
 
 (defmethod handle :default
   [method _ _ _]
-  (u/report :internal-error (str "The command method" method " does not exist.")))
+  (u/generate :internal-error (str "The command method" method " does not exist.")))

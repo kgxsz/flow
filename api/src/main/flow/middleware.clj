@@ -74,7 +74,7 @@
           session (get-in response [:body :session])]
       (if session
         (assoc response :session session)
-        (u/report :internal-error "Session missing from response body.")))))
+        (u/generate :internal-error "Session missing from response body.")))))
 
 
 (defn wrap-session-persistence
@@ -98,7 +98,7 @@
   (fn [request]
     (if (s/valid? :request/body-params (:body-params request))
       (update (handler request) :body (partial u/validate :response/body))
-      (u/report :unsupported-request "Invalid request content."))))
+      (u/generate :unsupported-request "Invalid request content."))))
 
 
 (defn wrap-content-type
@@ -110,8 +110,8 @@
         (slingshot/try+
           ((muuntaja.middleware/wrap-format handler) request)
           (catch [:type :muuntaja/decode] {:keys [format]}
-            (u/report :unsupported-request (str "Malformed " format " content."))))
-        (u/report :unsupported-request "Unsupported or missing Content-Type header.")))))
+            (u/generate :unsupported-request (str "Malformed " format " content."))))
+        (u/generate :unsupported-request "Unsupported or missing Content-Type header.")))))
 
 
 (defn wrap-request-path
@@ -120,7 +120,7 @@
   (fn [{:keys [uri] :as request}]
     (if (or (= uri "/") (= uri ""))
       (handler request)
-      (u/report :unsupported-request "Unsupported request path."))))
+      (u/generate :unsupported-request "Unsupported request path."))))
 
 
 (defn wrap-request-method
@@ -129,7 +129,7 @@
   (fn [{:keys [request-method] :as request}]
     (if (= request-method :post)
       (handler request)
-      (u/report :unsupported-request "Unsupported request method."))))
+      (u/generate :unsupported-request "Unsupported request method."))))
 
 
 (defn wrap-exception

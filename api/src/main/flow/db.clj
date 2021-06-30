@@ -34,7 +34,7 @@
      :flow
      {:partition (entity-partition entity-type entity-id)})
     (catch Object _
-      (u/report :external-error "Unable to get an item from DynamoDB.")))))
+      (u/generate :external-error "Unable to get an item from DynamoDB.")))))
 
 
 (defn fetch-entities
@@ -46,7 +46,7 @@
                  :flow
                  {:attr-conds {:partition [:begins-with (name entity-type)]}})
                 (catch Object _
-                  (u/report :external-error "Unable to scan DynamoDB.")))]
+                  (u/generate :external-error "Unable to scan DynamoDB.")))]
     (mapv :entity result)))
 
 
@@ -66,7 +66,7 @@
       entity-id
       (catch [:type :flow/internal-error] _ (slingshot/throw+))
       (catch Object _
-        (u/report :external-error "Unable to put an item into DynamoDB.")))
+        (u/generate :external-error "Unable to put an item into DynamoDB.")))
     (slingshot/throw+
      {:type :flow/internal-error
       :message (str "the " entity-type " entity with id " entity-id " already exists.")})))
@@ -91,7 +91,7 @@
       entity-id
       (catch [:type :flow/internal-error] _ (slingshot/throw+))
       (catch Object _
-        (u/report :external-error "Unable to update an item in DynamoDB.")))
+        (u/generate :external-error "Unable to update an item in DynamoDB.")))
     (slingshot/throw+
      {:type :flow/internal-error
       :message (str "the " entity-type " entity with id " entity-id " does not exist.")})))

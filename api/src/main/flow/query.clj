@@ -29,4 +29,4 @@
 
 (defmethod handle :default
   [method _ _ _]
-  (u/report :internal-error (str "The query method" method " does not exist.")))
+  (u/generate :internal-error (str "The query method" method " does not exist.")))

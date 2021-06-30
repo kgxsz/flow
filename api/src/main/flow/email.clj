@@ -18,4 +18,4 @@
      :text-body (u/validate :email/text (:text body))})
    (catch [:type :flow/internal-error] _ (slingshot/throw+))
    (catch Object _
-     (u/report :external-error "Unable to send an email with SES."))))
+     (u/generate :external-error "Unable to send an email with SES."))))
