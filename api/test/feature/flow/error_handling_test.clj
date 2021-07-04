@@ -6,6 +6,7 @@
             [clojure.java.io :as io]))
 
 (def encode (partial muuntaja/encode "application/transit+json"))
+(def decode (partial muuntaja/decode "application/json"))
 
 (defn request
   []
@@ -24,8 +25,7 @@
       (is (= 400 status))
       (is (= {"Content-Type" "application/json; charset=utf-8"}
              headers))
-      (is (= {:error "Unsupported request method."}
-             (muuntaja/decode "application/json" body)))))
+      (is (= {:error "Unsupported request method."} (decode body)))))
 
   (testing "The handler denies requests with unsupported request paths."
     (let [request (assoc (request) :uri "/hello")
@@ -33,8 +33,7 @@
       (is (= 400 status))
       (is (= {"Content-Type" "application/json; charset=utf-8"}
              headers))
-      (is (= {:error "Unsupported request path."}
-             (muuntaja/decode "application/json" body)))))
+      (is (= {:error "Unsupported request path."} (decode body)))))
 
   (testing "The handler denies requests with unsupported content type."
     (let [request (assoc (request) :headers {"content-type" "application/json"
@@ -43,8 +42,7 @@
       (is (= 400 status))
       (is (= {"Content-Type" "application/json; charset=utf-8"}
              headers))
-      (is (= {:error "Unsupported or missing Content-Type header."}
-             (muuntaja/decode "application/json" body)))))
+      (is (= {:error "Unsupported or missing Content-Type header."} (decode body)))))
 
   (testing "The handler denies requests with no content type declared."
     (let [request (assoc (request) :headers {"accept" "application/transit+json"})
@@ -52,8 +50,7 @@
       (is (= 400 status))
       (is (= {"Content-Type" "application/json; charset=utf-8"}
              headers))
-      (is (= {:error "Unsupported or missing Content-Type header."}
-             (muuntaja/decode "application/json" body)))))
+      (is (= {:error "Unsupported or missing Content-Type header."} (decode body)))))
 
   (testing "The handler denies requests with malformed request content."
     (let [request (assoc (request) :body "hello world")
@@ -61,8 +58,7 @@
       (is (= 400 status))
       (is (= {"Content-Type" "application/json; charset=utf-8"}
              headers))
-      (is (= {:error "Malformed application/transit+json content."}
-             (muuntaja/decode "application/json" body)))))
+      (is (= {:error "Malformed application/transit+json content."} (decode body)))))
 
   (testing "The handler denies requests with invalid request content."
     (let [request (assoc (request) :body (encode {:query {}}))
@@ -79,8 +75,7 @@
         (is (= 500 status))
         (is (= {"Content-Type" "application/json; charset=utf-8"}
                  headers))
-        (is (= {:error "The :response/body specification was violated."}
-               (muuntaja/decode "application/json" body))))))
+        (is (= {:error "The :response/body specification was violated."} (decode body))))))
 
   (testing "The handler provides partial information when an external error occurs."
     (with-redefs [handle-command (fn [_] (slingshot/throw+ {:type :flow/external-error}))]
@@ -88,8 +83,7 @@
         (is (= 500 status))
         (is (= {"Content-Type" "application/json; charset=utf-8"}
                headers))
-        (is (= {:error "External error detected."}
-               (muuntaja/decode "application/json" body))))))
+        (is (= {:error "External error detected."} (decode body))))))
 
   (testing "The handler provides opaque information when an unspecified error occurs."
     (with-redefs [handle-command (fn [_] (throw (Exception. "hello world")))]
@@ -97,5 +91,4 @@
         (is (= 500 status))
         (is (= {"Content-Type" "application/json; charset=utf-8"}
                headers))
-        (is (= {:error "Unspecified error detected."}
-               (muuntaja/decode "application/json" body)))))))
+        (is (= {:error "Unspecified error detected."} (decode body)))))))

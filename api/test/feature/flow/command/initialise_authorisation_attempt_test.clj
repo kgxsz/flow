@@ -82,7 +82,6 @@
                                   :session {}})}
           {:keys [status headers body] :as response} (handler request)]
       (is (= 200 status))
-      (is (= "application/transit+json; charset=utf-8" (get headers "Content-Type")))
       (is (= {:users {}
               :authorisations {}
               :metadata {}
@@ -104,7 +103,6 @@
                                   :session {}})}
           {:keys [status headers body] :as response} (handler request)]
       (is (= 200 status))
-      (is (= "application/transit+json; charset=utf-8" (get headers "Content-Type")))
       (is (= {:users {}
               :authorisations {}
               :metadata {}
@@ -126,7 +124,6 @@
                                   :session {}})}
           {:keys [status headers body] :as response} (handler request)]
       (is (= 200 status))
-      (is (= "application/transit+json; charset=utf-8" (get headers "Content-Type")))
       (is (= {:users {}
               :authorisations {}
               :metadata {}
