@@ -64,7 +64,7 @@
                                        :user/roles]))
 (s/def :command/delete-user (s/keys :req [:user/id]))
 (s/def :command/method #{:initialise-authorisation-attempt
-                         :finalise-authoirsation-attempt
+                         :finalise-authorisation-attempt
                          :deauthorise
                          :add-user
                          :delete-user})
