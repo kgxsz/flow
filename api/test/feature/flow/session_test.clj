@@ -24,19 +24,19 @@
   (when-let [{:keys [user/id]} (user/fetch (user/id email-address))]
     (user/destroy! id)))
 
-(defn setup-initial-conditions
+(defn setup
   []
-  (destroy-test-user! "success+1@simulator.amazonses.com")
   (create-test-user! "success+1@simulator.amazonses.com"))
 
-(defn tear-down-final-conditions
+(defn tear-down
   []
   (destroy-test-user! "success+1@simulator.amazonses.com"))
 
 (defn fixture [f]
-  (setup-initial-conditions)
+  (tear-down)
+  (setup)
   (f)
-  (tear-down-final-conditions))
+  (tear-down))
 
 (use-fixtures :once fixture)
 
