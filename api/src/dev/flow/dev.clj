@@ -41,9 +41,7 @@
 
   (kaocha/run :feature)
 
-  (kaocha/run 'flow.command-handling-test)
-
-  (kaocha/run 'flow.email-test)
+  (user/create! "success+1@simulator.amazonses.com" "Test" #{:customer})
 
   (user/create! "k.suzukawa@gmail.com" "Keigo" #{:admin :customer})
 
@@ -55,4 +53,4 @@
 
   (authorisation/fetch-all)
 
-  )
+)
