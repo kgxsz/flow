@@ -1,7 +1,7 @@
 (ns flow.cross-origin-resource-sharing-test
   (:require [flow.core :refer :all]
             [clojure.test :refer :all]
-            [muuntaja.core :as muuntaja]
+            [flow.helpers :as h]
             [clojure.java.io :as io]))
 
 
@@ -33,4 +33,4 @@
       (is (= {"Content-Type" "application/json; charset=utf-8"}
              headers))
       (is (= {:error "Unsupported request method."}
-             (muuntaja/decode "application/json" body))))))
+             (h/decode :json body))))))

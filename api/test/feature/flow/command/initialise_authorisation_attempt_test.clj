@@ -3,91 +3,68 @@
             [flow.entity.authorisation :as authorisation]
             [flow.entity.user :as user]
             [flow.domain.user-management :as user-management]
-            [flow.db :as db]
-            [clojure.test :refer :all]
-            [muuntaja.core :as muuntaja]
-            [taoensso.faraday :as faraday]))
+            [flow.helpers :as h]
+            [clojure.test :refer :all]))
 
-
-(def cookies
-  {:authorised "session=A%2BxGyCLBttSGHCm7iyhCLY%2Bkbmnufu3s9O4%2FNjSewTmmUzoETzooY4pArKQULcpT08xBYGccImTug%2Bhex%2B3k772VwOFKoxw9YXRSJWTQsFs%3D--Xc5up%2BLiYmkuw7en8842HOwipzihtCSqlMOccqs4xTI%3D"
-   :unauthorised "session=vJxkdtO0BOSz5nDqFHDhXAycccwHiYP6kHvsUQYb%2FUzrrj5jtUbM5obcG6htBG5W--ZO6plGXoqeDqtHlU38R2I3vwYsbt1YalbU9OEI0vq9Q%3D"})
-
-(def encode (partial muuntaja/encode "application/transit+json"))
-(def decode (partial muuntaja/decode "application/transit+json"))
-
-(defn create-test-user!
-  [email-address]
-  (user/create! email-address "Test" #{:customer}))
-
-(defn destroy-test-user!
-  [email-address]
-  (when-let [{:keys [user/id]} (user/fetch (user/id email-address))]
-    (user/destroy! id)))
-
-(defn delete-test-user!
-  [email-address]
-  (let [id (user/id email-address)]
-    (user/mutate! id user-management/delete)))
-
-(defn find-test-authorisations
-  [email-address]
-  (filter
-   #(= (:user/id %) (user/id email-address))
-   (authorisation/fetch-all)))
-
-(defn destroy-test-authorisations!
-  [email-address]
-  (->> (find-test-authorisations email-address)
-       (map :authorisation/id)
-       (map authorisation/destroy!)
-       (doall)))
 
 (defn setup
   []
-  (create-test-user! "success+1@simulator.amazonses.com")
-  (create-test-user! "success+2@simulator.amazonses.com")
-  (delete-test-user! "success+2@simulator.amazonses.com"))
+  (h/create-test-user! "success+2@simulator.amazonses.com")
+  (h/create-test-user! "success+3@simulator.amazonses.com")
+  (h/create-test-user! "success+4@simulator.amazonses.com")
+  (h/delete-test-user! "success+2@simulator.amazonses.com"))
 
 (defn tear-down
   []
-  (destroy-test-user! "success+1@simulator.amazonses.com")
-  (destroy-test-user! "success+2@simulator.amazonses.com")
-  (destroy-test-user! "success+3@simulator.amazonses.com")
-  (destroy-test-authorisations! "success+1@simulator.amazonses.com")
-  (destroy-test-authorisations! "success+2@simulator.amazonses.com")
-  (destroy-test-authorisations! "success+3@simulator.amazonses.com"))
+  (h/destroy-test-user! "success+1@simulator.amazonses.com")
+  (h/destroy-test-user! "success+2@simulator.amazonses.com")
+  (h/destroy-test-user! "success+3@simulator.amazonses.com")
+  (h/destroy-test-user! "success+4@simulator.amazonses.com")
+  (h/destroy-test-authorisations! (user/id "success+1@simulator.amazonses.com"))
+  (h/destroy-test-authorisations! (user/id "success+2@simulator.amazonses.com"))
+  (h/destroy-test-authorisations! (user/id "success+3@simulator.amazonses.com"))
+  (h/destroy-test-authorisations! (user/id "success+4@simulator.amazonses.com")))
 
-(defn fixture [f]
+(defn fixture [test]
   (tear-down)
   (setup)
-  (f)
+  (test)
   (tear-down))
 
-(use-fixtures :once fixture)
+(use-fixtures :each fixture)
+
 
 (deftest test-initialise-authorisation-attempt
 
   (testing "The handler negotiates the initialise-authorisation-attempt command when the
-            command is being made for an existing user."
+            command is being made for a non-existent user."
     (let [request {:request-method :post
                    :uri "/"
                    :headers {"content-type" "application/transit+json"
                              "accept" "application/transit+json"
-                             "cookie" (:unauthorised cookies)}
-                   :body (encode {:command {:initialise-authorisation-attempt
-                                            {:user/email-address "success+1@simulator.amazonses.com"}}
-                                  :query {}
-                                  :metadata {}
-                                  :session {}})}
-          {:keys [status headers body] :as response} (handler request)]
+                             "cookie" (h/cookie)}
+                   :body (h/encode
+                          :transit
+                          {:command {:initialise-authorisation-attempt
+                                     {:user/email-address "success+1@simulator.amazonses.com"}}
+                           :query {}
+                           :metadata {}
+                           :session {}})}
+          user-id (user/id "success+1@simulator.amazonses.com")
+          user (user/fetch user-id)
+          authorisations (h/find-test-authorisations user-id)
+          {:keys [status headers body] :as response} (handler request)
+          user' (user/fetch user-id)
+          authorisations' (h/find-test-authorisations user-id)]
       (is (= 200 status))
       (is (= {:users {}
               :authorisations {}
               :metadata {}
               :session {:current-user-id nil}}
-             (decode body)))
-      (is (= 1 (count (find-test-authorisations "success+1@simulator.amazonses.com"))))))
+             (h/decode :transit body)))
+      (is (= nil user user'))
+      (is (empty? authorisations))
+      (is (empty? authorisations'))))
 
   (testing "The handler negotiates the initialise-authorisation-attempt command when the
             command is being made for a deleted user."
@@ -95,38 +72,86 @@
                    :uri "/"
                    :headers {"content-type" "application/transit+json"
                              "accept" "application/transit+json"
-                             "cookie" (:unauthorised cookies)}
-                   :body (encode {:command {:initialise-authorisation-attempt
-                                            {:user/email-address "success+2@simulator.amazonses.com"}}
-                                  :query {}
-                                  :metadata {}
-                                  :session {}})}
-          {:keys [status headers body] :as response} (handler request)]
+                             "cookie" (h/cookie)}
+                   :body (h/encode
+                          :transit
+                          {:command {:initialise-authorisation-attempt
+                                     {:user/email-address "success+2@simulator.amazonses.com"}}
+                           :query {}
+                           :metadata {}
+                           :session {}})}
+          user-id (user/id "success+2@simulator.amazonses.com")
+          user (user/fetch user-id)
+          authorisations (h/find-test-authorisations user-id)
+          {:keys [status headers body] :as response} (handler request)
+          user' (user/fetch user-id)
+          authorisations' (h/find-test-authorisations user-id)]
       (is (= 200 status))
       (is (= {:users {}
               :authorisations {}
               :metadata {}
               :session {:current-user-id nil}}
-             (decode body)))
-      (is (empty? (find-test-authorisations "success+2@simulator.amazonses.com")))))
+             (h/decode :transit body)))
+      (is (= user user'))
+      (is (empty? authorisations))
+      (is (empty? authorisations'))))
 
   (testing "The handler negotiates the initialise-authorisation-attempt command when the
-            command is being made for a non-existant user."
+            command is being made for an existing user who isn't already authorised."
     (let [request {:request-method :post
                    :uri "/"
                    :headers {"content-type" "application/transit+json"
                              "accept" "application/transit+json"
-                             "cookie" (:unauthorised cookies)}
-                   :body (encode {:command {:initialise-authorisation-attempt
-                                            {:user/email-address "success+3@simulator.amazonses.com"}}
-                                  :query {}
-                                  :metadata {}
-                                  :session {}})}
-          {:keys [status headers body] :as response} (handler request)]
+                             "cookie" (h/cookie)}
+                   :body (h/encode
+                          :transit
+                          {:command {:initialise-authorisation-attempt
+                                     {:user/email-address "success+3@simulator.amazonses.com"}}
+                           :query {}
+                           :metadata {}
+                           :session {}})}
+          user-id (user/id "success+3@simulator.amazonses.com")
+          user (user/fetch user-id)
+          authorisations (h/find-test-authorisations user-id)
+          {:keys [status headers body] :as response} (handler request)
+          user' (user/fetch user-id)
+          authorisations' (h/find-test-authorisations user-id)]
       (is (= 200 status))
       (is (= {:users {}
               :authorisations {}
               :metadata {}
               :session {:current-user-id nil}}
-             (decode body)))
-      (is (empty? (find-test-authorisations "success+3@simulator.amazonses.com"))))))
+             (h/decode :transit body)))
+      (is (= user user'))
+      (is (= 0 (count authorisations)))
+      (is (= 1 (count authorisations')))))
+
+  (testing "The handler negotiates the initialise-authorisation-attempt command when the
+            command is being made for an existing user who is already authorised."
+    (let [request {:request-method :post
+                   :uri "/"
+                   :headers {"content-type" "application/transit+json"
+                             "accept" "application/transit+json"
+                             "cookie" (h/cookie "success+4@simulator.amazonses.com")}
+                   :body (h/encode
+                          :transit
+                          {:command {:initialise-authorisation-attempt
+                                     {:user/email-address "success+4@simulator.amazonses.com"}}
+                           :query {}
+                           :metadata {}
+                           :session {}})}
+          user-id (user/id "success+4@simulator.amazonses.com")
+          user (user/fetch user-id)
+          authorisations (h/find-test-authorisations user-id)
+          {:keys [status headers body] :as response} (handler request)
+          user' (user/fetch user-id)
+          authorisations' (h/find-test-authorisations user-id)]
+      (is (= 200 status))
+      (is (= {:users {}
+              :authorisations {}
+              :metadata {}
+              :session {:current-user-id user-id}}
+             (h/decode :transit body)))
+      (is (= user user'))
+      (is (= 0 (count authorisations)))
+      (is (= 1 (count authorisations'))))))

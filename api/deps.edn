@@ -13,7 +13,7 @@
         com.taoensso/faraday {:mvn/version "1.11.1"}
         expound/expound {:mvn/version "0.8.9"}
         slingshot/slingshot {:mvn/version "0.12.2"}}
- :aliases {:repl {:extra-paths ["src/dev" "test/unit"]
+ :aliases {:repl {:extra-paths ["src/dev" "test/common" "test/unit" "test/feature"]
                   :extra-deps {ring/ring-jetty-adapter {:mvn/version "1.8.0"}
                                lambdaisland/kaocha {:mvn/version "1.0.829"}
                                refactor-nrepl/refactor-nrepl {:mvn/version "2.5.0"}
@@ -22,10 +22,10 @@
                               "nrepl.cmdline"
                               "--middleware"
                               "[cider.nrepl/cider-middleware,refactor-nrepl.middleware/wrap-refactor]"]}
-           :test/unit {:extra-paths ["test/unit"]
+           :test/unit {:extra-paths ["test/common" "test/unit"]
                        :extra-deps {lambdaisland/kaocha {:mvn/version "1.0.829"}}
                        :main-opts ["--main" "kaocha.runner" "--focus" "unit"]}
-           :test/feature {:extra-paths ["test/feature"]
+           :test/feature {:extra-paths ["test/common" "test/feature"]
                           :extra-deps {lambdaisland/kaocha {:mvn/version "1.0.829"}}
                           :main-opts ["--main" "kaocha.runner" "--focus" "feature"]}
            :compile {:extra-paths ["src/main" "classes"]

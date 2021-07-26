@@ -6,6 +6,7 @@
             [flow.db :as db]
             [flow.entity.authorisation :as authorisation]
             [flow.entity.user :as user]
+            [flow.entity.user :as user]
             [taoensso.faraday :as faraday]
             [kaocha.repl :as kaocha]))
 
@@ -41,7 +42,9 @@
 
   (kaocha/run :feature)
 
-  (user/create! "success+1@simulator.amazonses.com" "Test" #{:customer})
+  (kaocha/run 'flow.command.finalise-authorisation-attempt-test)
+
+  (user/create! "success+4@simulator.amazonses.com" "Test" #{:customer})
 
   (user/create! "k.suzukawa@gmail.com" "Keigo" #{:admin :customer})
 
@@ -52,5 +55,13 @@
   (user/fetch-all)
 
   (authorisation/fetch-all)
+
+  ;; - Extract common feature test functions  [DONE]
+  ;; - Extract helpers from other feature tests [DONE]
+  ;; - Align arguments for authorisations
+  ;; - Update helper function documentation
+  ;; - Extract dummy data from unit tests
+  ;; - Add more command feature tests
+  ;; - Add qury feature tests
 
 )
