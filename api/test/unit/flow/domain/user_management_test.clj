@@ -1,17 +1,13 @@
 (ns flow.domain.user-management-test
   (:require [flow.domain.user-management :refer :all]
             [flow.specifications :as s]
+            [flow.dummy :as d]
             [clojure.test :refer :all]
             [clj-time.coerce :as t.coerce]
             [clj-time.core :as t]))
 
 
-(def user {:user/id #uuid "19f3c785-cf5f-530b-841d-6161400e6793"
-           :user/email-address "j.mcjohnson@gmail.com"
-           :user/name "Johnson"
-           :user/roles #{:customer}
-           :user/created-at #inst "2021-04-02T19:58:19.213-00:00"
-           :user/deleted-at nil})
+(def user (first d/users))
 
 
 (deftest test-delete

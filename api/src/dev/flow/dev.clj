@@ -58,8 +58,8 @@
 
   ;; - Extract common feature test functions  [DONE]
   ;; - Extract helpers from other feature tests [DONE]
-  ;; - Align arguments for authorisations
-  ;; - Update helper function documentation
+  ;; - Align arguments for authorisations [DONE]
+  ;; - Update helper function documentation [DONE]
   ;; - Extract dummy data from unit tests
   ;; - Add more command feature tests
   ;; - Add qury feature tests

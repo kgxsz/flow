@@ -1,16 +1,13 @@
 (ns flow.domain.authorisation-attempt-test
   (:require [flow.domain.authorisation-attempt :refer :all]
             [flow.specifications :as s]
+            [flow.dummy :as d]
             [clojure.test :refer :all]
             [clj-time.coerce :as t.coerce]
             [clj-time.core :as t]))
 
 
-(def authorisation {:authorisation/id #uuid "31f3c785-0f5f-530b-841d-7761400e6793"
-                    :user/id #uuid "19f3c785-cf5f-530b-841d-6161400e6793"
-                    :authorisation/phrase "amount-addition-harbor",
-                    :authorisation/created-at #inst "2021-04-03T11:21:46.894-00:00",
-                    :authorisation/granted-at nil})
+(def authorisation (first d/authorisations))
 
 
 (deftest test-grant

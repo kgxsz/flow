@@ -2,10 +2,12 @@
   (:require [flow.email :refer :all]
             [flow.specifications :as s]
             [ses-mailer.core :as mailer]
+            [flow.dummy :as d]
             [clojure.test :refer :all]))
 
 
-(def email-address "j.mcjohnson@gmail.com")
+(def email-address (:user/email-address (first d/users)))
+
 (def email {:subject "Hello world"
             :body {:html "<div>hello world</div>"
                    :text "Hello world"}})

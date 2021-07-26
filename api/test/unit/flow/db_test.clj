@@ -1,24 +1,15 @@
 (ns flow.db-test
   (:require [flow.db :refer :all]
             [flow.specifications :as s]
+            [flow.dummy :as d]
             [taoensso.faraday :as faraday]
             [clojure.test :refer :all]
             [slingshot.test :refer :all]))
 
 
-(def user {:user/id #uuid "19f3c785-cf5f-530b-841d-6161400e6793"
-           :user/email-address "j.mcjohnson@gmail.com"
-           :user/name "Johnson"
-           :user/roles #{:customer}
-           :user/created-at #inst "2021-04-02T19:58:19.213-00:00"
-           :user/deleted-at nil})
+(def user (first d/users))
 
-(def authorisation {:authorisation/id #uuid "31f3c785-0f5f-530b-841d-7761400e6793"
-                    :user/id #uuid "19f3c785-cf5f-530b-841d-6161400e6793"
-                    :authorisation/phrase "amount-addition-harbor",
-                    :authorisation/created-at #inst "2021-04-03T11:21:46.894-00:00",
-                    :authorisation/granted-at nil})
-
+(def authorisation (first d/authorisations))
 
 (deftest test-entity-specification
 
