@@ -66,9 +66,9 @@
                    :body (h/encode
                           :transit
                           {:command {}
-                                  :query {}
-                                  :metadata {}
-                                  :session {}})}
+                           :query {}
+                           :metadata {}
+                           :session {}})}
           {:keys [status headers body] :as response} (handler request)
           {:keys [session]} (h/decode :transit body)]
       (is (some? (get headers "Set-Cookie")))

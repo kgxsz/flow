@@ -19,6 +19,10 @@
    (case email-address
      "success+1@simulator.amazonses.com"
      "session=A%2BxGyCLBttSGHCm7iyhCLY%2Bkbmnufu3s9O4%2FNjSewTmmUzoETzooY4pArKQULcpT08xBYGccImTug%2Bhex%2B3k772VwOFKoxw9YXRSJWTQsFs%3D--Xc5up%2BLiYmkuw7en8842HOwipzihtCSqlMOccqs4xTI%3D"
+     "success+2@simulator.amazonses.com"
+     "session=mHw90D%2F2WHC4rrQQ67MoDxJHQ7G6i4%2F9eOOfmKeWNeaiesAltp%2BCFHgszvO4Of%2Bzje6HM8KPolW1UQqr0x8vIBesucLO7pK9yQsxvAA3%2B74%3D--wnbObmTg5L6ppu51ilT3gBFOIYqAEjKRsIrA4MaeXTQ%3D"
+     "success+3@simulator.amazonses.com"
+     "session=ZOpL2Z1Igv3rb3I9eNy78sOSE1CfMQ0mXEYmYjX6AVxk3VZ46zfyu3QbV%2BL5soHnFhFutL4LbLf%2BsyfmCwzZ17u37qQM8HKXnzpmgQYcdVc%3D--WTMqeApWc5wEsNb8fDGYDZtqFq1HXk80%2BCpQYKWaAww%3D"
      "success+4@simulator.amazonses.com"
      "session=9OtgYnRnAk6v8D%2Fa5HGax%2FvS4CopNQzi7IwkCmZIX%2FGnndokqBGlhgz4zKKxWEdsG2%2BGvQRkl8eoQ8rlzNz0a746Ml1gFDnHshxJaw2M7jM%3D--RhhFa3mW9riWoKFHgwRlmS%2B3sRw7ROKekyESPW4Hu%2Bw%3D"
      "session=vJxkdtO0BOSz5nDqFHDhXAycccwHiYP6kHvsUQYb%2FUzrrj5jtUbM5obcG6htBG5W--ZO6plGXoqeDqtHlU38R2I3vwYsbt1YalbU9OEI0vq9Q%3D")))
