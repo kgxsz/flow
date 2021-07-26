@@ -50,19 +50,10 @@
 
   (testing "The handler negotiates the finalise-authorisation-attempt command when the
             command is being made for a non-existent user and authorisation."
-    (let [request {:request-method :post
-                   :uri "/"
-                   :headers {"content-type" "application/transit+json"
-                             "accept" "application/transit+json"
-                             "cookie" (h/cookie)}
-                   :body (h/encode
-                          :transit
-                          {:command {:finalise-authorisation-attempt
-                                     {:user/email-address "success+1@simulator.amazonses.com"
-                                      :authorisation/phrase "hello-world"}}
-                           :query {}
-                           :metadata {}
-                           :session {}})}
+    (let [request (h/request
+                   {:command {:finalise-authorisation-attempt
+                              {:user/email-address "success+1@simulator.amazonses.com"
+                               :authorisation/phrase "hello-world"}}})
           user-id (user/id "success+1@simulator.amazonses.com")
           authorisation-id (authorisation/id user-id "hello-world")
           user (user/fetch user-id)
@@ -81,19 +72,10 @@
 
   (testing "The handler negotiates the finalise-authorisation-attempt command when the
             command is being made for an existing user with a non-existent authorisation."
-    (let [request {:request-method :post
-                   :uri "/"
-                   :headers {"content-type" "application/transit+json"
-                             "accept" "application/transit+json"
-                             "cookie" (h/cookie)}
-                   :body (h/encode
-                          :transit
-                          {:command {:finalise-authorisation-attempt
-                                     {:user/email-address "success+2@simulator.amazonses.com"
-                                      :authorisation/phrase "hello-world"}}
-                           :query {}
-                           :metadata {}
-                           :session {}})}
+    (let [request (h/request
+                   {:command {:finalise-authorisation-attempt
+                              {:user/email-address "success+2@simulator.amazonses.com"
+                               :authorisation/phrase "hello-world"}}})
           user-id (user/id "success+2@simulator.amazonses.com")
           authorisation-id (authorisation/id user-id "hello-world")
           user (user/fetch user-id)
@@ -112,19 +94,10 @@
 
   (testing "The handler negotiates the finalise-authorisation-attempt command when the command is being
             made for an existing user and authorisation where the authorisation has already been granted."
-    (let [request {:request-method :post
-                   :uri "/"
-                   :headers {"content-type" "application/transit+json"
-                             "accept" "application/transit+json"
-                             "cookie" (h/cookie)}
-                   :body (h/encode
-                          :transit
-                          {:command {:finalise-authorisation-attempt
-                                     {:user/email-address "success+2@simulator.amazonses.com"
-                                      :authorisation/phrase "some-phrase"}}
-                           :query {}
-                           :metadata {}
-                           :session {}})}
+    (let [request (h/request
+                   {:command {:finalise-authorisation-attempt
+                              {:user/email-address "success+2@simulator.amazonses.com"
+                               :authorisation/phrase "some-phrase"}}})
           user-id (user/id "success+2@simulator.amazonses.com")
           authorisation-id (user/id "success+2@simulator.amazonses.com")
           user (user/fetch user-id)
@@ -143,19 +116,10 @@
 
   (testing "The handler negotiates the finalise-authorisation-attempt command when the command is being
             made for an existing user and authorisation where the authorisation was created 5 minutes ago."
-    (let [request {:request-method :post
-                   :uri "/"
-                   :headers {"content-type" "application/transit+json"
-                             "accept" "application/transit+json"
-                             "cookie" (h/cookie)}
-                   :body (h/encode
-                          :transit
-                          {:command {:finalise-authorisation-attempt
-                                     {:user/email-address "success+3@simulator.amazonses.com"
-                                      :authorisation/phrase "some-phrase"}}
-                           :query {}
-                           :metadata {}
-                           :session {}})}
+    (let [request (h/request
+                   {:command {:finalise-authorisation-attempt
+                              {:user/email-address "success+3@simulator.amazonses.com"
+                               :authorisation/phrase "some-phrase"}}})
           user-id (user/id "success+3@simulator.amazonses.com")
           authorisation-id (authorisation/id user-id "some-phrase")
           user' (user/fetch user-id)
@@ -175,19 +139,11 @@
   (testing "The handler negotiates the finalise-authorisation-attempt command when the command is being
             made for an existing user and authorisation where the authorisation is grantable and a session
             authorised to the user is provided."
-    (let [request {:request-method :post
-                   :uri "/"
-                   :headers {"content-type" "application/transit+json"
-                             "accept" "application/transit+json"
-                             "cookie" (h/cookie "success+4@simulator.amazonses.com")}
-                   :body (h/encode
-                          :transit
-                          {:command {:finalise-authorisation-attempt
-                                     {:user/email-address "success+4@simulator.amazonses.com"
-                                      :authorisation/phrase "some-phrase"}}
-                           :query {}
-                           :metadata {}
-                           :session {}})}
+    (let [request (h/request
+                   {:cookie (h/cookie "success+4@simulator.amazonses.com")
+                    :command {:finalise-authorisation-attempt
+                              {:user/email-address "success+4@simulator.amazonses.com"
+                               :authorisation/phrase "some-phrase"}}})
           user-id (user/id "success+4@simulator.amazonses.com")
           authorisation-id (authorisation/id user-id "some-phrase")
           user (user/fetch user-id)
@@ -205,22 +161,14 @@
       (is (nil? (:authorisation/granted-at authorisation)))
       (is (some? (:authorisation/granted-at authorisation')))))
 
-(testing "The handler negotiates the finalise-authorisation-attempt command when the command is being
-          made for an existing user and authorisation where the authorisation is grantable and a session
-          authorised to a different user is provided."
-    (let [request {:request-method :post
-                   :uri "/"
-                   :headers {"content-type" "application/transit+json"
-                             "accept" "application/transit+json"
-                             "cookie" (h/cookie "success+4@simulator.amazonses.com")}
-                   :body (h/encode
-                          :transit
-                          {:command {:finalise-authorisation-attempt
-                                     {:user/email-address "success+5@simulator.amazonses.com"
-                                      :authorisation/phrase "some-phrase"}}
-                           :query {}
-                           :metadata {}
-                           :session {}})}
+  (testing "The handler negotiates the finalise-authorisation-attempt command when the command is being
+            made for an existing user and authorisation where the authorisation is grantable and a session
+            authorised to a different user is provided."
+    (let [request (h/request
+                   {:cookie (h/cookie "success+4@simulator.amazonses.com")
+                    :command {:finalise-authorisation-attempt
+                              {:user/email-address "success+5@simulator.amazonses.com"
+                               :authorisation/phrase "some-phrase"}}})
           user-id (user/id "success+5@simulator.amazonses.com")
           authorisation-id (authorisation/id user-id "some-phrase")
           user (user/fetch user-id)
@@ -238,22 +186,13 @@
       (is (nil? (:authorisation/granted-at authorisation)))
       (is (some? (:authorisation/granted-at authorisation')))))
 
-(testing "The handler negotiates the finalise-authorisation-attempt command when the command is being
-          made for an existing user and authorisation where the authorisation is grantable and an
-          unauthorised session is provided."
-    (let [request {:request-method :post
-                   :uri "/"
-                   :headers {"content-type" "application/transit+json"
-                             "accept" "application/transit+json"
-                             "cookie" (h/cookie)}
-                   :body (h/encode
-                          :transit
-                          {:command {:finalise-authorisation-attempt
-                                     {:user/email-address "success+6@simulator.amazonses.com"
-                                      :authorisation/phrase "some-phrase"}}
-                           :query {}
-                           :metadata {}
-                           :session {}})}
+  (testing "The handler negotiates the finalise-authorisation-attempt command when the command is being
+            made for an existing user and authorisation where the authorisation is grantable and an
+            unauthorised session is provided."
+    (let [request (h/request
+                   {:command {:finalise-authorisation-attempt
+                              {:user/email-address "success+6@simulator.amazonses.com"
+                               :authorisation/phrase "some-phrase"}}})
           user-id (user/id "success+6@simulator.amazonses.com")
           authorisation-id (authorisation/id user-id "some-phrase")
           user (user/fetch user-id)

@@ -44,6 +44,8 @@
 
   (kaocha/run 'flow.command.finalise-authorisation-attempt-test)
 
+  (kaocha/run 'flow.command.deauthorise-test)
+
   (user/create! "success+3@simulator.amazonses.com" "Test" #{:customer})
 
   (user/create! "k.suzukawa@gmail.com" "Keigo" #{:admin :customer})
@@ -63,7 +65,7 @@
   ;; - Extract dummy data from unit tests [DONE]
   ;; - Fix up the session related tests [DONE]
   ;; - Extract the request maker from all the tests
-  ;; - Add deauthorise command feature test [DONE]
+  ;; - Add deauthorise command feature test
   ;; - Add add-user command feature test
   ;; - Add delete-user command feature test
 

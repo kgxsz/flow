@@ -26,17 +26,7 @@
 (deftest test-deauthorise
 
   (testing "The handler negotiates the deauthorise command when an unauthorised session is provided."
-    (let [request {:request-method :post
-                   :uri "/"
-                   :headers {"content-type" "application/transit+json"
-                             "accept" "application/transit+json"
-                             "cookie" (h/cookie)}
-                   :body (h/encode
-                          :transit
-                          {:command {:deauthorise {}}
-                           :query {}
-                           :metadata {}
-                           :session {}})}
+    (let [request (h/request {:command {:deauthorise {}}})
           {:keys [status headers body] :as response} (handler request)]
       (is (= 200 status))
       (is (= {:users {}
@@ -46,17 +36,8 @@
              (h/decode :transit body)))))
 
   (testing "The handler negotiates the deauthorise command when an autorised session is provided."
-    (let [request {:request-method :post
-                   :uri "/"
-                   :headers {"content-type" "application/transit+json"
-                             "accept" "application/transit+json"
-                             "cookie" (h/cookie "success+1@simulator.amazonses.com")}
-                   :body (h/encode
-                          :transit
-                          {:command {:deauthorise {}}
-                           :query {}
-                           :metadata {}
-                           :session {}})}
+    (let [request (h/request {:cookie (h/cookie "success+1@simulator.amazonses.com")
+                              :command {:deauthorise {}}})
           {:keys [status headers body] :as response} (handler request)]
       (is (= 200 status))
       (is (= {:users {}

@@ -48,6 +48,23 @@
    content))
 
 
+(defn request
+  "Helper function for constructing requests made to the core handler."
+  ([] (request {}))
+  ([request]
+   {:request-method :post
+    :uri "/"
+    :headers {"content-type" "application/transit+json"
+              "accept" "application/transit+json"
+              "cookie" (or (:cookie request) (cookie))}
+    :body (encode
+           :transit
+           {:command (:command request {})
+            :query (:query request {})
+            :metadata {}
+            :session {}})}))
+
+
 (defn create-test-user!
   "Creates a test user with customer role."
   [email-address]

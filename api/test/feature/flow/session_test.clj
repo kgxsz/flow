@@ -25,50 +25,20 @@
 (deftest test-session
 
   (testing "The handler returns a session cookie and corresponding session when no cookie is provided."
-    (let [request {:request-method :post
-                   :uri "/"
-                   :headers {"content-type" "application/transit+json"
-                             "accept" "application/transit+json"}
-                   :body (h/encode
-                          :transit
-                          {:command {}
-                           :query {}
-                           :metadata {}
-                           :session {}})}
+    (let [request (update (h/request) :headers dissoc "cookie")
           {:keys [status headers body] :as response} (handler request)]
       (is (some? (get headers "Set-Cookie")))
       (is (= {:current-user-id nil} (:session (h/decode :transit body))))))
 
   (testing "The handler returns a session cookie and corresponding session when a cookie
             containing an unauthorised session is provided."
-    (let [request {:request-method :post
-                   :uri "/"
-                   :headers {"content-type" "application/transit+json"
-                             "accept" "application/transit+json"
-                             "cookie" (h/cookie)}
-                   :body (h/encode
-                          :transit
-                          {:command {}
-                           :query {}
-                           :metadata {}
-                           :session {}})}
-          {:keys [status headers body] :as response} (handler request)]
+    (let [{:keys [status headers body] :as response} (handler (h/request))]
       (is (some? (get headers "Set-Cookie")))
       (is (= {:current-user-id nil} (:session (h/decode :transit body))))))
 
   (testing "The handler returns a session cookie and corresponding session when a cookie
             containing an authorised session is provided."
-    (let [request {:request-method :post
-                   :uri "/"
-                   :headers {"content-type" "application/transit+json"
-                             "accept" "application/transit+json"
-                             "cookie" (h/cookie "success+1@simulator.amazonses.com")}
-                   :body (h/encode
-                          :transit
-                          {:command {}
-                           :query {}
-                           :metadata {}
-                           :session {}})}
+    (let [request (h/request {:cookie (h/cookie "success+1@simulator.amazonses.com")})
           {:keys [status headers body] :as response} (handler request)
           {:keys [session]} (h/decode :transit body)]
       (is (some? (get headers "Set-Cookie")))
