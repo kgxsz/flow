@@ -46,7 +46,7 @@
 
   (kaocha/run 'flow.command.delete-user-test)
 
-  (user/create! "success+6@simulator.amazonses.com" "Test" #{:customer})
+  (user/create! "success+9@simulator.amazonses.com" "Test" #{:customer})
 
   (user/create! "k.suzukawa@gmail.com" "Keigo" #{:admin :customer})
 
@@ -57,7 +57,5 @@
   (user/fetch-all)
 
   (authorisation/fetch-all)
-
-  ;; - Add tests and logic for dealing with a deleted admin adding/deleting users
 
 )
