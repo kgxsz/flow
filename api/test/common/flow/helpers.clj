@@ -66,9 +66,11 @@
 
 
 (defn create-test-user!
-  "Creates a test user with customer role."
-  [email-address]
-  (user/create! email-address "Test" #{:customer}))
+  "Creates a test user with some default options unless specified otherwise."
+  ([email-address]
+   (user/create! email-address "Test" #{:customer}))
+  ([email-address name roles]
+   (user/create! email-address name roles)))
 
 
 (defn destroy-test-user!

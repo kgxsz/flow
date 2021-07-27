@@ -42,13 +42,9 @@
 
   (kaocha/run :feature)
 
-  (kaocha/run 'flow.command.finalise-authorisation-attempt-test)
-
   (kaocha/run 'flow.command.add-user-test)
 
-  (kaocha/run 'flow.session-test)
-
-  (user/create! "success+3@simulator.amazonses.com" "Test" #{:customer})
+  (user/create! "success+1@simulator.amazonses.com" "Test" #{:customer})
 
   (user/create! "k.suzukawa@gmail.com" "Keigo" #{:admin :customer})
 
