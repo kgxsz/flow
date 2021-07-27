@@ -35,7 +35,7 @@
               :session {:current-user-id nil}}
              (h/decode :transit body)))))
 
-  (testing "The handler negotiates the deauthorise command when an autorised session is provided."
+  (testing "The handler negotiates the deauthorise command when an authorised session is provided."
     (let [request (h/request {:cookie (h/cookie "success+1@simulator.amazonses.com")
                               :command {:deauthorise {}}})
           {:keys [status headers body] :as response} (handler request)]

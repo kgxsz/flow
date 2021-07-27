@@ -82,16 +82,16 @@
 
   (testing "The wrapped handler throws an exception when the current user cannot be fetched."
     (let [handler' (wrap-current-user (constantly response))
-          request (assoc-in request [:body-params :session :current-user-id] "hello")]
-      (with-redefs [user/fetch (constantly {})]
+          request (assoc-in request [:body-params :session :current-user-id] (:user/id user))]
+      (with-redefs [user/fetch (constantly nil)]
         (is (thrown+? [:type :flow/internal-error]
                       (handler' request))))))
 
   (testing "The wrapped handler returns a response with the current user removed and the current
-            user id added to the body session no matter what the current user is.."
+            user id added to the body session no matter what the current user is."
     (with-redefs [user/fetch (constantly user)]
       (let [response (assoc-in response [:body :session] {:current-user nil})
-            request (assoc-in request [:body-params :session :current-user-id] "hello")
+            request (assoc-in request [:body-params :session :current-user-id] (:user/id user))
             handler' (wrap-current-user (constantly response))]
         (is (= {:status 200
                 :headers {}
@@ -101,7 +101,7 @@
                        :session {:current-user-id nil}}}
                (handler' request))))
       (let [response (assoc-in response [:body :session] {:current-user {}})
-            request (assoc-in request [:body-params :session :current-user-id] "hello")
+            request (assoc-in request [:body-params :session :current-user-id] (:user/id user))
             handler' (wrap-current-user (constantly response))]
         (is (= {:status 200
                 :headers {}
@@ -111,7 +111,7 @@
                        :session {:current-user-id nil}}}
                (handler' request))))
       (let [response (assoc-in response [:body :session] {:current-user user})
-            request (assoc-in request [:body-params :session :current-user-id] "hello")
+            request (assoc-in request [:body-params :session :current-user-id] (:user/id user))
             handler' (wrap-current-user (constantly response))]
         (is (= {:status 200
                 :headers {}

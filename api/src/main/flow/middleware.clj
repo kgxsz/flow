@@ -49,9 +49,9 @@
    user id in the session while removing the current user itself."
   [handler]
   (fn [request]
-    (let [current-user (some->> (get-in request [:body-params :session :current-user-id])
-                                (user/fetch)
-                                (u/validate :db/user))
+    (let [current-user-id (get-in request [:body-params :session :current-user-id])
+          current-user (when (uuid? current-user-id)
+                         (u/validate :db/user (user/fetch current-user-id)))
           request (-> request
                       (update-in [:body-params :session] dissoc :current-user-id)
                       (assoc-in [:body-params :session :current-user] current-user))
@@ -68,7 +68,10 @@
    session is present in the body is placed in the request so as to be persisted."
   [handler]
   (fn [{:keys [session] :as request}]
-    ;; TODO - carefully merge any session update suggestions from the client
+    ;; NOTE - today the client can send over session information as part of the body params
+    ;; but we ignore this completely as it's untrustworthy and we prefer to rely on the session
+    ;; information encrypted in the tamper proof cookie. Eventually though, we'll want to allow
+    ;; the client to suggest session updates that we can then carefully merge safely in here.
     (let [request (assoc-in request [:body-params :session] session)
           response (handler request)
           session (get-in response [:body :session])]

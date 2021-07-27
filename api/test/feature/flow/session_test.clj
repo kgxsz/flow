@@ -7,11 +7,12 @@
 
 (defn setup
   []
-  (h/create-test-user! "success+1@simulator.amazonses.com"))
+  (h/create-test-user! "success+2@simulator.amazonses.com"))
 
 (defn tear-down
   []
-  (h/destroy-test-user! "success+1@simulator.amazonses.com"))
+  (h/destroy-test-user! "success+1@simulator.amazonses.com")
+  (h/destroy-test-user! "success+2@simulator.amazonses.com"))
 
 (defn fixture [test]
   (tear-down)
@@ -36,10 +37,16 @@
       (is (some? (get headers "Set-Cookie")))
       (is (= {:current-user-id nil} (:session (h/decode :transit body))))))
 
-  (testing "The handler returns a session cookie and corresponding session when a cookie
-            containing an authorised session is provided."
+  (testing "The handler returns an internal error when a cookie containing an authorised session
+            for a non-existent user is provided."
     (let [request (h/request {:cookie (h/cookie "success+1@simulator.amazonses.com")})
+          {:keys [status headers body] :as response} (handler request)]
+      (is (= 500 status))))
+
+  (testing "The handler returns a session cookie and corresponding session when a cookie
+            containing an authorised session for an existing user is provided."
+    (let [request (h/request {:cookie (h/cookie "success+2@simulator.amazonses.com")})
           {:keys [status headers body] :as response} (handler request)
           {:keys [session]} (h/decode :transit body)]
       (is (some? (get headers "Set-Cookie")))
-      (is (= {:current-user-id (user/id "success+1@simulator.amazonses.com")} session)))))
+      (is (= {:current-user-id (user/id "success+2@simulator.amazonses.com")} session)))))

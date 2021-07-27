@@ -44,7 +44,9 @@
 
   (kaocha/run 'flow.command.finalise-authorisation-attempt-test)
 
-  (kaocha/run 'flow.command.deauthorise-test)
+  (kaocha/run 'flow.command.add-user-test)
+
+  (kaocha/run 'flow.session-test)
 
   (user/create! "success+3@simulator.amazonses.com" "Test" #{:customer})
 
@@ -58,15 +60,12 @@
 
   (authorisation/fetch-all)
 
-  ;; - Extract common feature test functions  [DONE]
-  ;; - Extract helpers from other feature tests [DONE]
-  ;; - Align arguments for authorisations [DONE]
-  ;; - Update helper function documentation [DONE]
-  ;; - Extract dummy data from unit tests [DONE]
-  ;; - Fix up the session related tests [DONE]
-  ;; - Extract the request maker from all the tests
-  ;; - Add deauthorise command feature test
   ;; - Add add-user command feature test
+  ;;   - No authorised session
+  ;;   - Admin and target user already exists
+  ;;     - Need facility to create admin users and non admin users explicitly
+  ;;   - Not admin and target user does not exist
+  ;;   - Admin and target user does not exist
   ;; - Add delete-user command feature test
 
 )
