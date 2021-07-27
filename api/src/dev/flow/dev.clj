@@ -44,7 +44,9 @@
 
   (kaocha/run 'flow.command.add-user-test)
 
-  (user/create! "success+1@simulator.amazonses.com" "Test" #{:customer})
+  (kaocha/run 'flow.command.delete-user-test)
+
+  (user/create! "success+6@simulator.amazonses.com" "Test" #{:customer})
 
   (user/create! "k.suzukawa@gmail.com" "Keigo" #{:admin :customer})
 
@@ -56,12 +58,6 @@
 
   (authorisation/fetch-all)
 
-  ;; - Add add-user command feature test
-  ;;   - No authorised session
-  ;;   - Admin and target user already exists
-  ;;     - Need facility to create admin users and non admin users explicitly
-  ;;   - Not admin and target user does not exist
-  ;;   - Admin and target user does not exist
-  ;; - Add delete-user command feature test
+  ;; - Add tests and logic for dealing with a deleted admin adding/deleting users
 
 )
