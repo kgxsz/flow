@@ -33,6 +33,26 @@
 
 (deftest test-add-user
 
+  (testing "The handler negotiates the add-user command when no session is provided."
+    (let [request (-> (h/request
+                        {:command {:add-user
+                                   {:user/id #uuid "00000000-0000-0000-0000-000000000000"
+                                    :user/email-address "success+1@simulator.amazonses.com"
+                                    :user/name "Test"
+                                    :user/roles #{:customer}}}})
+                      (update :headers dissoc "cookie"))
+          user-id (user/id "success+1@simulator.amazonses.com")
+          user (user/fetch user-id)
+          {:keys [status headers body] :as response} (handler request)
+          user' (user/fetch user-id)]
+      (is (= 200 status))
+      (is (= {:users {}
+              :authorisations {}
+              :metadata {}
+              :session {:current-user-id nil}}
+             (h/decode :transit body)))
+      (is (= nil user user'))))
+
   (testing "The handler negotiates the add-user command when an unauthorised session is provided."
     (let [request (h/request
                    {:command {:add-user

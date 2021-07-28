@@ -25,6 +25,18 @@
 
 (deftest test-deauthorise
 
+  (testing "The handler negotiates the deauthorise command when no session is provided."
+    (let [request (-> {:command {:deauthorise {}}}
+                      (h/request)
+                      (update :headers dissoc "cookie"))
+          {:keys [status headers body] :as response} (handler request)]
+      (is (= 200 status))
+      (is (= {:users {}
+              :authorisations {}
+              :metadata {}
+              :session {:current-user-id nil}}
+             (h/decode :transit body)))))
+
   (testing "The handler negotiates the deauthorise command when an unauthorised session is provided."
     (let [request (h/request {:command {:deauthorise {}}})
           {:keys [status headers body] :as response} (handler request)]

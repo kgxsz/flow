@@ -42,9 +42,9 @@
 
   (kaocha/run :feature)
 
-  (kaocha/run 'flow.command.add-user-test)
+  (kaocha/run 'flow.query.current-user-test)
 
-  (kaocha/run 'flow.command.delete-user-test)
+  (kaocha/run 'flow.command.add-user-test)
 
   (user/create! "success+9@simulator.amazonses.com" "Test" #{:customer})
 
@@ -58,4 +58,16 @@
 
   (authorisation/fetch-all)
 
+  ;; - Create a better interface for the h/request function to be able
+  ;;   to describe session options
+
+  ;; - Add query feature tests
+  ;;   - current-user query
+  ;;     - No session
+  ;;     - Unauthorised session
+  ;;     - Authorised session
+  ;;     - Authorised session but deleted
+  ;;   - users query
+  ;;     - No session
+  ;;     - Different roles
 )

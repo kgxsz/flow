@@ -42,6 +42,22 @@
 
 (deftest test-delete-user
 
+  (testing "The handler negotiates the delete-user command when no session is provided."
+    (let [request (-> (h/request
+                       {:command {:delete-user {:user/id (user/id "success+1@simulator.amazonses.com")}}})
+                      (update :headers dissoc "cookie"))
+          user-id (user/id "success+1@simulator.amazonses.com")
+          user (user/fetch user-id)
+          {:keys [status headers body] :as response} (handler request)
+          user' (user/fetch user-id)]
+      (is (= 200 status))
+      (is (= {:users {}
+              :authorisations {}
+              :metadata {}
+              :session {:current-user-id nil}}
+             (h/decode :transit body)))
+      (is (= user user'))))
+
   (testing "The handler negotiates the delete-user command when an unauthorised session is provided."
     (let [request (h/request
                    {:command {:delete-user {:user/id (user/id "success+1@simulator.amazonses.com")}}})

@@ -13,6 +13,7 @@
   (h/create-test-user! "success+3@simulator.amazonses.com")
   (h/create-test-user! "success+4@simulator.amazonses.com")
   (h/create-test-user! "success+5@simulator.amazonses.com")
+  (h/create-test-user! "success+6@simulator.amazonses.com")
   (h/delete-test-user! "success+2@simulator.amazonses.com"))
 
 (defn tear-down
@@ -22,11 +23,13 @@
   (h/destroy-test-user! "success+3@simulator.amazonses.com")
   (h/destroy-test-user! "success+4@simulator.amazonses.com")
   (h/destroy-test-user! "success+5@simulator.amazonses.com")
+  (h/destroy-test-user! "success+6@simulator.amazonses.com")
   (h/destroy-test-authorisations! (user/id "success+1@simulator.amazonses.com"))
   (h/destroy-test-authorisations! (user/id "success+2@simulator.amazonses.com"))
   (h/destroy-test-authorisations! (user/id "success+3@simulator.amazonses.com"))
   (h/destroy-test-authorisations! (user/id "success+4@simulator.amazonses.com"))
-  (h/destroy-test-authorisations! (user/id "success+5@simulator.amazonses.com")))
+  (h/destroy-test-authorisations! (user/id "success+5@simulator.amazonses.com"))
+  (h/destroy-test-authorisations! (user/id "success+6@simulator.amazonses.com")))
 
 (defn fixture [test]
   (tear-down)
@@ -61,7 +64,7 @@
       (is (empty? authorisations'))))
 
   (testing "The handler negotiates the initialise-authorisation-attempt command when the
-            command is being made for a deleted user."
+            command is being made for an existing user who has prevously been deleted."
     (let [request (h/request
                    {:command {:initialise-authorisation-attempt
                               {:user/email-address "success+2@simulator.amazonses.com"}}})
@@ -82,12 +85,55 @@
       (is (empty? authorisations'))))
 
   (testing "The handler negotiates the initialise-authorisation-attempt command when the command
-            is being made for an existing user and a session authorised to the user is provided."
-    (let [request (h/request
-                   {:cookie (h/cookie "success+3@simulator.amazonses.com")
-                    :command {:initialise-authorisation-attempt
-                              {:user/email-address "success+3@simulator.amazonses.com"}}})
+            is being made for an existing user and no session is provided."
+    (let [request (-> (h/request
+                       {:command {:initialise-authorisation-attempt
+                                  {:user/email-address "success+3@simulator.amazonses.com"}}})
+                      (update :headers dissoc "cookie"))
           user-id (user/id "success+3@simulator.amazonses.com")
+          user (user/fetch user-id)
+          authorisations (h/find-test-authorisations user-id)
+          {:keys [status headers body] :as response} (handler request)
+          user' (user/fetch user-id)
+          authorisations' (h/find-test-authorisations user-id)]
+      (is (= 200 status))
+      (is (= {:users {}
+              :authorisations {}
+              :metadata {}
+              :session {:current-user-id nil}}
+             (h/decode :transit body)))
+      (is (= user user'))
+      (is (= 0 (count authorisations)))
+      (is (= 1 (count authorisations')))))
+
+  (testing "The handler negotiates the initialise-authorisation-attempt command when the command
+            is being made for an existing user and an unauthorised session is provided."
+    (let [request (h/request
+                   {:command {:initialise-authorisation-attempt
+                              {:user/email-address "success+4@simulator.amazonses.com"}}})
+          user-id (user/id "success+4@simulator.amazonses.com")
+          user (user/fetch user-id)
+          authorisations (h/find-test-authorisations user-id)
+          {:keys [status headers body] :as response} (handler request)
+          user' (user/fetch user-id)
+          authorisations' (h/find-test-authorisations user-id)]
+      (is (= 200 status))
+      (is (= {:users {}
+              :authorisations {}
+              :metadata {}
+              :session {:current-user-id nil}}
+             (h/decode :transit body)))
+      (is (= user user'))
+      (is (= 0 (count authorisations)))
+      (is (= 1 (count authorisations')))))
+
+  (testing "The handler negotiates the initialise-authorisation-attempt command when the command
+            is being made for an existing user and a session authorised to that user is provided."
+    (let [request (h/request
+                   {:cookie (h/cookie "success+5@simulator.amazonses.com")
+                    :command {:initialise-authorisation-attempt
+                              {:user/email-address "success+5@simulator.amazonses.com"}}})
+          user-id (user/id "success+5@simulator.amazonses.com")
           user (user/fetch user-id)
           authorisations (h/find-test-authorisations user-id)
           {:keys [status headers body] :as response} (handler request)
@@ -106,10 +152,10 @@
   (testing "The handler negotiates the initialise-authorisation-attempt command when the command is being
             made for an existing user and a session authorised to a different user is provided."
     (let [request (h/request
-                   {:cookie (h/cookie "success+3@simulator.amazonses.com")
+                   {:cookie (h/cookie "success+5@simulator.amazonses.com")
                     :command {:initialise-authorisation-attempt
-                              {:user/email-address "success+4@simulator.amazonses.com"}}})
-          user-id (user/id "success+4@simulator.amazonses.com")
+                              {:user/email-address "success+6@simulator.amazonses.com"}}})
+          user-id (user/id "success+6@simulator.amazonses.com")
           user (user/fetch user-id)
           authorisations (h/find-test-authorisations user-id)
           {:keys [status headers body] :as response} (handler request)
@@ -119,29 +165,8 @@
       (is (= {:users {}
               :authorisations {}
               :metadata {}
-              :session {:current-user-id (user/id "success+3@simulator.amazonses.com")}}
+              :session {:current-user-id (user/id "success+5@simulator.amazonses.com")}}
              (h/decode :transit body)))
       (is (= user user'))
       (is (= 0 (count authorisations)))
-      (is (= 1 (count authorisations')))))
-
-  (testing "The handler negotiates the initialise-authorisation-attempt command when the command
-            is being made for an existing user and an unauthorised session is provided."
-    (let [request (h/request
-                   {:command {:initialise-authorisation-attempt
-                              {:user/email-address "success+5@simulator.amazonses.com"}}})
-          user-id (user/id "success+5@simulator.amazonses.com")
-          user (user/fetch user-id)
-          authorisations (h/find-test-authorisations user-id)
-          {:keys [status headers body] :as response} (handler request)
-          user' (user/fetch user-id)
-          authorisations' (h/find-test-authorisations user-id)]
-      (is (= 200 status))
-      (is (= {:users {}
-              :authorisations {}
-              :metadata {}
-              :session {:current-user-id nil}}
-             (h/decode :transit body)))
-      (is (= user user'))
-      (is (= 0 (count authorisations)))
-      (is (= 1 (count authorisations'))))))
+      (is (= 1 (count authorisations'))))) )
