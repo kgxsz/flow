@@ -43,7 +43,7 @@
 
   (kaocha/run :feature)
 
-  (kaocha/run 'flow.query.users-test)
+  (kaocha/run 'flow.query.user-test)
 
   (user/create! "success+9@simulator.amazonses.com" "Test" #{:customer})
 
@@ -58,20 +58,11 @@
   (authorisation/fetch-all)
 
   ;; - Add query feature tests
-  ;;   - users query
+  ;;   - user query
   ;;     - No session
   ;;     - Unauthorised session
   ;;     - Authorised session with customer role
   ;;     - Authorised session with admin role
-
-  ;; The users query relies on the state of the DB, since the testing DB is
-  ;; shared between both feature tests and regular local development, it means
-  ;; that you're going to have trouble. So, there's two viable options here:
-  ;; 1. Separate local DBs and have one for feature tests and one for local development
-  ;; 2. Make the feature tests nuke the local DB every time, and make it easy to seed
-  ;;    the DB for local development.
-  ;; I like options two since it's the simpler one for now and the local DB is in memory
-  ;; anyway so it's not inconceivable for the data in there to be nuked.
 
   ;; Collect all the TODO items in a single place.
 )
