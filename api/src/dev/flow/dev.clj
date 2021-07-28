@@ -44,7 +44,7 @@
 
   (kaocha/run 'flow.query.current-user-test)
 
-  (kaocha/run 'flow.command.add-user-test)
+  (kaocha/run 'flow.command.initialise-authorisation-attempt-test)
 
   (user/create! "success+9@simulator.amazonses.com" "Test" #{:customer})
 

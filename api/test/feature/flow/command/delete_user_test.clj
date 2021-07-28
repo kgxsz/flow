@@ -43,9 +43,8 @@
 (deftest test-delete-user
 
   (testing "The handler negotiates the delete-user command when no session is provided."
-    (let [request (-> (h/request
-                       {:command {:delete-user {:user/id (user/id "success+1@simulator.amazonses.com")}}})
-                      (update :headers dissoc "cookie"))
+    (let [request (h/request
+                   {:command {:delete-user {:user/id (user/id "success+1@simulator.amazonses.com")}}})
           user-id (user/id "success+1@simulator.amazonses.com")
           user (user/fetch user-id)
           {:keys [status headers body] :as response} (handler request)
@@ -60,7 +59,8 @@
 
   (testing "The handler negotiates the delete-user command when an unauthorised session is provided."
     (let [request (h/request
-                   {:command {:delete-user {:user/id (user/id "success+1@simulator.amazonses.com")}}})
+                   {:session :unauthorised
+                    :command {:delete-user {:user/id (user/id "success+1@simulator.amazonses.com")}}})
           user-id (user/id "success+1@simulator.amazonses.com")
           user (user/fetch user-id)
           {:keys [status headers body] :as response} (handler request)
@@ -76,7 +76,7 @@
   (testing "The handler negotiates the delete-user command when the user being deleted does
             not exist and a session authorised to an admin user is provided."
     (let [request (h/request
-                   {:cookie (h/cookie "success+2@simulator.amazonses.com")
+                   {:session "success+2@simulator.amazonses.com"
                     :command {:delete-user {:user/id (user/id "success+3@simulator.amazonses.com")}}})
           user-id (user/id "success+3@simulator.amazonses.com")
           user (user/fetch user-id)
@@ -93,7 +93,7 @@
   (testing "The handler negotiates the delete-user command when the user being deleted exists,
             has previously been deleted, and a session authorised to an admin user is provided."
     (let [request (h/request
-                   {:cookie (h/cookie "success+2@simulator.amazonses.com")
+                   {:session "success+2@simulator.amazonses.com"
                     :command {:delete-user {:user/id (user/id "success+4@simulator.amazonses.com")}}})
           user-id (user/id "success+4@simulator.amazonses.com")
           user (user/fetch user-id)
@@ -110,7 +110,7 @@
   (testing "The handler negotiates the delete-user command when the user being deleted exists,
             has not previously been deleted, and a session authorised to a non-admin user is provided."
     (let [request (h/request
-                   {:cookie (h/cookie "success+5@simulator.amazonses.com")
+                   {:session "success+5@simulator.amazonses.com"
                     :command {:delete-user {:user/id (user/id "success+6@simulator.amazonses.com")}}})
           user-id (user/id "success+6@simulator.amazonses.com")
           user (user/fetch user-id)
@@ -128,7 +128,7 @@
             has not previously been deleted, and a session authorised to an admin user is provided
             where that admin user has previously been deleted."
     (let [request (h/request
-                   {:cookie (h/cookie "success+7@simulator.amazonses.com")
+                   {:session "success+7@simulator.amazonses.com"
                     :command {:delete-user {:user/id (user/id "success+6@simulator.amazonses.com")}}})
           user-id (user/id "success+6@simulator.amazonses.com")
           user (user/fetch user-id)
@@ -147,7 +147,7 @@
   (testing "The handler negotiates the delete-user command when the user being deleted exists,
             has not previously been deleted, and a session authorised to an admin user is provided. "
     (let [request (h/request
-                   {:cookie (h/cookie "success+2@simulator.amazonses.com")
+                   {:session "success+2@simulator.amazonses.com"
                     :command {:delete-user {:user/id (user/id "success+8@simulator.amazonses.com")}}})
           user-id (user/id "success+8@simulator.amazonses.com")
           user (user/fetch user-id)
@@ -167,7 +167,7 @@
             has not previously been deleted, and a session authorised for an admin user is provided
             where that admin user happens to be the same user being deleted."
     (let [request (h/request
-                   {:cookie (h/cookie "success+9@simulator.amazonses.com")
+                   {:session "success+9@simulator.amazonses.com"
                     :command {:delete-user {:user/id (user/id "success+9@simulator.amazonses.com")}}})
           user-id (user/id "success+9@simulator.amazonses.com")
           user (user/fetch user-id)

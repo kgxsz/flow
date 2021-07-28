@@ -25,7 +25,7 @@
 
   (testing "The handler denies requests with unsupported content type."
     (let [request (assoc (h/request) :headers {"content-type" "application/json"
-                                             "accept" "application/transit+json"})
+                                               "accept" "application/transit+json"})
           {:keys [status headers body] :as response} (handler request)]
       (is (= 400 status))
       (is (= {"Content-Type" "application/json; charset=utf-8"}

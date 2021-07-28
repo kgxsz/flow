@@ -59,18 +59,23 @@
 
 
 (defn request
-  "Helper function for constructing requests made to the core handler."
+  "Helper function for constructing requests made to the core handler.
+   Options can override the command and query, as well as set either
+   a unauthorised session cookie, or set the session to one of the
+   users by providing the email addresses."
   ([] (request {}))
-  ([request]
-   {:request-method :post
+  ([{:keys [method session command query]}]
+   {:request-method (or method :post)
     :uri "/"
-    :headers {"content-type" "application/transit+json"
-              "accept" "application/transit+json"
-              "cookie" (or (:cookie request) (cookie))}
+    :headers (cond-> {"content-type" "application/transit+json"
+                      "accept" "application/transit+json"}
+               session (assoc "cookie" (if (= :unauthorised session)
+                                         (cookie)
+                                         (cookie session))))
     :body (encode
            :transit
-           {:command (:command request {})
-            :query (:query request {})
+           {:command (or command {})
+            :query (or query {})
             :metadata {}
             :session {}})}))
 

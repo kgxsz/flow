@@ -45,7 +45,8 @@
   (testing "The handler negotiates the initialise-authorisation-attempt command when the
             command is being made for a non-existent user."
     (let [request (h/request
-                   {:command {:initialise-authorisation-attempt
+                   {:session :unauthorised
+                    :command {:initialise-authorisation-attempt
                               {:user/email-address "success+1@simulator.amazonses.com"}}})
           user-id (user/id "success+1@simulator.amazonses.com")
           user (user/fetch user-id)
@@ -66,7 +67,8 @@
   (testing "The handler negotiates the initialise-authorisation-attempt command when the
             command is being made for an existing user who has prevously been deleted."
     (let [request (h/request
-                   {:command {:initialise-authorisation-attempt
+                   {:session :unauthorised
+                    :command {:initialise-authorisation-attempt
                               {:user/email-address "success+2@simulator.amazonses.com"}}})
           user-id (user/id "success+2@simulator.amazonses.com")
           user (user/fetch user-id)
@@ -86,10 +88,9 @@
 
   (testing "The handler negotiates the initialise-authorisation-attempt command when the command
             is being made for an existing user and no session is provided."
-    (let [request (-> (h/request
-                       {:command {:initialise-authorisation-attempt
-                                  {:user/email-address "success+3@simulator.amazonses.com"}}})
-                      (update :headers dissoc "cookie"))
+    (let [request (h/request
+                   {:command {:initialise-authorisation-attempt
+                              {:user/email-address "success+3@simulator.amazonses.com"}}})
           user-id (user/id "success+3@simulator.amazonses.com")
           user (user/fetch user-id)
           authorisations (h/find-test-authorisations user-id)
@@ -109,7 +110,8 @@
   (testing "The handler negotiates the initialise-authorisation-attempt command when the command
             is being made for an existing user and an unauthorised session is provided."
     (let [request (h/request
-                   {:command {:initialise-authorisation-attempt
+                   {:session :unauthorised
+                    :command {:initialise-authorisation-attempt
                               {:user/email-address "success+4@simulator.amazonses.com"}}})
           user-id (user/id "success+4@simulator.amazonses.com")
           user (user/fetch user-id)
@@ -130,7 +132,7 @@
   (testing "The handler negotiates the initialise-authorisation-attempt command when the command
             is being made for an existing user and a session authorised to that user is provided."
     (let [request (h/request
-                   {:cookie (h/cookie "success+5@simulator.amazonses.com")
+                   {:session "success+5@simulator.amazonses.com"
                     :command {:initialise-authorisation-attempt
                               {:user/email-address "success+5@simulator.amazonses.com"}}})
           user-id (user/id "success+5@simulator.amazonses.com")
@@ -152,7 +154,7 @@
   (testing "The handler negotiates the initialise-authorisation-attempt command when the command is being
             made for an existing user and a session authorised to a different user is provided."
     (let [request (h/request
-                   {:cookie (h/cookie "success+5@simulator.amazonses.com")
+                   {:session "success+5@simulator.amazonses.com"
                     :command {:initialise-authorisation-attempt
                               {:user/email-address "success+6@simulator.amazonses.com"}}})
           user-id (user/id "success+6@simulator.amazonses.com")
