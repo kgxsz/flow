@@ -8,7 +8,7 @@
 
 
 (defmethod handle :current-user
-  [_ _ {:keys [current-user]} _]
+  [_ _ _ {:keys [current-user]}]
   {:users (user/index current-user)})
 
 

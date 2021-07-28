@@ -44,8 +44,6 @@
 
   (kaocha/run 'flow.query.current-user-test)
 
-  (kaocha/run 'flow.command.initialise-authorisation-attempt-test)
-
   (user/create! "success+9@simulator.amazonses.com" "Test" #{:customer})
 
   (user/create! "k.suzukawa@gmail.com" "Keigo" #{:admin :customer})
@@ -58,9 +56,6 @@
 
   (authorisation/fetch-all)
 
-  ;; - Create a better interface for the h/request function to be able
-  ;;   to describe session options
-
   ;; - Add query feature tests
   ;;   - current-user query
   ;;     - No session
@@ -70,4 +65,6 @@
   ;;   - users query
   ;;     - No session
   ;;     - Different roles
+
+  ;; Collect all the TODO items in a single place.
 )
