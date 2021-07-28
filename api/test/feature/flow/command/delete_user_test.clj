@@ -11,31 +11,19 @@
   (h/create-test-user! "success+1@simulator.amazonses.com")
   (h/create-test-user! "success+2@simulator.amazonses.com" "Test" #{:customer :admin})
   (h/create-test-user! "success+4@simulator.amazonses.com")
+  (h/delete-test-user! "success+4@simulator.amazonses.com")
   (h/create-test-user! "success+5@simulator.amazonses.com")
   (h/create-test-user! "success+6@simulator.amazonses.com")
   (h/create-test-user! "success+7@simulator.amazonses.com" "Test" #{:customer :admin})
+  (h/delete-test-user! "success+7@simulator.amazonses.com")
   (h/create-test-user! "success+8@simulator.amazonses.com")
-  (h/create-test-user! "success+9@simulator.amazonses.com" "Test" #{:customer :admin})
-  (h/delete-test-user! "success+4@simulator.amazonses.com")
-  (h/delete-test-user! "success+7@simulator.amazonses.com"))
-
-(defn tear-down
-  []
-  (h/destroy-test-user! "success+1@simulator.amazonses.com")
-  (h/destroy-test-user! "success+2@simulator.amazonses.com")
-  (h/destroy-test-user! "success+3@simulator.amazonses.com")
-  (h/destroy-test-user! "success+4@simulator.amazonses.com")
-  (h/destroy-test-user! "success+5@simulator.amazonses.com")
-  (h/destroy-test-user! "success+6@simulator.amazonses.com")
-  (h/destroy-test-user! "success+7@simulator.amazonses.com")
-  (h/destroy-test-user! "success+8@simulator.amazonses.com")
-  (h/destroy-test-user! "success+9@simulator.amazonses.com"))
+  (h/create-test-user! "success+9@simulator.amazonses.com" "Test" #{:customer :admin}))
 
 (defn fixture [test]
-  (tear-down)
+  (h/ensure-empty-table)
   (setup)
   (test)
-  (tear-down))
+  (h/ensure-empty-table))
 
 (use-fixtures :each fixture)
 

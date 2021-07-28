@@ -41,12 +41,6 @@
       :authorisation/granted-at nil})))
 
 
-(defn destroy!
-  "Destroys a authorisation entity if it exists."
-  [id]
-  (db/destroy-entity! :authorisation id))
-
-
 (defn mutate!
   "Authorisation entity specific wrapper."
   [id f]

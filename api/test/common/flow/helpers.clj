@@ -5,6 +5,7 @@
             [flow.domain.user-management :as user-management]
             [flow.domain.authorisation-attempt :as authorisation-attempt]
             [flow.db :as db]
+            [taoensso.faraday :as faraday]
             [clj-time.coerce :as t.coerce]
             [clj-time.core :as t]
             [muuntaja.core :as muuntaja]))
@@ -80,19 +81,24 @@
             :session {}})}))
 
 
+(defn ensure-empty-table
+  "Helper function for clearing the table so as to have a clean
+   an predictable table for each test."
+  []
+  (let [table-description (faraday/describe-table db/config :flow)
+        table-index [:partition :s]
+        table-options {:throughput {:read 1 :write 1} :block? true}]
+    (when (some? table-description)
+      (faraday/delete-table db/config :flow))
+    (faraday/create-table db/config :flow table-index table-options)))
+
+
 (defn create-test-user!
   "Creates a test user with some default options unless specified otherwise."
   ([email-address]
    (user/create! email-address "Test" #{:customer}))
   ([email-address name roles]
    (user/create! email-address name roles)))
-
-
-(defn destroy-test-user!
-  "Destroys the test user."
-  [email-address]
-  (when-let [{:keys [user/id]} (user/fetch (user/id email-address))]
-    (user/destroy! id)))
 
 
 (defn delete-test-user!
@@ -137,12 +143,3 @@
   (filter
    #(= (:user/id %) user-id)
    (authorisation/fetch-all)))
-
-
-(defn destroy-test-authorisations!
-  "Destroys all test authorisations associarted with the user id provided."
-  [user-id]
-  (->> (find-test-authorisations user-id)
-       (map :authorisation/id)
-       (map authorisation/destroy!)
-       (doall)))

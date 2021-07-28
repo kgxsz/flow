@@ -1,4 +1,4 @@
-(ns flow.command.deauthorise-test
+(ns flow.query.users-test
   (:require [flow.core :refer :all]
             [flow.entity.authorisation :as authorisation]
             [flow.entity.user :as user]
@@ -19,11 +19,10 @@
 (use-fixtures :each fixture)
 
 
-(deftest test-deauthorise
+(deftest test-users
 
-  (testing "The handler negotiates the deauthorise command when no session is provided."
-    (let [request (h/request
-                   {:command {:deauthorise {}}})
+  (testing "The handler negotiates the current-user query when no session is provided."
+    (let [request (h/request {:query {:users {}}})
           {:keys [status headers body] :as response} (handler request)]
       (is (= 200 status))
       (is (= {:users {}
@@ -32,10 +31,10 @@
               :session {:current-user-id nil}}
              (h/decode :transit body)))))
 
-  (testing "The handler negotiates the deauthorise command when an unauthorised session is provided."
+  (testing "The handler negotiates the current-user query when an unauthorised session is provided."
     (let [request (h/request
                    {:session :unauthorised
-                    :command {:deauthorise {}}})
+                    :query {:users {}}})
           {:keys [status headers body] :as response} (handler request)]
       (is (= 200 status))
       (is (= {:users {}
@@ -44,14 +43,17 @@
               :session {:current-user-id nil}}
              (h/decode :transit body)))))
 
-  (testing "The handler negotiates the deauthorise command when an authorised session is provided."
+  (testing "The handler negotiates the current-user query when an authorised session is provided."
     (let [request (h/request
                    {:session "success+1@simulator.amazonses.com"
-                    :command {:deauthorise {}}})
+                    :query {:users {}}})
+          user-id (user/id "success+1@simulator.amazonses.com")
+          user (user/fetch user-id)
+          users (user/fetch-all)
           {:keys [status headers body] :as response} (handler request)]
       (is (= 200 status))
-      (is (= {:users {}
+      (is (= {:users {user-id user}
               :authorisations {}
               :metadata {}
-              :session {:current-user-id nil}}
+              :session {:current-user-id user-id}}
              (h/decode :transit body))))))

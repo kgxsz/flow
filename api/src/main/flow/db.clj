@@ -72,24 +72,6 @@
       :message (str "the " entity-type " entity with id " entity-id " already exists.")})))
 
 
-(defn destroy-entity!
-  "Destroys an entity in DynamoDB if and only if the entity exists.
-   On success, returns the entity's id."
-  [entity-type entity-id]
-  (if (some? (fetch-entity entity-type entity-id))
-    (slingshot/try+
-     (faraday/delete-item
-      config
-      :flow
-      {:partition (entity-partition entity-type entity-id)})
-     entity-id
-     (catch Object _
-       (u/generate :external-error "Unable to delete an item from DynamoDB.")))
-    (slingshot/throw+
-     {:type :flow/internal-error
-      :message (str "the " entity-type " entity with id " entity-id " does not exists.")})))
-
-
 (defn mutate-entity!
   "Mutates an entity by applying function f if and only if the
    entity exists. On success, returns the entity's id."

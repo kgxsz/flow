@@ -9,16 +9,11 @@
   []
   (h/create-test-user! "success+2@simulator.amazonses.com"))
 
-(defn tear-down
-  []
-  (h/destroy-test-user! "success+1@simulator.amazonses.com")
-  (h/destroy-test-user! "success+2@simulator.amazonses.com"))
-
 (defn fixture [test]
-  (tear-down)
+  (h/ensure-empty-table)
   (setup)
   (test)
-  (tear-down))
+  (h/ensure-empty-table))
 
 (use-fixtures :each fixture)
 

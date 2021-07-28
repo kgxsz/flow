@@ -84,18 +84,6 @@
       (is (= (:user/id user) (create-entity! :user (:user/id user) user))))))
 
 
-(deftest test-destroy-entity!
-
-  (testing "Throws an exception when the entity provided does not exist."
-    (with-redefs [faraday/get-item (constantly nil)]
-      (is (thrown+? [:type :flow/internal-error]
-                    (destroy-entity! :user (:user/id user))))))
-
-  (testing "Returns the entity ID when the operation is executed successfully."
-    (with-redefs [faraday/get-item (constantly {:entity authorisation})]
-      (is (= (:authorisation/id authorisation) (destroy-entity! :authorisation (:authorisation/id authorisation)))))))
-
-
 (deftest test-mutate-entity!
 
   (testing "Throws an exception when the entity provided does not exist."

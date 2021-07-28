@@ -41,12 +41,6 @@
       :user/deleted-at nil})))
 
 
-(defn destroy!
-  "Destroys a user entity if it exists."
-  [id]
-  (db/destroy-entity! :user id))
-
-
 (defn mutate!
   "User entity specific wrapper."
   [id f]
