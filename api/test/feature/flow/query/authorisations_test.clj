@@ -5,23 +5,6 @@
             [flow.helpers :as h]
             [clojure.test :refer :all]))
 
-(def accessible-keys
-  {#{:customer}
-   []
-   #{:customer :admin}
-   [:authorisation/id
-    :user/id
-    :authorisation/phrase
-    :authorisation/created-at
-    :authorisation/granted-at]
-   #{:owner :customer}
-   []
-   #{:owner :customer :admin}
-   [:authorisation/id
-    :user/id
-    :authorisation/phrase
-    :authorisation/created-at
-    :authorisation/granted-at]})
 
 (defn setup
   []
@@ -88,17 +71,17 @@
                                (-> (user/id "success+1@simulator.amazonses.com")
                                    (authorisation/id "some-phrase")
                                    (authorisation/fetch)
-                                   (select-keys (get accessible-keys #{:customer :admin})))
+                                   (select-keys (get-in h/accessible-keys [:authorisation #{:customer :admin}])))
                                (authorisation/id (user/id "success+1@simulator.amazonses.com") "some-other-phrase")
                                (-> (user/id "success+1@simulator.amazonses.com")
                                    (authorisation/id "some-other-phrase")
                                    (authorisation/fetch)
-                                   (select-keys (get accessible-keys #{:customer :admin})))
+                                   (select-keys (get-in h/accessible-keys [:authorisation #{:customer :admin}])))
                                (authorisation/id (user/id "success+2@simulator.amazonses.com") "some-phrase")
                                (-> (user/id "success+2@simulator.amazonses.com")
                                    (authorisation/id "some-phrase")
                                    (authorisation/fetch)
-                                   (select-keys (get accessible-keys #{:owner :customer :admin})))}
+                                   (select-keys (get-in h/accessible-keys [:authorisation #{:owner :customer :admin}])))}
               :metadata {}
               :session {:current-user-id (user/id "success+2@simulator.amazonses.com")}}
              (h/decode :transit body))))))

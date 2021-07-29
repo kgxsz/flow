@@ -39,6 +39,51 @@
      "session=vJxkdtO0BOSz5nDqFHDhXAycccwHiYP6kHvsUQYb%2FUzrrj5jtUbM5obcG6htBG5W--ZO6plGXoqeDqtHlU38R2I3vwYsbt1YalbU9OEI0vq9Q%3D")))
 
 
+(def accessible-keys
+  {:user {#{:customer}
+          [:user/id
+           :user/name
+           :user/created-at
+           :user/deleted-at]
+          #{:customer :admin}
+          [:user/id
+           :user/email-address
+           :user/name
+           :user/roles
+           :user/created-at
+           :user/deleted-at]
+          #{:owner :customer}
+          [:user/id
+           :user/email-address
+           :user/name
+           :user/roles
+           :user/created-at
+           :user/deleted-at]
+          #{:owner :customer :admin}
+          [:user/id
+           :user/email-address
+           :user/name
+           :user/roles
+           :user/created-at
+           :user/deleted-at]}
+   :authorisation {#{:customer}
+                   []
+                   #{:customer :admin}
+                   [:authorisation/id
+                    :user/id
+                    :authorisation/phrase
+                    :authorisation/created-at
+                    :authorisation/granted-at]
+                   #{:owner :customer}
+                   []
+                   #{:owner :customer :admin}
+                   [:authorisation/id
+                    :user/id
+                    :authorisation/phrase
+                    :authorisation/created-at
+                    :authorisation/granted-at]}})
+
+
 (defn encode
   "Encodes the content in either transit or json."
   [type content]

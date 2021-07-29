@@ -5,33 +5,6 @@
             [flow.helpers :as h]
             [clojure.test :refer :all]))
 
-(def accessible-keys
-  {#{:customer}
-   [:user/id
-    :user/name
-    :user/created-at
-    :user/deleted-at]
-   #{:customer :admin}
-   [:user/id
-    :user/email-address
-    :user/name
-    :user/roles
-    :user/created-at
-    :user/deleted-at]
-   #{:owner :customer}
-   [:user/id
-    :user/email-address
-    :user/name
-    :user/roles
-    :user/created-at
-    :user/deleted-at]
-   #{:owner :customer :admin}
-   [:user/id
-    :user/email-address
-    :user/name
-    :user/roles
-    :user/created-at
-    :user/deleted-at]})
 
 (defn setup
   []
@@ -46,6 +19,7 @@
   (h/ensure-empty-table))
 
 (use-fixtures :each fixture)
+
 
 (deftest test-users
 
@@ -81,15 +55,15 @@
       (is (= {:users {(user/id "success+1@simulator.amazonses.com")
                       (-> (user/id "success+1@simulator.amazonses.com")
                           (user/fetch)
-                          (select-keys (get accessible-keys #{:owner :customer})))
+                          (select-keys (get-in h/accessible-keys [:user #{:owner :customer}])))
                       (user/id "success+2@simulator.amazonses.com")
                       (-> (user/id "success+2@simulator.amazonses.com")
                           (user/fetch)
-                          (select-keys (get accessible-keys #{:customer})))
+                          (select-keys (get-in h/accessible-keys [:user #{:customer}])))
                       (user/id "success+3@simulator.amazonses.com")
                       (-> (user/id "success+3@simulator.amazonses.com")
                           (user/fetch)
-                          (select-keys (get accessible-keys #{:customer})))}
+                          (select-keys (get-in h/accessible-keys [:user #{:customer}])))}
               :authorisations {}
               :metadata {}
               :session {:current-user-id (user/id "success+1@simulator.amazonses.com")}}
@@ -105,15 +79,15 @@
       (is (= {:users {(user/id "success+1@simulator.amazonses.com")
                       (-> (user/id "success+1@simulator.amazonses.com")
                           (user/fetch)
-                          (select-keys (get accessible-keys #{:customer :admin})))
+                          (select-keys (get-in h/accessible-keys [:user #{:customer :admin}])))
                       (user/id "success+2@simulator.amazonses.com")
                       (-> (user/id "success+2@simulator.amazonses.com")
                           (user/fetch)
-                          (select-keys (get accessible-keys #{:owner :customer :admin})))
+                          (select-keys (get-in h/accessible-keys [:user #{:owner :customer :admin}])))
                       (user/id "success+3@simulator.amazonses.com")
                       (-> (user/id "success+3@simulator.amazonses.com")
                           (user/fetch)
-                          (select-keys (get accessible-keys #{:customer :admin})))}
+                          (select-keys (get-in h/accessible-keys [:user #{:customer :admin}])))}
               :authorisations {}
               :metadata {}
               :session {:current-user-id (user/id "success+2@simulator.amazonses.com")}}
