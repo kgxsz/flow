@@ -64,20 +64,44 @@
                                :user/roles #{:customer}}
                               :delete-user
                               {:user/id (user/id "success+5@simulator.amazonses.com")}}})
-          user-a (user/fetch (user/id "success+4@simulator.amazonses.com"))
-          user-b (user/fetch (user/id "success+5@simulator.amazonses.com"))
+          user-id-a (user/id "success+4@simulator.amazonses.com")
+          user-id-b (user/id "success+5@simulator.amazonses.com")
+          user-a (user/fetch user-id-a)
+          user-b (user/fetch user-id-b)
           {:keys [status headers body] :as response} (handler request)
-          user-a' (user/fetch (user/id "success+4@simulator.amazonses.com"))
-          user-b' (user/fetch (user/id "success+5@simulator.amazonses.com"))]
+          user-a' (user/fetch user-id-a)
+          user-b' (user/fetch user-id-b)]
       (is (= 200 status))
       (is (= {:users {}
               :authorisations {}
               :metadata {:id-resolution
-                         {#uuid "00000000-0000-0000-0000-000000000000"
-                          (user/id "success+4@simulator.amazonses.com")}}
+                         {#uuid "00000000-0000-0000-0000-000000000000" user-id-a}}
               :session {:current-user-id (user/id "success+1@simulator.amazonses.com")}}
              (h/decode :transit body)))
       (is (nil? user-a))
       (is (some? user-a'))
       (is (nil? (:user/deleted-at user-b)))
-      (is (some? (:user/deleted-at user-b'))))))
+      (is (some? (:user/deleted-at user-b')))))
+
+  (testing "The handler negotiates simultaneous commands and queries."
+    (let [request (h/request
+                   {:session "success+1@simulator.amazonses.com"
+                    :command {:add-user
+                              {:user/id #uuid "00000000-0000-0000-0000-000000000000"
+                               :user/email-address "success+6@simulator.amazonses.com"
+                               :user/name "Test"
+                               :user/roles #{:customer}}}
+                    :query {:user {:user/id #uuid "00000000-0000-0000-0000-000000000000"}}})
+          user-id (user/id "success+6@simulator.amazonses.com")
+          user (user/fetch user-id)
+          {:keys [status headers body] :as response} (handler request)
+          user' (user/fetch user-id)]
+      (is (= 200 status))
+      (is (= {:users {user-id (select-keys user' (get-in h/accessible-keys [:user #{:admin :customer}]))}
+              :authorisations {}
+              :metadata {:id-resolution
+                         {#uuid "00000000-0000-0000-0000-000000000000" user-id}}
+              :session {:current-user-id (user/id "success+1@simulator.amazonses.com")}}
+             (h/decode :transit body)))
+      (is (nil? user))
+      (is (some? user')))))
