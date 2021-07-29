@@ -116,7 +116,7 @@
 
   (testing "The handler negotiates the delete-user command when the command is being made for an
             existing user who has not previously been deleted, and a session authorised to a user
-            with an admin role is provided, where that user has previously been deleted."
+            with an admin role is provided, where that authorised user has previously been deleted."
     (let [request (h/request
                    {:session "success+7@simulator.amazonses.com"
                     :command {:delete-user {:user/id (user/id "success+6@simulator.amazonses.com")}}})
@@ -156,7 +156,8 @@
 
   (testing "The handler negotiates the delete-user command when the command is being made for an
             existing user who has not previously been deleted, and a session authorised for a user
-            with an admin role is provided, where that user happens to be the same user being deleted."
+            with an admin role is provided, where that authorised user happens to be the same user
+            being deleted."
     (let [request (h/request
                    {:session "success+9@simulator.amazonses.com"
                     :command {:delete-user {:user/id (user/id "success+9@simulator.amazonses.com")}}})

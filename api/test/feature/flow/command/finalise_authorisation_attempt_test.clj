@@ -176,8 +176,9 @@
       (is (some? (:authorisation/granted-at authorisation')))))
 
   (testing "The handler negotiates the finalise-authorisation-attempt command when the command is being
-            made for an existing user and authorisation where the authorisation is grantable and a session
-            authorised to that user is provided."
+            made for an existing user and authorisation where the authorisation is grantable and an
+            authorised session is provided, where the authorised user happens to be the same user upon
+            whom the authorisation attempt is being finalised."
     (let [request (h/request
                    {:session "success+6@simulator.amazonses.com"
                     :command {:finalise-authorisation-attempt
@@ -201,8 +202,9 @@
       (is (some? (:authorisation/granted-at authorisation')))))
 
   (testing "The handler negotiates the finalise-authorisation-attempt command when the command is being
-            made for an existing user and authorisation where the authorisation is grantable and a session
-            authorised to a different user is provided."
+            made for an existing user and authorisation where the authorisation is grantable and an
+            authorised session is provided, where the authorised user is distinct from the user upon whom
+            the authorisation attempt is being finalised."
     (let [request (h/request
                    {:session "success+6@simulator.amazonses.com"
                     :command {:finalise-authorisation-attempt

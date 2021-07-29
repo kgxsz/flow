@@ -105,17 +105,16 @@
       (is (= {:users {(user/id "success+1@simulator.amazonses.com")
                       (-> (user/id "success+1@simulator.amazonses.com")
                           (user/fetch)
-                          (select-keys (get accessible-keys #{:admin :customer})))
+                          (select-keys (get accessible-keys #{:customer :admin})))
                       (user/id "success+2@simulator.amazonses.com")
                       (-> (user/id "success+2@simulator.amazonses.com")
                           (user/fetch)
-                          (select-keys (get accessible-keys #{:owner :admin :customer})))
+                          (select-keys (get accessible-keys #{:owner :customer :admin})))
                       (user/id "success+3@simulator.amazonses.com")
                       (-> (user/id "success+3@simulator.amazonses.com")
                           (user/fetch)
-                          (select-keys (get accessible-keys #{:admin :customer})))}
+                          (select-keys (get accessible-keys #{:customer :admin})))}
               :authorisations {}
               :metadata {}
               :session {:current-user-id (user/id "success+2@simulator.amazonses.com")}}
              (h/decode :transit body))))))
-

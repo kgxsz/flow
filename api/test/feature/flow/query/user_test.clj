@@ -102,7 +102,7 @@
 
   (testing "The handler negotiates the user query when the query is being made for an existing
             user and an authorised session for a user with a customer role is provided, where
-            that user happens to be the same user being queried."
+            the authorised user happens to be the same user being queried."
     (let [request (h/request
                    {:session "success+3@simulator.amazonses.com"
                     :query {:user {:user/id (user/id "success+3@simulator.amazonses.com")}}})
@@ -135,7 +135,7 @@
 
   (testing "The handler negotiates the user query when the query is being made for an existing user
             and an authorised session for a user with both a customer and admin role is provided,
-            where that user happens to be the same user being queried."
+            where the authorised user happens to be the same user being queried."
     (let [request (h/request
                    {:session "success+4@simulator.amazonses.com"
                     :query {:user {:user/id (user/id "success+4@simulator.amazonses.com")}}})

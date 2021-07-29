@@ -107,7 +107,7 @@
 
   (testing "The handler negotiates the add-user command when the command is being made for a
             non-existent user and a session authorised to a user with an admin role is provided,
-            where the user has previously been deleted."
+            where that authorised user has previously been deleted."
     (let [request (h/request
                    {:session "success+4@simulator.amazonses.com"
                     :command {:add-user

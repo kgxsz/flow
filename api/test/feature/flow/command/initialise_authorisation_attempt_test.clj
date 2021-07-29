@@ -115,7 +115,9 @@
       (is (= 1 (count authorisations')))))
 
   (testing "The handler negotiates the initialise-authorisation-attempt command when the command
-            is being made for an existing user and a session authorised to that user is provided."
+            is being made for an existing user and an authorised session is provided, where the
+            authorised user happens to be the same user upon whom the authorisation attempt is
+            being initialised."
     (let [request (h/request
                    {:session "success+5@simulator.amazonses.com"
                     :command {:initialise-authorisation-attempt
@@ -136,8 +138,10 @@
       (is (= 0 (count authorisations)))
       (is (= 1 (count authorisations')))))
 
-  (testing "The handler negotiates the initialise-authorisation-attempt command when the command is being
-            made for an existing user and a session authorised to a different user is provided."
+  (testing "The handler negotiates the initialise-authorisation-attempt command when the command
+            is being made for an existing user and an authorised session is provided, where the
+            authorised user is distinct from the user upon whom the authorisation attempt is
+            being initialised."
     (let [request (h/request
                    {:session "success+5@simulator.amazonses.com"
                     :command {:initialise-authorisation-attempt
