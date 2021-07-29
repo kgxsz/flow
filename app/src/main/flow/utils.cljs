@@ -22,13 +22,13 @@
 
 (defn make-url
   "Makes the API url by looking at the current host, and adding the path."
-  [path]
+  []
   (let [{:keys [protocol host]} (url/url (.. js/window -location -href))]
+    ;; TODO - fix this after removal of paths
     (-> (url/url "")
-        (assoc :protocol protocol)
-        (assoc :host (str "api." host))
-        (assoc :path (->> path name (str "/")))
-        (str))))
+      (assoc :protocol protocol)
+      (assoc :host (str "api." host))
+      (str))))
 
 
 (defn valid-email-address?

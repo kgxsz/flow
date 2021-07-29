@@ -1,9 +1,13 @@
 (ns flow.core
-  (:require [muuntaja.core :as muuntaja]
+  (:require [flow.query :as query]
+            [flow.command :as command]
+            [muuntaja.core :as muuntaja]
             [flow.middleware :as middleware]
+            [flow.specifications :as specifications]
             [ring.util.response :as response]
             [clojure.java.io :as io]
-            [medley.core :as medley])
+            [medley.core :as medley]
+            [slingshot.slingshot :as slingshot])
   (:gen-class
    :implements [com.amazonaws.services.lambda.runtime.RequestStreamHandler]))
 
@@ -50,39 +54,84 @@
   {:statusCode status
    :headers (medley/remove-vals coll? headers)
    :multiValueHeaders (medley/filter-vals coll? headers)
-   :body (try (slurp body) (catch Exception e body))})
+   :body (slingshot/try+ (slurp body) (catch Object _ body))})
+
+
+(defn handle-command
+  "Fulfills each command method and merges the outcomes into a result.
+   Outputs a map containing the yet to be fulfilled query, the metadata,
+   and the session provided merged with any metadata and session present
+   in the command result."
+  [{:keys [query command metadata session]}]
+  (let [handle (fn [[method payload]] (command/handle method payload metadata session))
+        result (apply medley/deep-merge (map handle command))]
+    {:query query
+     :metadata (medley/deep-merge metadata (get result :metadata {}))
+     :session (medley/deep-merge session (get result :session {}))}))
+
+
+(defn resolve-ids
+  "Takes the ID resolution map provided in the metadata and replaces any
+   temporary ID in the query with its counterpart non temporary ID produced
+   in the command. This is needed because the app cannot know an entity's ID
+   before it is created, so it provides a temporary one that requires resolving."
+  [{:keys [query metadata session]}]
+  {:query (clojure.walk/postwalk
+           #(get (:id-resolution metadata) % %)
+           query)
+   :metadata metadata
+   :session session})
+
+
+(defn handle-query
+  "Fulfills each query method and merges the outcomes into a result.
+   Outputs a map containing each entity, the metadata, and the session
+   provided merged with any metadata or session present in the query
+   result."
+  [{:keys [query metadata session]}]
+  (let [handle (fn [[method payload]] (query/handle method payload metadata session))
+        result (apply medley/deep-merge (map handle query))]
+    {:users (get result :users {})
+     :authorisations (get result :authorisations {})
+     :metadata (medley/deep-merge metadata (get result :metadata {}))
+     :session (medley/deep-merge session (get result :session {}))}))
 
 
 (def handler
-  (-> (fn [request]
-        (->> (:body-params request)
-             (map (:handle request))
-             (apply medley/deep-merge)
-             (response/response)))
-      (middleware/wrap-query-command-dispatch)
-      (middleware/wrap-current-user-id)
+  (-> (fn [{:keys [body-params]}]
+        (-> body-params
+            (handle-command)
+            (resolve-ids)
+            (handle-query)
+            (response/response)))
+      (middleware/wrap-access-control)
+      (middleware/wrap-current-user)
       (middleware/wrap-session)
+      (middleware/wrap-session-persistence)
       (middleware/wrap-content-validation)
       (middleware/wrap-content-type)
+      (middleware/wrap-request-path)
       (middleware/wrap-request-method)
-      (middleware/wrap-cors)
-      (middleware/wrap-exception)))
+      ;; TODO - why can't exceptions be on the outside of cors?
+      (middleware/wrap-exception)
+      (middleware/wrap-cors)))
 
 
 (defn -handleRequest
   "Handles the Lambda invokation lifecycle."
   [_ input-stream output-stream context]
-  (try
+  (slingshot/try+
     (->> input-stream
          (read-input-stream)
          (adapt-input)
          (handler)
          (adapt-output)
          (write-output-stream output-stream))
-    (catch Exception e
-      (.printStackTrace e)
+    (catch Object o
+      ;; TODO - proper logging please
+      (.printStackTrace o)
       (write-output-stream
        output-stream
        {:statusCode 500
         :headers {"Content-Type" "application/json; charset=utf-8"}
-        :body "{\"error\": \"Uncaught exception.\"}"}))))
+        :body "{\"error\": \"Unspecified error detected.\"}"}))))

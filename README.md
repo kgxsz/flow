@@ -18,8 +18,7 @@
   - URI as `api.localhost`.
   - DNS name as `api.localhost`.
   - Empty IP Address.
-  - Choose a password, this is your keystore password.
-- Export the certificate to `api/ssl/Certificates.p12`
+- Export the certificate to `api/ssl/Certificates.p12` and choose a keystore password.
 - In `api/ssl/` generate the `keystore.jks` with: 
   `keytool -importkeystore -destkeystore keystore.jks -srcstoretype PKCS12 -srckeystore Certificates.p12`.
 - Ensure that the destination and source keystore passwords are equal to the keystore password above.
@@ -31,23 +30,23 @@
   - URI as `localhost`.
   - DNS name as `localhost`.
   - Empty IP Address.
-  - Choose a password, this is your keystore password.
-- Export the certificate to `app/ssl/Certificates.p12`
+- Export the certificate to `app/ssl/Certificates.p12` and choose a keystore password.
 - In `app/ssl/` generate the `keystore.jks` with: 
   `keytool -importkeystore -destkeystore keystore.jks -srcstoretype PKCS12 -srckeystore Certificates.p12`.
 - Ensure that the destination and source keystore passwords are equal to the keystore password above.
 
 ### Local database setup
 - Install a local DynamoDB instance with: `brew install --cask dynamodb-local`.
+- Ensure that the correct AWS credentials are in place in `~/.aws/credentials`.
 - Start the local DynamoDB instance with: `dynamodb-local -inMemory true`.
 
 ### Local api development setup
 - In `api/` setup the environment variables:
   - `KEYSTORE_PASSWORD` as determined above.
   - `CORS_ORIGIN` as `https://localhost:8080`.
-  - `COOKIE_STORE_KEY` as 16 byte secret key.
+  - `COOKIE_STORE_KEY` as `1234123412341234`.
   - `DB_ENDPOINT` as `http://localhost:8000`.
-- In `api/` start the REPL with `clj -A:repl`.
+- In `api/` start the REPL with `clj -M:repl`.
 - Connect to the api's Clojure REPL, load `flow.dev`.
 - Start the local server with: `(server)`.
 - Seed the local DynamoDB instance with: `(seed)`.
@@ -56,24 +55,41 @@
 ### Local app development setup
 - In `app/` setup the environment variables:
   - `KEYSTORE_PASSWORD` as determined above.
-- In `app/` start the auto JS compilation with `clj -A:dev/js`.
-- In `app/` start the auto CSS compilation with `clj -A:dev/css`.
+- In `app/` run `npm install` to prepare some dependencies.
+- In `app/` start the auto JS compilation with `clj -M:dev/js`.
+- In `app/` start the auto CSS compilation with `clj -M:dev/css`.
 - Connect to the app's Clojure REPL, and start the Clojurescript REPL with `(repl)`.
 - The app will be running at `https://localhost:8080`.
+
+
+## Testing
+
+### Unit
+- In `api/` setup the environment variables:
+  - `CORS_ORIGIN` as `https://localhost:8080`.
+- In `api/` run the unit tests with `clj -M:test/unit`.
+- Alternatively, in the api's Clojure REPL, run `(kaocha/run :unit)`.
+
+### Feature
+- In `api/` setup the environment variables:
+  - `CORS_ORIGIN` as `https://localhost:8080`.
+- In `api/` run the feature tests with `clj -M:test/feature`.
+- Alternatively, in the api's Clojure REPL, run `(kaocha/run :feature)`.
 
 
 ## Remote deployment
 
 ### Create the assets
-- In `app/` build an optimised index.js file with `clj -A:release/js`.
-- In `app/` build an optimised index.css file with `clj -A:release/css`.
-- In `api/` clear out previous assets with `rm -rf classes && mkdir classes && rm-rf target && mkdir target`.
-- In `api/` compile the API with `clj -A:compile`.
-- In `api/` zip the API with `clj -A:zip mach.pack.alpha.aws-lambda target/flow.zip -C:compile -R:compile`
+- In `app/` build an optimised index.js file with `clj -M:release/js`.
+- In `app/` build an optimised index.css file with `clj -M:release/css`.
+- In `api/` clear out previous assets with `rm -rf classes && mkdir classes && rm -rf target && mkdir target`.
+- In `api/` compile the API with `clj -M:compile`.
+- In `api/` zip the API with `clj -M:zip mach.pack.alpha.aws-lambda target/flow.zip -C:compile -R:compile`
 
 ### Deploy the infrastructure and assets
 - In `infrastructure/` setup the environment variables:
   - `TF_VAR_cookie_store_key` as the 16 byte secret key set in production.
+- In `infrastructure/` initialise terraform if required using `terraform init`.
 - In `infrastructure/` update the remote assets with `terraform apply`.
 
 ## Tear down

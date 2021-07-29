@@ -1,75 +1,75 @@
 (ns flow.command
-  (:require [flow.domain.authorisation :as authorisation]
-            [flow.domain.user :as user]))
+  (:require [flow.entity.user :as user]
+            [flow.entity.authorisation :as authorisation]
+            [flow.email :as email]
+            [flow.domain.user-management :as user-management]
+            [flow.domain.authorisation-attempt :as authorisation-attempt]
+            [flow.utils :as u]))
 
 
-(defmulti handle first)
+(defmulti handle (fn [method payload metadata session] method))
 
 
-(defmethod handle :initialise-authorisation
-  [[_ {:keys [authorisation-email-address]}]]
-  (try
-    (let [user-id (user/id authorisation-email-address)
-          authorisation-phrase (authorisation/generate-phrase)]
-      (if (user/fetch user-id)
-        (do
-          (authorisation/create user-id authorisation-phrase)
-          (authorisation/send-phrase authorisation-email-address authorisation-phrase)
-          {})
-        {}))
-    (catch Exception e
-      {})))
-
-
-;; TODO - convert all language here to an authorisation-attempt
-(defmethod handle :finalise-authorisation
-  [[_ {:keys [authorisation-email-address authorisation-phrase]}]]
-  (try
-    (let [user-id (user/id authorisation-email-address)
-          authorisation-id (authorisation/id user-id authorisation-phrase)
-          authorisation (authorisation/fetch authorisation-id)]
-      (if (and (some? authorisation) (not (authorisation/expired? authorisation)))
-        ;; TODO - user return IDs here consistently
-        (do
-          (authorisation/finalise authorisation-id)
-          {:current-user-id user-id})
-        {}))
-    (catch Exception e
-      {})))
-
-
-(defmethod handle :add-user
-  [[_ {:keys [user current-user-id]}]]
-  (try
-    (if (user/admin? current-user-id)
-      (if-let [user-id (user/create (:email-address user)
-                                    (:name user)
-                                    (:roles user))]
-        ;; TODO - probably want something more general here like a temp-id
-        {:user-id user-id}
+(defmethod handle :initialise-authorisation-attempt
+  [_ {:keys [user/email-address]} _ _]
+  "If the user with the given email address exists and has not been deleted,
+   then a phrase will be generated, an authorisation will be created, and an
+   email containing the phrase will be sent to the user such that they may
+   finalise their authorisation attempt."
+  (let [{:user/keys [id deleted-at] :as user} (user/fetch (user/id email-address))]
+    (if (and (some? user) (nil? deleted-at))
+      (let [phrase (authorisation-attempt/generate-phrase)]
+        (authorisation/create! id phrase)
+        (email/send-email! email-address (authorisation-attempt/email phrase))
         {})
-      {})
-    (catch Exception e
       {})))
 
 
-(defmethod handle :delete-user
-  [[_ {:keys [user-id current-user-id]}]]
-  (try
-    (if (user/admin? current-user-id)
-      (if-let [user-id (user/delete user-id)]
-        {:user-id user-id}
-        {})
-      {})
-    (catch Exception e
+(defmethod handle :finalise-authorisation-attempt
+  [_ {:keys [user/email-address authorisation/phrase]} _ _]
+  "If a grantable authorisation is found to match the given email address and phrase,
+   then the authorisation will be marked as granted, and a session will be created."
+  (let [user (user/fetch (user/id email-address))
+        authorisation (authorisation/fetch (authorisation/id (:user/id user) phrase))]
+    (if (and (some? authorisation) (authorisation-attempt/grantable? authorisation))
+      (do
+        (authorisation/mutate!
+         (:authorisation/id authorisation)
+         authorisation-attempt/grant)
+        {:session {:current-user user}})
       {})))
 
 
 (defmethod handle :deauthorise
-  [command]
-  {:current-user-id nil})
+  [_ _ _ _]
+  "The current user will be deauthorised."
+  {:session {:current-user nil}})
+
+
+(defmethod handle :add-user
+  [_ {:user/keys [id email-address name roles]} _ {:keys [current-user]}]
+  "If the current user is an admin, and the given user doesn't
+   already exist, then the given user will be created."
+  (if (and (user-management/admin? current-user)
+           (nil? (user/fetch (user/id email-address))))
+    {:metadata
+     {:id-resolution
+      {id (user/create! email-address name roles)}}}
+    {}))
+
+
+(defmethod handle :delete-user
+  [_ {:keys [user/id]} _ {:keys [current-user]}]
+  "If the current user is an admin, and the given user exists,
+   then that user will be deleted."
+  (if (and (user-management/admin? current-user)
+           (user/fetch id))
+    (do
+      (user/mutate! id user-management/delete)
+      {})
+    {}))
 
 
 (defmethod handle :default
-  [command]
-  (throw (IllegalArgumentException. "Unsupported command method.")))
+  [method _ _ _]
+  (u/generate :internal-error (str "The command method" method " does not exist.")))

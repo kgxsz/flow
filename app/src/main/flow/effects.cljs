@@ -31,21 +31,15 @@
 
 
 (re-frame/reg-fx
- :query
- (fn [query]
-   (ajax/POST (utils/make-url :query)
-              {:params query
+ :api
+ (fn [parameters]
+   ;; TODO - fix all this soon
+   (ajax/POST (utils/make-url)
+              {:params (medley/deep-merge parameters {:command {} :query {} :metadata {} :session {}})
                :with-credentials true
                :handler (fn [response]
-                          (re-frame/dispatch [:query-success query response]))
-               :error-handler (fn [{:keys [response]}] (re-frame/dispatch [:query-failure query response]))})))
-
-
-(re-frame/reg-fx
- :command
- (fn [command]
-   (ajax/POST (utils/make-url :command)
-              {:params command
-               :with-credentials true
-               :handler (fn [response] (re-frame/dispatch [:command-success command response]))
-               :error-handler (fn [{:keys [response]}] (re-frame/dispatch [:command-failure command response]))})))
+                          (re-frame/dispatch [:handle-api-success parameters response]))
+               :error-handler (fn [{:keys [response]}]
+                                (js/console.warn "API call NOT successful!")
+                                (js/console.warn response)
+                                (re-frame/dispatch [:handle-api-failure parameters response]))})))

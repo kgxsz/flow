@@ -1,11 +1,14 @@
 (ns flow.dev
   (:require [ring.adapter.jetty :as jetty]
             [flow.middleware :as middleware]
+            [flow.specifications :as specifications]
             [flow.core :as core]
             [flow.db :as db]
-            [flow.domain.authorisation :as authorisation]
-            [flow.domain.user :as user]
-            [taoensso.faraday :as faraday]))
+            [flow.entity.authorisation :as authorisation]
+            [flow.entity.user :as user]
+            [flow.entity.user :as user]
+            [taoensso.faraday :as faraday]
+            [kaocha.repl :as kaocha]))
 
 
 (defn server []
@@ -26,25 +29,34 @@
         users [["k.suzukawa@gmail.com" "Keigo" #{:admin :customer}]
                ["ksarnecka50@gmail.com" "Kasia" #{:customer}]]]
     (faraday/create-table db/config :flow table-index table-options)
-    (doall (map (partial apply user/create) users))))
+    (doall (map (partial apply user/create!) users))))
 
 
 (comment
+
 
   (server)
 
   (seed)
 
-  (user/create "k.suzukawa@gmail.com" "Keigo" #{:admin :customer})
+  (kaocha/run :unit)
 
-  (user/create "ksarnecka50@gmail.com" "Kasia" #{:customer})
+  (kaocha/run :feature)
+
+  (kaocha/run 'flow.query.authorisations-test)
+
+  (kaocha/run 'flow.query.users-test)
+
+  (user/create! "success+9@simulator.amazonses.com" "Test" #{:customer})
+
+  (user/create! "k.suzukawa@gmail.com" "Keigo" #{:admin :customer})
+
+  (user/create! "ksarnecka50@gmail.com" "Kasia" #{:customer})
 
   (user/fetch (user/id "k.suzukawa@gmail.com"))
 
   (user/fetch-all)
 
-  (authorisation/fetch (authorisation/id (user/id "k.suzukawa@gmail.com") "paste-work-belief"))
-
   (authorisation/fetch-all)
 
-  )
+)

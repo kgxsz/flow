@@ -1,45 +1,86 @@
 (ns flow.middleware
-  (:require [flow.query :as query]
-            [flow.command :as command]
+  (:require [flow.entity.user :as user]
+            [flow.entity.authorisation :as authorisation]
+            [flow.entity.utils :as entity.u]
+            [flow.query :as query]
+            [flow.utils :as u]
             [medley.core :as medley]
             [ring.middleware.cors :as cors.middleware]
             [ring.middleware.session :as session.middleware]
             [ring.middleware.session.cookie :as cookie]
-            [muuntaja.middleware :as muuntaja.middleware]))
+            [muuntaja.middleware :as muuntaja.middleware]
+            [slingshot.slingshot :as slingshot]
+            [clojure.spec.alpha :as s]))
 
 
-(defn wrap-query-command-dispatch
-  "Determines whether to dispatch to query/handle or command/handle,
-   and adds it to the request to be used by the handler."
+(defn wrap-access-control
+  "For inbound requests does nothing. For outbound responses, works through each entity
+   in the response's body and selects the keys that correspond to the correct level of access:
+   - The default accessible keys, which are visible to anybody.
+   - The owner accessible keys, which are visible when the current user owns the entity.
+   - The role accessible keys, which are visible when the current user has the corresponding role.
+   If an entity has had all its keys removed then the entity itself will be removed from the response."
   [handler]
-  (fn [{:keys [uri] :as request}]
-    (case uri
-      "/query" (handler (assoc request :handle query/handle))
-      "/command" (handler (assoc request :handle command/handle))
-      (throw (IllegalArgumentException. "Unsupported uri.")))))
+  (fn [request]
+    (let [response (handler request)
+          ;; NOTE - the current user may be stale during the outbound portion
+          ;; of this middleware. This is okay though since the fields used
+          ;; to determine access control aren't mutable by commands.
+          current-user (get-in response [:body :session :current-user])]
+      (-> response
+          (update-in [:body :users]
+           #(medley/deep-merge
+             (medley/map-vals user/select-default-accessible-keys %)
+             (medley/map-vals (partial user/select-owner-accessible-keys current-user) %)
+             (medley/map-vals (partial user/select-role-accessible-keys current-user) %)))
+          (update-in [:body :users] (partial medley/remove-vals empty?))
+          (update-in [:body :authorisations]
+           #(medley/deep-merge
+             (medley/map-vals authorisation/select-default-accessible-keys %)
+             (medley/map-vals (partial authorisation/select-owner-accessible-keys current-user) %)
+             (medley/map-vals (partial authorisation/select-role-accessible-keys current-user) %)))
+          (update-in [:body :authorisations] (partial medley/remove-vals empty?))))))
 
 
-(defn wrap-current-user-id
-  "For inbound requests, takes the current user id found in the session
-   and adds it to every query/command. For outbound responses, checks
-   whether the current user id has been updated or removed, and acts
-   accordingly by updating or removing the session."
+(defn wrap-current-user
+  "For inbound requests, takes the current user id found in the session and fetches
+   the current user, then attaches it to the session. If the current user cannot be
+   fetched, then an exception is raised. For outbound responses, updates the current
+   user id in the session while removing the current user itself."
   [handler]
-  (fn [{:keys [body-params session] :as request}]
-    (let [{:keys [current-user-id]} session
-          body-params (medley/map-vals
-                       #(assoc % :current-user-id current-user-id)
-                       body-params)
-          request (assoc request :body-params body-params)
+  (fn [request]
+    (let [current-user-id (get-in request [:body-params :session :current-user-id])
+          current-user (when (uuid? current-user-id)
+                         (u/validate :db/user (user/fetch current-user-id)))
+          request (-> request
+                      (update-in [:body-params :session] dissoc :current-user-id)
+                      (assoc-in [:body-params :session :current-user] current-user))
           {:keys [body] :as response} (handler request)]
-      (if (contains? body :current-user-id)
-        (if-let [current-user-id (get-in response [:body :current-user-id])]
-          (assoc-in response [:session :current-user-id] current-user-id)
-          (assoc response :session nil))
-        (assoc-in response [:body :current-user-id] current-user-id)))))
+      (let [id (get-in response [:body :session :current-user :user/id])]
+        (-> response
+            (assoc-in [:body :session :current-user-id] id)
+            (update-in [:body :session] dissoc :current-user))))))
 
 
 (defn wrap-session
+  "For the inbound requests, takes the persisted session and puts it into the body params
+   for use directly in the query/command. For the outbound response, ensures that the
+   session is present in the body is placed in the request so as to be persisted."
+  [handler]
+  (fn [{:keys [session] :as request}]
+    ;; NOTE - today the client can send over session information as part of the body params
+    ;; but we ignore this completely as it's untrustworthy and we prefer to rely on the session
+    ;; information encrypted in the tamper proof cookie. Eventually though, we'll want to allow
+    ;; the client to suggest session updates that we can then carefully merge safely in here.
+    (let [request (assoc-in request [:body-params :session] session)
+          response (handler request)
+          session (get-in response [:body :session])]
+      (if session
+        (assoc response :session session)
+        (u/generate :internal-error "Session missing from response body.")))))
+
+
+(defn wrap-session-persistence
   "Ensures that sessions are persisted in an encrypted cookie on the client."
   [handler]
   (session.middleware/wrap-session
@@ -55,27 +96,34 @@
 
 
 (defn wrap-content-validation
-  "Determines the validity of the content provided by the client."
+  "Determines the validity of the content for both inbound request and outbound responses."
   [handler]
-  (fn [{:keys [body-params] :as request}]
-    (if (and (map? body-params) (not (empty? body-params)))
-      (handler request)
-      (throw (IllegalArgumentException. "Unsupported content.")))))
+  (fn [request]
+    (if (s/valid? :request/body-params (:body-params request))
+      (update (handler request) :body (partial u/validate :response/body))
+      (u/generate :unsupported-request "Invalid request content."))))
 
 
 (defn wrap-content-type
   "Formats the inbound request and outbound response based on the content type header."
   [handler]
-  (fn [{:keys [headers] :as request}]
+  (fn [request]
     (let [content-type (get-in request [:headers "content-type"])]
       (if (= content-type "application/transit+json")
-        (try
+        (slingshot/try+
           ((muuntaja.middleware/wrap-format handler) request)
-          (catch clojure.lang.ExceptionInfo e
-            (let [{:keys [type format]} (ex-data e)]
-              (when (= :muuntaja/decode type)
-                (throw (IllegalArgumentException. (str "Malformed " format " content.")))))))
-        (throw (IllegalArgumentException. "Unsupported or missing Content-Type header."))))))
+          (catch [:type :muuntaja/decode] {:keys [format]}
+            (u/generate :unsupported-request (str "Malformed " format " content."))))
+        (u/generate :unsupported-request "Unsupported or missing Content-Type header.")))))
+
+
+(defn wrap-request-path
+  "Filters out any request path other than the root."
+  [handler]
+  (fn [{:keys [uri] :as request}]
+    (if (or (= uri "/") (= uri ""))
+      (handler request)
+      (u/generate :unsupported-request "Unsupported request path."))))
 
 
 (defn wrap-request-method
@@ -84,7 +132,31 @@
   (fn [{:keys [request-method] :as request}]
     (if (= request-method :post)
       (handler request)
-      (throw (IllegalArgumentException. "Unsupported request method.")))))
+      (u/generate :unsupported-request "Unsupported request method."))))
+
+
+(defn wrap-exception
+  "Handles all uncaught exceptions."
+  [handler]
+  (fn [request]
+    (slingshot/try+
+     (handler request)
+      (catch [:type :flow/unsupported-request] {:keys [message]}
+        {:status 400
+         :headers {"Content-Type" "application/json; charset=utf-8"}
+         :body (str "{\"error\": \"" message "\"}")})
+      (catch [:type :flow/internal-error] {:keys [message]}
+        {:status 500
+         :headers {"Content-Type" "application/json; charset=utf-8"}
+         :body (str "{\"error\": \"" message "\"}")})
+      (catch [:type :flow/external-error] _
+        {:status 500
+         :headers {"Content-Type" "application/json; charset=utf-8"}
+         :body "{\"error\": \"External error detected.\"}"})
+      (catch Object _
+        {:status 500
+         :headers {"Content-Type" "application/json; charset=utf-8"}
+         :body "{\"error\": \"Unspecified error detected.\"}"}))))
 
 
 (defn wrap-cors
@@ -96,15 +168,3 @@
    :access-control-allow-methods [:options :post]
    :access-control-allow-headers ["Content-Type"]
    :access-control-allow-credentials "true"))
-
-
-(defn wrap-exception
-  "Handles all uncaught exceptions."
-  [handler]
-  (fn [request]
-    (try
-      (handler request)
-      (catch IllegalArgumentException e
-        {:status 400
-         :headers {"Content-Type" "application/json; charset=utf-8"}
-         :body (str "{\"error\": \"" (.getMessage e) "\"}")}))))
