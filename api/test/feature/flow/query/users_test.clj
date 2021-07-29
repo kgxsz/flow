@@ -95,8 +95,8 @@
               :session {:current-user-id (user/id "success+1@simulator.amazonses.com")}}
              (h/decode :transit body)))))
 
-  (testing "The handler negotiates the users query when an authorised session is provided
-            for a user with both a customer and admin role."
+  (testing "The handler negotiates the users query when an authorised session for a user
+            with both a customer and admin role is provided."
     (let [request (h/request
                    {:session "success+2@simulator.amazonses.com"
                     :query {:users {}}})
@@ -118,3 +118,4 @@
               :metadata {}
               :session {:current-user-id (user/id "success+2@simulator.amazonses.com")}}
              (h/decode :transit body))))))
+

@@ -63,8 +63,8 @@
              (h/decode :transit body)))
       (is (= nil user user'))))
 
-  (testing "The handler negotiates the add-user command when the user being added already exists
-            and a session authorised to an admin user is provided."
+  (testing "The handler negotiates the add-user command when the command is being made for an
+            exiting user and a session authorised to a user with an admin role is provided."
     (let [request (h/request
                    {:session "success+2@simulator.amazonses.com"
                     :command {:add-user
@@ -84,8 +84,8 @@
              (h/decode :transit body)))
       (is (= user user'))))
 
-  (testing "The handler negotiates the add-user command when the user being added does not exist
-            and a session authorised to an non-admin user is provided."
+  (testing "The handler negotiates the add-user command when the command is being made for a
+            non-existent user and a session authorised to a user without an admin role is provided."
     (let [request (h/request
                    {:session "success+3@simulator.amazonses.com"
                     :command {:add-user
@@ -105,9 +105,9 @@
              (h/decode :transit body)))
       (is (= nil user user'))))
 
-  (testing "The handler negotiates the add-user command when the user being added does not
-            exist and a session authorised to an admin user is provided where the admin
-            user has previously been deleted."
+  (testing "The handler negotiates the add-user command when the command is being made for a
+            non-existent user and a session authorised to a user with an admin role is provided,
+            where the user has previously been deleted."
     (let [request (h/request
                    {:session "success+4@simulator.amazonses.com"
                     :command {:add-user
@@ -129,8 +129,8 @@
       (is (nil? user))
       (is (some? user'))))
 
-  (testing "The handler negotiates the add-user command when the user being added does not exist
-            and a session authorised to an admin user is provided."
+  (testing "The handler negotiates the add-user command when the command is being made for a
+            non-existent user and a session authorised to a user with an admin role is provided."
     (let [request (h/request
                    {:session "success+2@simulator.amazonses.com"
                     :command {:add-user

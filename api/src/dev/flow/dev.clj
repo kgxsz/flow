@@ -57,12 +57,4 @@
 
   (authorisation/fetch-all)
 
-  ;; - Add query feature tests
-  ;;   - user query
-  ;;     - No session
-  ;;     - Unauthorised session
-  ;;     - Authorised session with customer role
-  ;;     - Authorised session with admin role
-
-  ;; Collect all the TODO items in a single place.
 )
