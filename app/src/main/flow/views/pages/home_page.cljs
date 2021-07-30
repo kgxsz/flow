@@ -1,4 +1,4 @@
-(ns flow.views.home-page
+(ns flow.views.pages.home-page
   (:require [re-frame.core :as re-frame]
             [flow.views.authorisation :as authorisation]
             [flow.views.navigation :as navigation]

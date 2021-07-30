@@ -1,4 +1,4 @@
-(ns flow.views.admin-page
+(ns flow.views.pages.admin-page
   (:require [re-frame.core :as re-frame]
             [flow.utils :as u]
             [flow.views.input :as input]

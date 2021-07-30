@@ -1,4 +1,4 @@
-(ns flow.views.loading-page
+(ns flow.views.pages.initialisation-page
   (:require [re-frame.core :as re-frame]
             [flow.utils :as u]))
 
@@ -16,5 +16,5 @@
     {:class (u/bem [:page__footer])}]])
 
 
-(defn loading-page []
+(defn initialisation-page []
   [view {} {} {}])

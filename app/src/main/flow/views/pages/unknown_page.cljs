@@ -1,4 +1,4 @@
-(ns flow.views.unknown-page
+(ns flow.views.pages.unknown-page
   (:require [re-frame.core :as re-frame]
             [flow.utils :as u]))
 
