@@ -7,28 +7,22 @@
 (re-frame/reg-sub
  :initialising?
  (fn [db [_]]
-   (let [routing-not-initialised? (not (contains? db :route))
-         current-user-id-not-received? (not (contains? db :current-user-id))
-         current-user-expected? (some? (:current-user-id db))
-         current-user-not-received? (not (contains? (:user db) (:current-user-id db)))]
-     (or routing-not-initialised?
-         current-user-id-not-received?
-         (and current-user-expected?
-              current-user-not-received?)))))
+   (let [routing-established? (contains? db :routing)
+         session-established? (contains? db :session)]
+     (or (not routing-established?)
+         (not session-established?)))))
 
 
 (re-frame/reg-sub
  :route
  (fn [db [_]]
-   (:route db)))
+   (get-in db [:routing :route])))
 
 
 (re-frame/reg-sub
  :authorised?
  (fn [db [_]]
-   (and
-    (contains? db :current-user-id)
-    (some? (:current-user-id db)))))
+   (some? (get-in db [:session :current-user-id]))))
 
 
 (re-frame/reg-sub
@@ -58,7 +52,7 @@
 (re-frame/reg-sub
  :authorisation-initialisation-disabled?
  (fn [db [_]]
-   (not (u/valid-email-address? (:authorisation-email-address db)))))
+   (not (u/email-address? (:authorisation-email-address db)))))
 
 
 (re-frame/reg-sub
@@ -78,19 +72,20 @@
 (re-frame/reg-sub
  :current-user
  (fn [db [_]]
-   (get-in db [:user (:current-user-id db)])))
+   (let [{:keys [current-user-id]} (:session db)]
+     (get-in db [:users current-user-id]))))
 
 
 (re-frame/reg-sub
  :users
  (fn [db [_]]
-   (vals (:user db))))
+   (vals (:users db))))
 
 
 (re-frame/reg-sub
  :authorisations
  (fn [db [_]]
-   (vals (:authorisation db))))
+   (vals (:authorisations db))))
 
 
 (re-frame/reg-sub
@@ -116,5 +111,5 @@
  :user-addition-disabled?
  (fn [db [_]]
    (or
-    (not (u/valid-email-address? (:user-addition-email-address db)))
+    (not (u/email-address? (:user-addition-email-address db)))
     (string/blank? (:user-addition-name db)))))

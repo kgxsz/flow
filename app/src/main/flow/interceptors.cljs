@@ -2,16 +2,16 @@
   (:require [cljs.spec.alpha :as s]
             [expound.alpha :as expound]
             [re-frame.core :as re-frame]
-            [flow.schema :as schema]))
+            [flow.specifications :as specifications]))
 
 
 (def schema
   (re-frame/after
    (fn [db]
-     (when-not (s/valid? ::schema/db db)
-       (js/console.error (expound/expound-str ::schema/db db))
+     (when-not (s/valid? :app/db db)
+       (js/console.error (expound/expound-str :app/db db))
        (throw (ex-info "the db spec has been violated"
-                       {:spec ::schema/db
+                       {:spec :app/db
                         :db db}))))))
 
 
@@ -21,14 +21,14 @@
      (js/console.info db))))
 
 
-(def current-user-id
+(def session
   (re-frame/->interceptor
-   :id :current-user-id
+   :id :session
    :before (fn [context]
-             (let [{:keys [current-user-id]} (get-in context [:coeffects :event 2 :session])]
+             (let [session (get-in context [:coeffects :event 2 :session])]
                (-> context
-                   (update-in [:coeffects :event 2 :session] dissoc :current-user-id)
-                   (assoc-in [:coeffects :db :current-user-id] current-user-id))))
+                   (update-in [:coeffects :event 2] dissoc :session)
+                   (assoc-in [:coeffects :db :session] session))))
    :after (fn [context]
             (if (some? (get-in context [:effects :db]))
               context

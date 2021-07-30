@@ -8,7 +8,8 @@
  :initialise
  [interceptors/schema]
  (fn [{:keys [db]} event]
-   {:db {:initialed? false}
+   {:db {:users {}
+         :authorisations {}}
     :router {}
     :api {:query {:current-user {}}}}))
 
@@ -18,9 +19,9 @@
  [interceptors/schema]
  (fn [{:keys [db]} [_ {:keys [route route-params query-params]}]]
    (let [db (-> db
-                (assoc :route route)
-                (assoc :route-params route-params)
-                (assoc :query-params query-params))]
+                (assoc-in [:routing :route] route)
+                (assoc-in [:routing :route-params] route-params)
+                (assoc-in [:routing :query-params] query-params))]
      (case route
        :home {:db db}
        :admin {:db db}
@@ -43,11 +44,11 @@
 (re-frame/reg-event-fx
  ;; TODO - consider naming
  :handle-api-success
- [interceptors/schema interceptors/current-user-id]
+ [interceptors/schema interceptors/session]
  (fn [{:keys [db]} [_ parameters {:keys [users authorisations metadata]}]]
    {:db (cond-> db
-          users (update :user merge users)
-          authorisations (update :authorisation merge authorisations)
+          users (update :users merge users)
+          authorisations (update :authorisations merge authorisations)
           ;; TODO - do something smarter here
           (get-in parameters [:command :finalise-authorisation-attempt])
           (assoc :authorisation-finalised? false
@@ -56,7 +57,7 @@
 
 (re-frame/reg-event-fx
  :handle-api-failure
- [interceptors/schema interceptors/current-user-id]
+ [interceptors/schema interceptors/session]
  (fn [{:keys [db]} [_ parameters response]]
    {:db (assoc db :error? true)}))
 
@@ -117,7 +118,7 @@
  (fn [{:keys [db]} [_]]
    {:api {:command {:deauthorise {}}}
     :db (dissoc db
-                :current-user-id
+                :session
                 :authorisation-email-address
                 :authorisation-phrase
                 :authorisation-initialised?

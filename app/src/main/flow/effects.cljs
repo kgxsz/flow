@@ -33,7 +33,7 @@
 (re-frame/reg-fx
  :api
  (fn [parameters]
-   ;; TODO - fix all this soon
+   ;; TODO - fix the error handling and add support for specific callbacks
    (ajax/POST (utils/make-url)
               {:params (medley/deep-merge parameters {:command {} :query {} :metadata {} :session {}})
                :with-credentials true
@@ -42,4 +42,5 @@
                :error-handler (fn [{:keys [response]}]
                                 (js/console.warn "API call NOT successful!")
                                 (js/console.warn response)
-                                (re-frame/dispatch [:handle-api-failure parameters response]))})))
+                                (re-frame/dispatch [:handle-api-failure parameters response]))
+               :response-format (ajax/transit-response-format {:handlers {"u" ->UUID "n" long}}) })))

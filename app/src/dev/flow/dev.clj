@@ -4,7 +4,8 @@
 (defn repl []
   (shadow.cljs.devtools.api/repl :app))
 
-;; - Improve the initialisation flow
-;;   - What does this mean?
 ;; - Secure the DB schema
-;;   - Don't know?
+
+;; - Think about flows, and their state transitions
+;;   - Authorisation flow
+;;   - Deauthorisation flow

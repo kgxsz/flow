@@ -1,5 +1,6 @@
 (ns flow.utils
-  (:require [cemerick.url :as url]))
+  (:require [cemerick.url :as url]
+            [clojure.string :as string]))
 
 
 (defn bem
@@ -21,18 +22,41 @@
 
 
 (defn make-url
-  "Makes the API url by looking at the current host, and adding the path."
+  "Makes the API url by looking at the current protocol and host and prefixing 'api'."
   []
   (let [{:keys [protocol host]} (url/url (.. js/window -location -href))]
-    ;; TODO - fix this after removal of paths
     (-> (url/url "")
       (assoc :protocol protocol)
       (assoc :host (str "api." host))
       (str))))
 
 
-(defn valid-email-address?
-  [email-address]
+(defn constrained-string?
+  "Takes a number and a string, and returns
+   a boolean indication that the string has
+   a positive length less than or equal to n."
+  [n s]
+  (and (string? s)
+       (<= (count s) n)
+       (not (string/blank? s))))
+
+
+(defn sanitised-string?
+  "Takes a string, and returns a boolean indication
+   that the string has been sanitised. A string is
+   considered sanitised if it has contains no whitespace,
+   newline, or carriage return characters."
+  [s]
+  (and
+   (string? s)
+   (nil? (re-find #"\n|\r| " s))))
+
+
+(defn email-address?
+  "Takes a string and returns a boolean indication that
+   the string adheres to an email address pattern."
+  [s]
   (let [pattern #"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"]
-    (and (string? email-address)
-         (re-matches pattern email-address))))
+    (boolean
+     (and (string? s)
+          (re-matches pattern s)))))

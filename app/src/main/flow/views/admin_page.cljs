@@ -40,7 +40,7 @@
           "Admin"]
 
          (case content
-           :summary
+           :default
            [:div
             {:class (u/bem [:cell :column :padding-top-large])}
             [:div
