@@ -1,4 +1,4 @@
-(ns flow.views.navigation
+(ns flow.views.components.navigation
   (:require [re-frame.core :as re-frame]
             [flow.utils :as u]))
 

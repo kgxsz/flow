@@ -1,4 +1,4 @@
-(ns flow.views.toggle
+(ns flow.views.widgets.toggle
   (:require [re-frame.core :as re-frame]
             [flow.utils :as u]))
 

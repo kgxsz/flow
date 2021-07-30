@@ -1,7 +1,7 @@
-(ns flow.views.authorisation
+(ns flow.views.components.authorisation
   (:require [re-frame.core :as re-frame]
-            [flow.views.input :as input]
-            [flow.views.button :as button]
+            [flow.views.widgets.input :as input]
+            [flow.views.widgets.button :as button]
             [flow.utils :as u]))
 
 

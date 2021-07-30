@@ -1,4 +1,4 @@
-(ns flow.views.input
+(ns flow.views.widgets.input
   (:require [re-frame.core :as re-frame]
             [flow.utils :as u]))
 
