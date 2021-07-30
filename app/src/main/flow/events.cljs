@@ -8,9 +8,8 @@
  :initialise
  [interceptors/schema]
  (fn [{:keys [db]} event]
-   {:db {}
-    ;; TODO - consider renaming
-    :initialise-routing {}
+   {:db {:initialed? false}
+    :router {}
     :api {:query {:current-user {}}}}))
 
 
@@ -37,8 +36,8 @@
  :update-route
  [interceptors/schema]
  (fn [{:keys [db]} [_ route]]
-   {:update-route {:route route
-                   :db db}}))
+   {:update-route {:route route}
+    :db db}))
 
 
 (re-frame/reg-event-fx

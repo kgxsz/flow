@@ -10,7 +10,7 @@
 
 
 (re-frame/reg-fx
- :initialise-routing
+ :router
  (fn []
    (reset! routing/!history
            (pushy/pushy
