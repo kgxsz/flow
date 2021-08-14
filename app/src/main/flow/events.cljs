@@ -186,17 +186,13 @@
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ {:keys [users session]}]]
    (js/console.warn "SUCCESS RESPONSE FROM AUTH ATTEMPT FINALISE")
-   ;; TODO - if authorised then merge stuff, update current user and
-   ;; kill this flow since it's no longer needed
-   ;; Otherwise, don't merge, mark unsuccessful, don't clear state
-   (let [authorised? (some? (:current-user session))]
+   (if (:current-user-id session)
      {:db (-> db
-              (assoc-in [:flows :authorisation-attempt :status]
-                        (if authorised? :successfully-finalised :unsuccessfully-finalised))
-              ;; TODO - the below is a smell that perhaps the flows should be nested
-              ;; to justify shared state up the tree of flows?
+              (assoc-in [:flows :authorisation-attempt :status] :successfully-finalised)
+              (update :flows dissoc :authorisation-attempt)
               (assoc-in [:flows :home-page :current-user-id] (:current-user-id session))
-              (update-in [:entities :users] merge users))})))
+              (update-in [:entities :users] merge users))}
+     {:db (assoc-in db [:flows :authorisation-attempt :status] :unsuccessfully-finalised)})))
 
 
 (re-frame/reg-event-fx
