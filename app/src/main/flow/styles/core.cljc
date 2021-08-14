@@ -7,8 +7,9 @@
             [flow.styles.components.toggle :refer [toggle]]
             [flow.styles.components.button :refer [button]]
             [flow.styles.components.cell :refer [cell]]
+            [flow.styles.components.router :refer [router]]
             [flow.styles.components.page :refer [page]]
-            [flow.styles.components.authorisation :refer [authorisation]]
+            [flow.styles.components.authorisation-attempt :refer [authorisation-attempt]]
             [garden.def :refer [defstyles]]
             [garden.units :refer [px percent ms]]
             [normalize.core :refer [normalize]]))
@@ -26,8 +27,9 @@
     :margin 0
     :padding 0}]
 
-  ["input[type=text]"
+  ["input[type=text],input[type=text]:disabled"
    {:outline :none
+    :background-color (:white-one c/colour)
     :overflow :auto
     :-webkit-box-shadow :none
     :-moz-box-shadow :none
@@ -56,5 +58,6 @@
   button
   text
   cell
+  router
   page
-  authorisation)
+  authorisation-attempt)

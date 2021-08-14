@@ -13,8 +13,11 @@
     :border-radius (px (:medium c/radius))}
 
    [:&--disabled
-    {:cursor :not-allowed
+    {:cursor :default
      :opacity (:10 c/fraction)}]
+
+   [:&--working
+    {:cursor :default}]
 
    [:&--primary
     {:color (:white-one c/colour)
