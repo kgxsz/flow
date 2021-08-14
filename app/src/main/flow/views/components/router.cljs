@@ -1,4 +1,4 @@
-(ns flow.views.core
+(ns flow.views.components.router
   (:require [re-frame.core :as re-frame]
             [flow.views.pages.initialisation-page :as initialisation-page]
             [flow.views.pages.home-page :as home-page]
@@ -7,7 +7,7 @@
             [flow.utils :as u]))
 
 
-(defn view [{:keys [initialising?
+(defn view [{:keys [status
                     route]}
             {:keys [initialisation-page
                     home-page
@@ -15,9 +15,13 @@
                     unknown-page]}
             _]
   [:div
-   {:class (u/bem [:core])}
-   (if initialising?
+   {:class (u/bem [:router])}
+   (case status
+     :initialising
+     ;; TODO - move to an initialisation component rather than a page?
      [initialisation-page]
+
+     :initialised
      (case route
        :home [home-page]
        :admin [admin-page {:content :default}]
@@ -26,12 +30,12 @@
        :unknown [unknown-page]))])
 
 
-(defn core []
-  (let [!initialising? (re-frame/subscribe [:initialising?])
-        !route (re-frame/subscribe [:route])]
+(defn router []
+  (let [!status (re-frame/subscribe [:router/status])
+        !route (re-frame/subscribe [:router/route])]
     (fn []
       [view
-       {:initialising? @!initialising?
+       {:status @!status
         :route @!route}
        {:initialisation-page initialisation-page/initialisation-page
         :home-page home-page/home-page

@@ -3,25 +3,37 @@
             [flow.utils :as u]))
 
 
-(defn view [_ _ {:keys [update-route]}]
+(defn view [{:keys [status]}
+            _
+            {:keys [route-home]}]
   [:div
    {:class (u/bem [:page])}
    [:div
     {:class (u/bem [:page__body])}
-    [:div
-     {:class (u/bem [:cell :column :padding-top-huge])}
-     [:div
-      {:class (u/bem [:icon :construction :font-size-xx-huge :align-center])}]
-     [:div
-      {:class (u/bem [:text :font-size-xx-huge :align-center])
-       :on-click update-route}
-      "Unknown"]]]
+    (case status
+      :uninitialised
+      [:div
+       {:class (u/bem [:text :align-center :padding-top-medium])}
+       ;; TODO - deal with this more nicely
+       "********************HSKJSFHLJHFJKSHFLKJYe!!!!!!!!!!!!!!!!!!"]
+
+      :initialised
+      [:div
+       {:class (u/bem [:cell :column :padding-top-huge])}
+       [:div
+        {:class (u/bem [:icon :construction :font-size-xx-huge :align-center])}]
+       [:div
+        {:class (u/bem [:text :font-size-xx-huge :align-center])
+         :on-click route-home}
+        "Unknown"]])]
    [:div
     {:class (u/bem [:page__footer])}]])
 
 
 (defn unknown-page []
-  [view
-   {}
-   {}
-   {:update-route #(re-frame/dispatch [:update-route :home])}])
+  (let [!status (re-frame/subscribe [:unknown-page/status])]
+    (fn []
+      [view
+       {:status @!status}
+       {}
+       {:route-home #(re-frame/dispatch [:unknown-page/route-home])}])))

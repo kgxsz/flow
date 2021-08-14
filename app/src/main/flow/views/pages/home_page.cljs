@@ -1,14 +1,15 @@
 (ns flow.views.pages.home-page
   (:require [re-frame.core :as re-frame]
-            [flow.views.components.authorisation :as authorisation]
+            [flow.views.components.authorisation-attempt :as authorisation-attempt]
             [flow.views.components.navigation :as navigation]
             [flow.utils :as u]))
 
 
-(defn view [{:keys [authorised?]}
+(defn view [{:keys [status
+                    authorised?]}
             {:keys [navigation
-                    authorisation]}
-            {:keys [deauthorise]}]
+                    authorisation-attempt]}
+            _]
   [:div
    {:class (u/bem [:page])}
    [:div
@@ -19,18 +20,46 @@
       {:class (u/bem [:icon :leaf :font-size-xxx-huge])}]
      [:div
       {:class (u/bem [:cell :padding-top-xx-large])}
-      (if authorised?
-        [navigation]
-        [authorisation])]]]
+      (case status
+
+        :uninitialised
+        [:div
+         {:class (u/bem [:text :align-center :padding-top-medium])}
+         ;; TODO - deal with this more nicely
+         "********************NOT REAAAADDYYYYe!!!!!!!!!!!!!!!!!!"]
+
+        :initialising
+        [:div
+         {:class (u/bem [:text :align-center :padding-top-medium])}
+         ;; TODO - deal with this more nicely
+         "********************INITIALISING HOME PAGe!!!!!!!!!!!!!!!!!!"]
+
+        :initialised
+        (if authorised?
+          [:div
+           {:class (u/bem [:text :align-center :padding-top-medium])}
+
+           ;; TODO - bring navigation in eventually
+           "********************AUTHOORSED"]
+          #_[navigation]
+          [authorisation-attempt])
+
+        :initialisation-errored
+        [:div
+         {:class (u/bem [:text :align-center :padding-top-medium])}
+         ;; TODO - deal with this more nicely
+         "********************ERRRRRRORGe!!!!!!!!!!!!!!!!!!"])]]]
    [:div
     {:class (u/bem [:page__footer])}]])
 
 
 (defn home-page []
-  (let [!authorised? (re-frame/subscribe [:authorised?])]
+  (let [!status (re-frame/subscribe [:home-page/status])
+        !authorised? (re-frame/subscribe [:home-page/authorised?])]
     (fn []
       [view
-       {:authorised? @!authorised?}
+       {:status @!status
+        :authorised? @!authorised?}
        {:navigation navigation/navigation
-        :authorisation authorisation/authorisation}
+        :authorisation-attempt authorisation-attempt/authorisation-attempt}
        {}])))
