@@ -1,6 +1,5 @@
 (ns flow.utils
-  (:require [cemerick.url :as url]
-            [clojure.string :as string]))
+  (:require [clojure.string :as string]))
 
 
 (defn bem
@@ -19,16 +18,6 @@
        (flatten)
        (interpose " ")
        (apply str)))
-
-
-(defn make-url
-  "Makes the API url by looking at the current protocol and host and prefixing 'api'."
-  []
-  (let [{:keys [protocol host]} (url/url (.. js/window -location -href))]
-    (-> (url/url "")
-      (assoc :protocol protocol)
-      (assoc :host (str "api." host))
-      (str))))
 
 
 (defn constrained-string?

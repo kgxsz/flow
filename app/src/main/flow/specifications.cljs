@@ -42,28 +42,32 @@
 (s/def :session/current-user-id (s/nilable uuid?))
 
 
+;; Entities
+(s/def :entities/users (s/map-of :user/id
+                                 (s/keys :opt [:user/id
+                                               :user/name
+                                               :user/email-address
+                                               :user/roles
+                                               :user/created-at
+                                               :user/deleted-at])))
+(s/def :entities/authorisations (s/map-of :authorisation/id
+                                          (s/keys :opt [:authorisation/id
+                                                        :user/id
+                                                        :authorisation/phrase
+                                                        :authorisation/created-at
+                                                        :authorisation/granted-at])))
+
+
 ;; DB
-(s/def :db/users (s/map-of :user/id
-                           (s/keys :opt [:user/id
-                                         :user/name
-                                         :user/email-address
-                                         :user/roles
-                                         :user/created-at
-                                         :user/deleted-at])))
-(s/def :db/authorisations (s/map-of :authorisation/id
-                                    (s/keys :opt [:authorisation/id
-                                                  :user/id
-                                                  :authorisation/phrase
-                                                  :authorisation/created-at
-                                                  :authorisation/granted-at])))
 (s/def :db/routing (s/keys :req-un [:routing/route
                                     :routing/route-params
                                     :routing/query-params]))
 (s/def :db/session (s/keys :req-un [:session/current-user-id]))
+(s/def :db/entities (s/keys :opt-un [:entities/users
+                                     :entities/authorisations]))
 
 
 ;; App
-(s/def :app/db (s/keys :req-un [:db/users
-                                :db/authorisations]
-                       :opt-un [:db/routing
+(s/def :app/db (s/keys :opt-un [:db/entities
+                                :db/routing
                                 :db/session]))
