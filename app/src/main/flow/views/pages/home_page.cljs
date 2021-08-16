@@ -1,6 +1,7 @@
 (ns flow.views.pages.home-page
   (:require [re-frame.core :as re-frame]
             [flow.views.components.authorisation-attempt :as authorisation-attempt]
+            [flow.views.components.deauthorisation :as deauthorisation]
             [flow.views.components.navigation :as navigation]
             [flow.utils :as u]))
 
@@ -8,7 +9,8 @@
 (defn view [{:keys [status
                     authorised?]}
             {:keys [navigation
-                    authorisation-attempt]}
+                    authorisation-attempt
+                    deauthorisation]}
             _]
   [:div
    {:class (u/bem [:page])}
@@ -36,12 +38,7 @@
 
         :initialised
         (if authorised?
-          [:div
-           {:class (u/bem [:text :align-center :padding-top-medium])}
-
-           ;; TODO - bring navigation in eventually
-           "********************AUTHOORSED"]
-          #_[navigation]
+          [deauthorisation]
           [authorisation-attempt])
 
         :initialisation-errored
@@ -61,5 +58,6 @@
        {:status @!status
         :authorised? @!authorised?}
        {:navigation navigation/navigation
-        :authorisation-attempt authorisation-attempt/authorisation-attempt}
+        :authorisation-attempt authorisation-attempt/authorisation-attempt
+        :deauthorisation deauthorisation/deauthorisation}
        {}])))

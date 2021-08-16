@@ -10,6 +10,7 @@
             [flow.styles.components.router :refer [router]]
             [flow.styles.components.page :refer [page]]
             [flow.styles.components.authorisation-attempt :refer [authorisation-attempt]]
+            [flow.styles.components.deauthorisation :refer [deauthorisation]]
             [garden.def :refer [defstyles]]
             [garden.units :refer [px percent ms]]
             [normalize.core :refer [normalize]]))
@@ -60,4 +61,5 @@
   cell
   router
   page
-  authorisation-attempt)
+  authorisation-attempt
+  deauthorisation)

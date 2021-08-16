@@ -119,6 +119,33 @@
        (s/valid? :authorisation/phrase phrase))))))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; Deauthorisation flow ;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(re-frame/reg-sub
+ :deauthorisation/status
+ (fn [db [_]]
+   (get-in db [:flows :deauthorisation :status])))
+
+
+(re-frame/reg-sub
+ :deauthorisation/disabled?
+ (fn [db [_]]
+   (let [{:keys [status]} (get-in db [:flows :deauthorisation])]
+     (contains? #{:successful :error} status))))
+
+
+(re-frame/reg-sub
+ :deauthorisation/working?
+ (fn [db [_]]
+   (let [{:keys [status]} (get-in db [:flows :deauthorisation])]
+     (contains? #{:working} status))))
+
+
+
+
 #_(re-frame/reg-sub
  :current-user
  (fn [db [_]]

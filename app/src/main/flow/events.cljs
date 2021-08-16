@@ -69,8 +69,9 @@
    {:db (-> db
             (assoc-in [:flows :home-page :status] :initialised)
             (assoc-in [:flows :home-page :current-user-id] (:current-user-id session))
-            ;; TODO - what if we're authorised? Do we really need this?
+            ;; TODO - Review what the initial statuses should be here, if any
             (assoc-in [:flows :authorisation-attempt :status] :uninitialised)
+            (assoc-in [:flows :deauthorisation :status] :idle)
             (update-in [:entities :users] merge users))}))
 
 
@@ -189,7 +190,8 @@
    (if (:current-user-id session)
      {:db (-> db
               (assoc-in [:flows :authorisation-attempt :status] :successfully-finalised)
-              (update :flows dissoc :authorisation-attempt)
+              ;; TODO - Review what the workflow statuses should be here, if any
+              (assoc-in [:flows :deauthorisation :status] :idle)
               (assoc-in [:flows :home-page :current-user-id] (:current-user-id session))
               (update-in [:entities :users] merge users))}
      {:db (assoc-in db [:flows :authorisation-attempt :status] :unsuccessfully-finalised)})))
@@ -204,23 +206,43 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;; Deauthorisation workflow ;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;; Deauthorisation flow ;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-#_(re-frame/reg-event-fx
- :deauthorise
+(re-frame/reg-event-fx
+ :deauthorisation/started
  [interceptors/validate-db]
  (fn [{:keys [db]} [_]]
    {:api {:command {:deauthorise {}}
-          :on-response :todo/todo
-          :on-error :todo/todo}
-    :db (dissoc db
-                :session ;; TODO - only make this strip out the current user id
-                :authorisation-email-address
-                :authorisation-phrase
-                :authorisation-initialised?
-                :authorisation-finalised?
-                :authorisation-failed?)}))
+          :on-response :deauthorisation/ended
+          :on-error :deauthorisation/errored}
+    :db (assoc-in db [:flows :deauthorisation :status] :working)}))
+
+
+(re-frame/reg-event-fx
+ :deauthorisation/ended
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_]]
+   {:db (-> db
+            (assoc-in [:flows :deauthorisation :status] :successful)
+            ;; TODO - Review what the workflow statuses should be here, if any
+            (assoc-in [:flows :authorisation-attempt :status] :uninitialised)
+            (update-in [:flows :authorisation-attempt] dissoc :user/email-address)
+            (update-in [:flows :authorisation-attempt] dissoc :authorisation/phrase)
+            (assoc-in [:flows :home-page :current-user-id] nil))}))
+
+
+(re-frame/reg-event-fx
+ :deauthorisation/errored
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_]]
+   {:db (assoc-in db [:flows :deauthorisation :status] :error)}))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
 
 
 #_(re-frame/reg-event-fx
