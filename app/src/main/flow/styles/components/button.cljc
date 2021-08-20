@@ -16,7 +16,7 @@
     {:cursor :default
      :opacity (:10 c/fraction)}]
 
-   [:&--working
+   [:&--pending
     {:cursor :default}]
 
    [:&--primary

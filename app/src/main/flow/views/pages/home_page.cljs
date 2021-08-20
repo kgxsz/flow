@@ -24,24 +24,24 @@
       {:class (u/bem [:cell :padding-top-xx-large])}
       (case status
 
-        :uninitialised
+        :idle
         [:div
          {:class (u/bem [:text :align-center :padding-top-medium])}
          ;; TODO - deal with this more nicely
          "********************NOT REAAAADDYYYYe!!!!!!!!!!!!!!!!!!"]
 
-        :initialising
+        :initialisation-pending
         [:div
          {:class (u/bem [:text :align-center :padding-top-medium])}
          ;; TODO - deal with this more nicely
          "********************INITIALISING HOME PAGe!!!!!!!!!!!!!!!!!!"]
 
-        :initialised
+        :initialisation-successful
         (if authorised?
           [deauthorisation]
           [authorisation-attempt])
 
-        :initialisation-errored
+        :initialisation-error
         [:div
          {:class (u/bem [:text :align-center :padding-top-medium])}
          ;; TODO - deal with this more nicely

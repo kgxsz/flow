@@ -8,14 +8,14 @@
                     prefix-icon
                     icon
                     disabled?
-                    working?]}
+                    pending?]}
             _
             {:keys [on-click]}]
   [:div
-   ;; TODO - add some nice styling for when the button has the "working" property
-   {:class (u/bem [:button type (when disabled? :disabled) (when working? :working)]
+   ;; TODO - add some nice styling for when the button has the "pending" property
+   {:class (u/bem [:button type (when disabled? :disabled) (when pending? :pending)]
                   [:cell :row :width-cover :height-x-large])
-    :on-click (when-not (or disabled? working?) on-click)}
+    :on-click (when-not (or disabled? pending?) on-click)}
    [:div
     {:class (u/bem [:text])}
     label]
@@ -25,12 +25,12 @@
 
 (defn button [properties behaviours]
   (let [!disabled? (re-frame/subscribe [(get-in properties [:subscriptions :disabled?])])
-        !working? (re-frame/subscribe [(get-in properties [:subscriptions :working?])])]
+        !pending? (re-frame/subscribe [(get-in properties [:subscriptions :pending?])])]
     (fn [properties behaviours]
       [view
        (assoc properties
               :disabled? @!disabled?
-              :working? @!working?)
+              :pending? @!pending?)
        {}
        behaviours])))
 

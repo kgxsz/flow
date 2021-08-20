@@ -14,14 +14,14 @@
  [interceptors/validate-db]
  (fn [{:keys [db]} event]
    {:router {}
-    :db (assoc-in db [:flows :router :status] :initialising)}))
+    :db (assoc-in db [:flows :router :status] :initialisation-pending)}))
 
 
 (re-frame/reg-event-fx
  :router/initialisation-ended
  [interceptors/validate-db]
  (fn [{:keys [db]} event]
-   {:db (assoc-in db [:flows :router :status] :initialised)}))
+   {:db (assoc-in db [:flows :router :status] :initialisation-successful)}))
 
 
 (re-frame/reg-event-fx
@@ -33,7 +33,7 @@
                 (assoc-in [:flows :router :route-params] route-params)
                 (assoc-in [:flows :router :query-params] query-params))]
      (case route
-       :home {:db (assoc-in db [:flows :home-page :status] :uninitialised)
+       :home {:db (assoc-in db [:flows :home-page :status] :idle)
               :dispatch [:home-page/initialisation-started]}
        :admin {:db db}
        :admin.users {:db db
@@ -44,8 +44,7 @@
                               :api {:query {:authorisations {}}
                                     :on-response :todo/todo
                                     :on-error :todo/todo}}
-       :unknown {:db (assoc-in db [:flows :unknown-page :status] :uninitialised)
-                 :dispatch [:unknown-page/initialisation-started]}))))
+       :unknown {:db (assoc-in db [:flows :unknown-page :status] :initialisation-successful)}))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -58,8 +57,8 @@
  (fn [{:keys [db]} [_]]
    {:api {:query {:current-user {}}
           :on-response :home-page/initialisation-ended
-          :on-error :home-page/initialisation-error-occurred}
-    :db (assoc-in db [:flows :home-page :status] :initialising)}))
+          :on-error :home-page/initialisation-errored}
+    :db (assoc-in db [:flows :home-page :status] :initialisation-pending)}))
 
 
 (re-frame/reg-event-fx
@@ -67,20 +66,19 @@
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ {:keys [users session]}]]
    {:db (-> db
-            (assoc-in [:flows :home-page :status] :initialised)
+            (assoc-in [:flows :home-page :status] :initialisation-successful)
             (assoc-in [:flows :home-page :current-user-id] (:current-user-id session))
-            ;; TODO - Review what the initial statuses should be here, if any
-            (assoc-in [:flows :authorisation-attempt :status] :uninitialised)
+            (assoc-in [:flows :authorisation-attempt :status] :idle)
             (assoc-in [:flows :deauthorisation :status] :idle)
             (update-in [:entities :users] merge users))}))
 
 
 (re-frame/reg-event-fx
- :home-page/initialisation-error-occurred
+ :home-page/initialisation-errored
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ response]]
    {:db (-> db
-            (assoc-in [:flows :home-page :status] :initialisation-errored))}))
+            (assoc-in [:flows :home-page :status] :initialisation-error))}))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -88,14 +86,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
- :unknown-page/initialisation-started
- [interceptors/validate-db]
- (fn [{:keys [db]} [_]]
-   {:db (assoc-in db [:flows :unknown-page :status] :initialised)}))
-
-
-(re-frame/reg-event-fx
- :unknown-page/route-home
+ :unknown-page/route-update-requested
  [interceptors/validate-db]
  (fn [{:keys [db]} [_]]
    {:router {:route :home}
@@ -131,25 +122,22 @@
                         (get-in [:flows :authorisation-attempt])
                         (select-keys [:user/email-address]))}
           :on-response :authorisation-attempt/initialisation-ended
-          :on-error :authorisation-attempt/initialisation-error-occurred}
-    :db (assoc-in db [:flows :authorisation-attempt :status] :initialising)}))
+          :on-error :authorisation-attempt/initialisation-errored}
+    :db (assoc-in db [:flows :authorisation-attempt :status] :initialisation-pending)}))
 
 
 (re-frame/reg-event-fx
  :authorisation-attempt/initialisation-ended
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ response]]
-   (js/console.warn "SUCCESS RESPONSE FROM AUTH ATTEMPT INITIALISE")
-   ;; successfully-initialised
-   {:db (assoc-in db [:flows :authorisation-attempt :status] :initialised)}))
+   {:db (assoc-in db [:flows :authorisation-attempt :status] :initialisation-successful)}))
 
 
 (re-frame/reg-event-fx
- :authorisation-attempt/initialisation-error-occurred
+ :authorisation-attempt/initialisation-errored
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ _]]
-   (js/console.warn "ERROR RESPONSE FROM AUTH ATTEMPT INITIALISE")
-   {:db (assoc-in db [:flows :authorisation-attempt :status] :initialisation-errored)}))
+   {:db (assoc-in db [:flows :authorisation-attempt :status] :initialisation-error)}))
 
 
 (re-frame/reg-event-fx
@@ -178,8 +166,8 @@
                         (select-keys [:user/email-address :authorisation/phrase]))}
           :query {:current-user {}}
           :on-response :authorisation-attempt/finalisation-ended
-          :on-error :authorisation-attempt/finalisation-error-occurred}
-    :db (assoc-in db [:flows :authorisation-attempt :status] :finalising)}))
+          :on-error :authorisation-attempt/finalisation-errored}
+    :db (assoc-in db [:flows :authorisation-attempt :status] :finalisation-pending)}))
 
 
 (re-frame/reg-event-fx
@@ -189,20 +177,20 @@
    (js/console.warn "SUCCESS RESPONSE FROM AUTH ATTEMPT FINALISE")
    (if (:current-user-id session)
      {:db (-> db
-              (assoc-in [:flows :authorisation-attempt :status] :successfully-finalised)
+              (assoc-in [:flows :authorisation-attempt :status] :finalisation-successful)
               ;; TODO - Review what the workflow statuses should be here, if any
               (assoc-in [:flows :deauthorisation :status] :idle)
               (assoc-in [:flows :home-page :current-user-id] (:current-user-id session))
               (update-in [:entities :users] merge users))}
-     {:db (assoc-in db [:flows :authorisation-attempt :status] :unsuccessfully-finalised)})))
+     {:db (assoc-in db [:flows :authorisation-attempt :status] :finalisation-unsuccessful)})))
 
 
 (re-frame/reg-event-fx
- :authorisation-attempt/finalisation-error-occurred
+ :authorisation-attempt/finalisation-errored
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ _]]
    (js/console.warn "ERROR RESPONSE FROM AUTH ATTEMPT FINALISE")
-   {:db (assoc-in db [:authorisation-attempt :status] :finalisation-errored)}))
+   {:db (assoc-in db [:authorisation-attempt :status] :finalisation-error)}))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -216,7 +204,7 @@
    {:api {:command {:deauthorise {}}
           :on-response :deauthorisation/ended
           :on-error :deauthorisation/errored}
-    :db (assoc-in db [:flows :deauthorisation :status] :working)}))
+    :db (assoc-in db [:flows :deauthorisation :status] :pending)}))
 
 
 (re-frame/reg-event-fx
@@ -226,7 +214,7 @@
    {:db (-> db
             (assoc-in [:flows :deauthorisation :status] :successful)
             ;; TODO - Review what the workflow statuses should be here, if any
-            (assoc-in [:flows :authorisation-attempt :status] :uninitialised)
+            (assoc-in [:flows :authorisation-attempt :status] :idle)
             (update-in [:flows :authorisation-attempt] dissoc :user/email-address)
             (update-in [:flows :authorisation-attempt] dissoc :authorisation/phrase)
             (assoc-in [:flows :home-page :current-user-id] nil))}))

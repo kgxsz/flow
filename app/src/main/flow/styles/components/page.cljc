@@ -29,7 +29,8 @@
 
    [:&__body
     {:margin :auto
-     :padding (-> c/spacing :medium px)
+     :padding-left (-> c/spacing :medium px)
+     :padding-right (-> c/spacing :medium px)
      :display :flex
      :flex-direction :column
      :align-items :center}

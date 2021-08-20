@@ -14,9 +14,9 @@
                     start-finalisation]}]
 
   (case status
-    (:uninitialised
-     :initialising
-     :initialisation-errored)
+    (:idle
+     :initialisation-pending
+     :initialisation-error)
     [:div
      {:key :authorisation-uninitialised
       :class (u/bem [:authorisation-attempt])}
@@ -33,7 +33,7 @@
       {:class (u/bem [:cell :row :margin-top-small])}
       [button
        {:subscriptions {:disabled? :authorisation-attempt/initialisation-disabled?
-                        :working? :authorisation-attempt/initialising?}
+                        :pending? :authorisation-attempt/initialisation-pending?}
         :label "Continue"
         :icon :arrow-right}
        {:on-click start-initialisation}]]
@@ -47,11 +47,11 @@
          ;; TODO - make this better
          "Looks like we're having trouble here."]])]
 
-    (:initialised
-     :finalising
-     :successfully-finalised
-     :unsuccessfully-finalised
-     :finalisation-errored)
+    (:initialisation-successful
+     :finalisation-pending
+     :finalisation-successful
+     :finalisation-unsuccessful
+     :finalisation-error)
     [:div
      {:key :authorisation-initialised
       :class (u/bem [:authorisation-attempt])}
@@ -68,14 +68,14 @@
       {:class (u/bem [:cell :row :margin-top-small])}
       [button
        {:subscriptions {:disabled? :authorisation-attempt/finalisation-disabled?
-                        :working? :authorisation-attempt/finalising?}
+                        :pending? :authorisation-attempt/finalisation-pending?}
         :label "Sign in"
         :icon :arrow-right}
        {:on-click start-finalisation}]]
      ;; TODO - determine what the error modes are here
      ;; - No current user at finalisation means that the magic phrase is either wrong
      ;;   or the email address hasn't been invited.
-     (when (= status :unsuccessfully-finalised)
+     (when (= status :finalisation-unsuccessful)
        [:div
         {:class (u/bem [:cell :row :padding-top-small])}
         [:div
@@ -83,7 +83,7 @@
         [:div
          {:class (u/bem [:text :font-size-small :padding-left-tiny])}
          "That magic phrase isn't quite right."]])
-     (when (= status :finalisation-errored)
+     (when (= status :finalisation-error)
        [:div
         {:class (u/bem [:cell :row :padding-top-small])}
         [:div
@@ -94,7 +94,7 @@
          "Something has gone wrong!"]])]
 
     [:div
-     {:key :authorisation-uninitialised
+     {:key :idle
       :class (u/bem [:authorisation-attempt])}
      [:div
       {:class (u/bem [:text :align-center :padding-top-medium])}

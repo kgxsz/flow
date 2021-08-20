@@ -15,13 +15,13 @@
   [:div
    {:class (u/bem [:router])}
    (case status
-     :initialising
+     :initialisation-pending
      [:div
       {:class (u/bem [:cell :column :padding-top-huge])}
       [:div
        {:class (u/bem [:icon :leaf :font-size-xxx-huge])}]]
 
-     :initialised
+     :initialisation-successful
      (case route
        :home [home-page]
        :admin [admin-page {:content :default}]

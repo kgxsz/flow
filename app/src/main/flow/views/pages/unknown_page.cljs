@@ -5,26 +5,20 @@
 
 (defn view [{:keys [status]}
             _
-            {:keys [route-home]}]
+            {:keys [request-route-update]}]
   [:div
    {:class (u/bem [:page])}
    [:div
     {:class (u/bem [:page__body])}
     (case status
-      :uninitialised
-      [:div
-       {:class (u/bem [:text :align-center :padding-top-medium])}
-       ;; TODO - deal with this more nicely
-       "********************HSKJSFHLJHFJKSHFLKJYe!!!!!!!!!!!!!!!!!!"]
-
-      :initialised
+      :initialisation-successful
       [:div
        {:class (u/bem [:cell :column :padding-top-huge])}
        [:div
         {:class (u/bem [:icon :construction :font-size-xx-huge :align-center])}]
        [:div
         {:class (u/bem [:text :font-size-xx-huge :align-center])
-         :on-click route-home}
+         :on-click request-route-update}
         "Unknown"]])]
    [:div
     {:class (u/bem [:page__footer])}]])
@@ -36,4 +30,4 @@
       [view
        {:status @!status}
        {}
-       {:route-home #(re-frame/dispatch [:unknown-page/route-home])}])))
+       {:request-route-update #(re-frame/dispatch [:unknown-page/route-update-requested])}])))

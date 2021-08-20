@@ -58,43 +58,16 @@
 
 
 (re-frame/reg-sub
- :authorisation-attempt/initialising?
- (fn [db [_]]
-   (let [status (get-in db [:flows :authorisation-attempt :status])]
-     (= status :initialising))))
-
-
-(re-frame/reg-sub
- :authorisation-attempt/finalising?
- (fn [db [_]]
-   (let [status (get-in db [:flows :authorisation-attempt :status])]
-     (= status :finalising))))
-
-
-(re-frame/reg-sub
- :authorisation-attempt/email-address
- (fn [db [_]]
-   (get-in db [:flows :authorisation-attempt :user/email-address])))
+   :authorisation-attempt/email-address
+   (fn [db [_]]
+     (get-in db [:flows :authorisation-attempt :user/email-address])))
 
 
 (re-frame/reg-sub
  :authorisation-attempt/email-address-update-disabled?
  (fn [db [_]]
    (let [{:keys [status]} (get-in db [:flows :authorisation-attempt])]
-     (not (contains? #{:uninitialised} status)))))
-
-
-(re-frame/reg-sub
- :authorisation-attempt/phrase
- (fn [db [_]]
-   (get-in db [:flows :authorisation-attempt :authorisation/phrase])))
-
-
- (re-frame/reg-sub
-  :authorisation-attempt/phrase-update-disabled?
-  (fn [db [_]]
-    (let [{:keys [status]} (get-in db [:flows :authorisation-attempt])]
-      (not (contains? #{:initialised :unsuccessfully-finalised} status)))))
+     (not (contains? #{:idle} status)))))
 
 
 (re-frame/reg-sub
@@ -104,8 +77,28 @@
          email-address (get-in db [:flows :authorisation-attempt :user/email-address])]
      (not
       (and
-       (contains? #{:uninitialised :initialising} status)
+       (contains? #{:idle :initialisation-pending} status)
        (s/valid? :user/email-address email-address))))))
+
+
+(re-frame/reg-sub
+ :authorisation-attempt/initialisation-pending?
+ (fn [db [_]]
+   (let [status (get-in db [:flows :authorisation-attempt :status])]
+     (contains? #{:initialisation-pending} status))))
+
+
+(re-frame/reg-sub
+ :authorisation-attempt/phrase
+ (fn [db [_]]
+   (get-in db [:flows :authorisation-attempt :authorisation/phrase])))
+
+
+(re-frame/reg-sub
+ :authorisation-attempt/phrase-update-disabled?
+ (fn [db [_]]
+   (let [{:keys [status]} (get-in db [:flows :authorisation-attempt])]
+     (not (contains? #{:initialisation-successful :finalisation-unsuccessful} status)))))
 
 
 (re-frame/reg-sub
@@ -115,14 +108,20 @@
          phrase (get-in db [:flows :authorisation-attempt :authorisation/phrase])]
      (not
       (and
-       (contains? #{:initialised :finalising :unsuccessfully-finalised} status)
+       (contains? #{:initialisation-successful :finalisation-pending :finalisation-unsuccessful} status)
        (s/valid? :authorisation/phrase phrase))))))
+
+
+(re-frame/reg-sub
+ :authorisation-attempt/finalisation-pending?
+ (fn [db [_]]
+   (let [status (get-in db [:flows :authorisation-attempt :status])]
+     (contains? #{:finalisation-pending} status))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;; Deauthorisation flow ;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 (re-frame/reg-sub
  :deauthorisation/status
@@ -134,14 +133,14 @@
  :deauthorisation/disabled?
  (fn [db [_]]
    (let [{:keys [status]} (get-in db [:flows :deauthorisation])]
-     (contains? #{:successful :error} status))))
+     (not (contains? #{:idle :pending} status)))))
 
 
 (re-frame/reg-sub
- :deauthorisation/working?
+ :deauthorisation/pending?
  (fn [db [_]]
    (let [{:keys [status]} (get-in db [:flows :deauthorisation])]
-     (contains? #{:working} status))))
+     (contains? #{:pending} status))))
 
 
 

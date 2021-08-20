@@ -14,7 +14,7 @@
     {:class (u/bem [:cell :row :margin-top-small])}
     [button
      {:subscriptions {:disabled? :deauthorisation/disabled?
-                      :working? :deauthorisation/working?}
+                      :pending? :deauthorisation/pending?}
       :label "Sign out"
       :icon :exit}
      {:on-click start}]]
