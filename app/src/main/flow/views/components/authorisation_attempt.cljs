@@ -18,7 +18,7 @@
      :initialisation-pending
      :initialisation-error)
     [:div
-     {:key :authorisation-uninitialised
+     {:key status
       :class (u/bem [:authorisation-attempt])}
      [:div
       {:class (u/bem [:text :align-center :padding-top-medium])}
@@ -53,7 +53,7 @@
      :finalisation-unsuccessful
      :finalisation-error)
     [:div
-     {:key :authorisation-initialised
+     {:key status
       :class (u/bem [:authorisation-attempt])}
      [:div
       {:class (u/bem [:text :align-center :padding-top-medium])}

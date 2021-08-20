@@ -23,18 +23,11 @@
      [:div
       {:class (u/bem [:cell :padding-top-xx-large])}
       (case status
-
-        :idle
+        (:idle :initialisation-pending)
         [:div
          {:class (u/bem [:text :align-center :padding-top-medium])}
          ;; TODO - deal with this more nicely
          "********************NOT REAAAADDYYYYe!!!!!!!!!!!!!!!!!!"]
-
-        :initialisation-pending
-        [:div
-         {:class (u/bem [:text :align-center :padding-top-medium])}
-         ;; TODO - deal with this more nicely
-         "********************INITIALISING HOME PAGe!!!!!!!!!!!!!!!!!!"]
 
         :initialisation-successful
         (if authorised?

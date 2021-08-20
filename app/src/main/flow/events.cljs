@@ -44,7 +44,7 @@
                               :api {:query {:authorisations {}}
                                     :on-response :todo/todo
                                     :on-error :todo/todo}}
-       :unknown {:db (assoc-in db [:flows :unknown-page :status] :initialisation-successful)}))))
+       :unknown {:db db}))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -114,9 +114,6 @@
  :authorisation-attempt/initialisation-started
  [interceptors/validate-db]
  (fn [{:keys [db]} [_]]
-   ;; TODO - Throw an exception if this event is called without the
-   ;; right things being in place, protects from accidentally calling
-   ;; the event without using the appropriate subs
    {:api {:command {:initialise-authorisation-attempt
                     (-> db
                         (get-in [:flows :authorisation-attempt])
@@ -157,9 +154,6 @@
  :authorisation-attempt/finalisation-started
  [interceptors/validate-db]
  (fn [{:keys [db]} [_]]
-   ;; TODO - Throw an exception if this event is called without the
-   ;; right things being in place, protects from accidentally calling
-   ;; the event without using the appropriate subs
    {:api {:command {:finalise-authorisation-attempt
                     (-> db
                         (get-in [:flows :authorisation-attempt])
@@ -178,7 +172,6 @@
    (if (:current-user-id session)
      {:db (-> db
               (assoc-in [:flows :authorisation-attempt :status] :finalisation-successful)
-              ;; TODO - Review what the workflow statuses should be here, if any
               (assoc-in [:flows :deauthorisation :status] :idle)
               (assoc-in [:flows :home-page :current-user-id] (:current-user-id session))
               (update-in [:entities :users] merge users))}
@@ -213,7 +206,6 @@
  (fn [{:keys [db]} [_]]
    {:db (-> db
             (assoc-in [:flows :deauthorisation :status] :successful)
-            ;; TODO - Review what the workflow statuses should be here, if any
             (assoc-in [:flows :authorisation-attempt :status] :idle)
             (update-in [:flows :authorisation-attempt] dissoc :user/email-address)
             (update-in [:flows :authorisation-attempt] dissoc :authorisation/phrase)
@@ -228,8 +220,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 
 
 
