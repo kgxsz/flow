@@ -2,7 +2,8 @@
   (:require [re-frame.core :as re-frame]
             [flow.interceptors :as interceptors]
             [flow.utils :as u]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [cljs.core.async :refer [timeout]]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -39,11 +40,13 @@
        :admin.users {:db db
                      :api {:query {:users {}}
                            :on-response :todo/todo
-                           :on-error :todo/todo}}
+                           :on-error :todo/todo
+                           :delay (timeout 2000)}}
        :admin.authorisations {:db db
                               :api {:query {:authorisations {}}
                                     :on-response :todo/todo
-                                    :on-error :todo/todo}}
+                                    :on-error :todo/todo
+                                    :delay (timeout 2000)}}
        :unknown {:db db}))))
 
 
@@ -57,7 +60,8 @@
  (fn [{:keys [db]} [_]]
    {:api {:query {:current-user {}}
           :on-response :home-page/initialisation-ended
-          :on-error :home-page/initialisation-errored}
+          :on-error :home-page/initialisation-errored
+          :delay (timeout 0)}
     :db (assoc-in db [:flows :home-page :status] :initialisation-pending)}))
 
 
@@ -119,7 +123,8 @@
                         (get-in [:flows :authorisation-attempt])
                         (select-keys [:user/email-address]))}
           :on-response :authorisation-attempt/initialisation-ended
-          :on-error :authorisation-attempt/initialisation-errored}
+          :on-error :authorisation-attempt/initialisation-errored
+          :delay (timeout 2000)}
     :db (assoc-in db [:flows :authorisation-attempt :status] :initialisation-pending)}))
 
 
@@ -160,7 +165,8 @@
                         (select-keys [:user/email-address :authorisation/phrase]))}
           :query {:current-user {}}
           :on-response :authorisation-attempt/finalisation-ended
-          :on-error :authorisation-attempt/finalisation-errored}
+          :on-error :authorisation-attempt/finalisation-errored
+          :delay (timeout 2000)}
     :db (assoc-in db [:flows :authorisation-attempt :status] :finalisation-pending)}))
 
 
@@ -168,7 +174,6 @@
  :authorisation-attempt/finalisation-ended
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ {:keys [users session]}]]
-   (js/console.warn "SUCCESS RESPONSE FROM AUTH ATTEMPT FINALISE")
    (if (:current-user-id session)
      {:db (-> db
               (assoc-in [:flows :authorisation-attempt :status] :finalisation-successful)
@@ -196,7 +201,8 @@
  (fn [{:keys [db]} [_]]
    {:api {:command {:deauthorise {}}
           :on-response :deauthorisation/ended
-          :on-error :deauthorisation/errored}
+          :on-error :deauthorisation/errored
+          :delay (timeout 2000)}
     :db (assoc-in db [:flows :deauthorisation :status] :pending)}))
 
 
@@ -230,7 +236,8 @@
    {:api {:command {:delete-user {:user/id user-id}}
           :query {:user {:user/id user-id}}
           :on-response :core/todo
-          :on-error :core/todo}
+          :on-error :core/todo
+          :delay (timeout 2000)}
     :db db}))
 
 
@@ -275,7 +282,8 @@
                                                (:user-addition-admin-role? db) (conj :admin))}}
             :query {:user {:user/id id}}
             :on-response :core/todo
-            :on-error :core/todo})
+            :on-error :core/todo
+            :delay (timeout 2000)})
     :db (dissoc db
                 :user-addition-email-address
                 :user-addition-name

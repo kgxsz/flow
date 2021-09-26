@@ -20,25 +20,22 @@
      {:class (u/bem [:cell :column :padding-top-huge])}
      [:div
       {:class (u/bem [:icon :leaf :font-size-xxx-huge])}]
-     [:div
-      {:class (u/bem [:cell :padding-top-xx-large])}
-      (case status
-        (:idle :initialisation-pending)
-        [:div
-         {:class (u/bem [:text :align-center :padding-top-medium])}
-         ;; TODO - deal with this more nicely
-         "********************NOT REAAAADDYYYYe!!!!!!!!!!!!!!!!!!"]
+     (case status
+       (:idle :initialisation-pending)
+       [:div]
 
-        :initialisation-successful
+       :initialisation-successful
+       [:div
+        {:class (u/bem [:cell :padding-top-xx-large])}
         (if authorised?
           [deauthorisation]
-          [authorisation-attempt])
+          [authorisation-attempt])]
 
-        :initialisation-error
-        [:div
-         {:class (u/bem [:text :align-center :padding-top-medium])}
-         ;; TODO - deal with this more nicely
-         "********************ERRRRRRORGe!!!!!!!!!!!!!!!!!!"])]]]
+       :initialisation-error
+       [:div
+        {:class (u/bem [:text :align-center :padding-top-medium])}
+        ;; TODO - use an error notification here.
+        "Something has gone wrong."])]]
    [:div
     {:class (u/bem [:page__footer])}]])
 
