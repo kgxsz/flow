@@ -27,10 +27,6 @@
    [:&--pending
     {:cursor :default}]
 
-   [:&__icon-container
-    {:width "30px"
-     :height "30px"}]
-
    [:&__spinner
     {:position :relative}]
 
@@ -39,13 +35,13 @@
      :will-change :animation
      :box-sizing :border-box
      :position :absolute
-     :top "50%"
-     :left "50%"
-     :width "14px"
-     :height "14px"
-     :margin-top "-7px"
-     :margin-left "-7px"
-     :border-radius "50%"
-     :border [["1px" "solid" (:white-one c/colour)]]
-     :border-top [["1px" "solid" (:black-two c/colour)]]
-     :animation [["spin" "1s" "linear" "infinite"]]}]])
+     :top (percent (:50 c/proportion))
+     :left (percent (:50 c/proportion))
+     :width (px (:x-small c/filling))
+     :height (px (:x-small c/filling))
+     :margin-top (px (- (:xxx-small c/filling)))
+     :margin-left (px (- (:xxx-small c/filling)))
+     :border-radius (percent (:50 c/proportion))
+     :border [[(px (:xxx-tiny c/filling)) :solid (:white-one c/colour)]]
+     :border-top [[(px (:xxx-tiny c/filling)) :solid (:black-two c/colour)]]
+     :animation [[:spin (ms 1000) :linear :infinite]]}]])

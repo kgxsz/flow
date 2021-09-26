@@ -18,8 +18,7 @@
     {:class (u/bem [:text])}
     label]
    [:div
-    {:class (u/bem [:button__icon-container]
-                   [:cell :row])}
+    {:class (u/bem [:cell :row :width-large :height-large])}
     (if pending?
       [:div
        {:class (u/bem [:button__spinner])}]
