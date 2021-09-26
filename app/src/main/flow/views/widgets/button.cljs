@@ -5,14 +5,12 @@
 
 (defn view [{:keys [type
                     label
-                    prefix-icon
                     icon
                     disabled?
                     pending?]}
             _
             {:keys [on-click]}]
   [:div
-   ;; TODO - add some nice styling for when the button has the "pending" property
    {:class (u/bem [:button type (when disabled? :disabled) (when pending? :pending)]
                   [:cell :row :width-cover :height-x-large])
     :on-click (when-not (or disabled? pending?) on-click)}
@@ -20,7 +18,13 @@
     {:class (u/bem [:text])}
     label]
    [:div
-    {:class (u/bem [:icon icon :padding-left-xx-small])}]])
+    {:class (u/bem [:button__icon-container]
+                   [:cell :row])}
+    (if pending?
+      [:div
+       {:class (u/bem [:button__spinner])}]
+      [:div
+       {:class (u/bem [:icon icon])}])]])
 
 
 (defn button [properties behaviours]

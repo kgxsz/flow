@@ -1,4 +1,4 @@
-(ns flow.styles.components.input
+(ns flow.styles.widgets.input
   (:require [flow.styles.constants :as c]
             [flow.styles.utils :as u]
             [garden.def :refer [defstyles]]

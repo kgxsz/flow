@@ -1,14 +1,15 @@
 (ns flow.styles.core
   (:require [flow.styles.constants :as c]
             [flow.styles.fonts :as fonts]
-            [flow.styles.components.text :refer [text]]
-            [flow.styles.components.icon :refer [icon]]
-            [flow.styles.components.input :refer [input]]
-            [flow.styles.components.toggle :refer [toggle]]
-            [flow.styles.components.button :refer [button]]
-            [flow.styles.components.cell :refer [cell]]
+            [flow.styles.animations :as animations]
+            [flow.styles.common.text :refer [text]]
+            [flow.styles.common.icon :refer [icon]]
+            [flow.styles.common.cell :refer [cell]]
+            [flow.styles.common.page :refer [page]]
+            [flow.styles.widgets.input :refer [input]]
+            [flow.styles.widgets.toggle :refer [toggle]]
+            [flow.styles.widgets.button :refer [button]]
             [flow.styles.components.router :refer [router]]
-            [flow.styles.components.page :refer [page]]
             [flow.styles.components.authorisation-attempt :refer [authorisation-attempt]]
             [flow.styles.components.deauthorisation :refer [deauthorisation]]
             [garden.def :refer [defstyles]]
@@ -51,6 +52,9 @@
 
   ;; fonts
   fonts/icomoon
+
+  ;; animations
+  animations/spin
 
   ;; components
   icon

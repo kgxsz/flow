@@ -39,7 +39,6 @@
 
 (comment
 
-
   (server)
 
   (create-table)
@@ -49,8 +48,6 @@
   (kaocha/run :unit)
 
   (kaocha/run :feature)
-
-  (kaocha/run 'flow.command-query-combinations-test)
 
   (user/create! "success+9@simulator.amazonses.com" "Test" #{:customer})
 

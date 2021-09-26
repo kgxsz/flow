@@ -37,15 +37,14 @@
         :label "Continue"
         :icon :arrow-right}
        {:on-click start-initialisation}]]
-     (when (= status :initialisation-errored)
+     (when (= status :initialisation-error)
        [:div
         {:class (u/bem [:cell :row :padding-top-small])}
         [:div
          {:class (u/bem [:icon :font-size-medium :warning])}]
         [:div
          {:class (u/bem [:text :font-size-small :padding-left-tiny])}
-         ;; TODO - make this better
-         "Looks like we're having trouble here."]])]
+         "Something has gone wrong"]])]
 
     (:initialisation-successful
      :finalisation-pending
@@ -57,7 +56,7 @@
       :class (u/bem [:authorisation-attempt])}
      [:div
       {:class (u/bem [:text :align-center :padding-top-medium])}
-      "We've sent you a magic phrase."]
+      "We've emailed you a magic phrase."]
      [input
       {:subscriptions {:value :authorisation-attempt/phrase
                        :disabled? :authorisation-attempt/phrase-update-disabled?}
@@ -72,9 +71,6 @@
         :label "Sign in"
         :icon :arrow-right}
        {:on-click start-finalisation}]]
-     ;; TODO - determine what the error modes are here
-     ;; - No current user at finalisation means that the magic phrase is either wrong
-     ;;   or the email address hasn't been invited.
      (when (= status :finalisation-unsuccessful)
        [:div
         {:class (u/bem [:cell :row :padding-top-small])}
@@ -82,7 +78,7 @@
          {:class (u/bem [:icon :font-size-medium :warning])}]
         [:div
          {:class (u/bem [:text :font-size-small :padding-left-tiny])}
-         "That magic phrase isn't quite right."]])
+         "That magic phrase doesn't look right."]])
      (when (= status :finalisation-error)
        [:div
         {:class (u/bem [:cell :row :padding-top-small])}
@@ -90,16 +86,7 @@
          {:class (u/bem [:icon :font-size-medium :warning])}]
         [:div
          {:class (u/bem [:text :font-size-small :padding-left-tiny])}
-         ;; TODO - make this better
-         "Something has gone wrong!"]])]
-
-    [:div
-     {:key :idle
-      :class (u/bem [:authorisation-attempt])}
-     [:div
-      {:class (u/bem [:text :align-center :padding-top-medium])}
-      ;; TODO - deal with this more nicely
-      "!!!!!!!!!!!!!!!!!!!STATE NOT YET LOADED!!!!!!!!!!!!!!!!!!"]]))
+         "Something has gone wrong!"]])]))
 
 
 (defn authorisation-attempt []

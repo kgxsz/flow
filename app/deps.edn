@@ -18,7 +18,7 @@
                                 "watch" "app"]}
            :dev/css {:extra-deps {com.powernoodle/normalize {:mvn/version "8.0.1"}
                                   gardener/gardener {:git/url "https://github.com/kgxsz/gardener"
-                                                     :sha "b9df26671d2f868c21b80c68acf4620d9dd8f90b"}}
+                                                     :sha "9fc04d28b21f4a67fe653a500325f9024f056192"}}
                      :main-opts ["--main" "gardener.compiler"
                                  "--stylesheet" "flow.styles.core/core"
                                  "--output-to" "resources/public/css/index.css"

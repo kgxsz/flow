@@ -41,12 +41,12 @@
                      :api {:query {:users {}}
                            :on-response :todo/todo
                            :on-error :todo/todo
-                           :delay (timeout 2000)}}
+                           :delay (timeout 1000)}}
        :admin.authorisations {:db db
                               :api {:query {:authorisations {}}
                                     :on-response :todo/todo
                                     :on-error :todo/todo
-                                    :delay (timeout 2000)}}
+                                    :delay (timeout 1000)}}
        :unknown {:db db}))))
 
 
@@ -124,7 +124,7 @@
                         (select-keys [:user/email-address]))}
           :on-response :authorisation-attempt/initialisation-ended
           :on-error :authorisation-attempt/initialisation-errored
-          :delay (timeout 2000)}
+          :delay (timeout 1000)}
     :db (assoc-in db [:flows :authorisation-attempt :status] :initialisation-pending)}))
 
 
@@ -166,7 +166,7 @@
           :query {:current-user {}}
           :on-response :authorisation-attempt/finalisation-ended
           :on-error :authorisation-attempt/finalisation-errored
-          :delay (timeout 2000)}
+          :delay (timeout 1000)}
     :db (assoc-in db [:flows :authorisation-attempt :status] :finalisation-pending)}))
 
 
@@ -187,7 +187,6 @@
  :authorisation-attempt/finalisation-errored
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ _]]
-   (js/console.warn "ERROR RESPONSE FROM AUTH ATTEMPT FINALISE")
    {:db (assoc-in db [:authorisation-attempt :status] :finalisation-error)}))
 
 
@@ -202,7 +201,7 @@
    {:api {:command {:deauthorise {}}
           :on-response :deauthorisation/ended
           :on-error :deauthorisation/errored
-          :delay (timeout 2000)}
+          :delay (timeout 1000)}
     :db (assoc-in db [:flows :deauthorisation :status] :pending)}))
 
 
@@ -237,7 +236,7 @@
           :query {:user {:user/id user-id}}
           :on-response :core/todo
           :on-error :core/todo
-          :delay (timeout 2000)}
+          :delay (timeout 1000)}
     :db db}))
 
 
@@ -283,7 +282,7 @@
             :query {:user {:user/id id}}
             :on-response :core/todo
             :on-error :core/todo
-            :delay (timeout 2000)})
+            :delay (timeout 1000)})
     :db (dissoc db
                 :user-addition-email-address
                 :user-addition-name
