@@ -49,7 +49,8 @@
 - In `api/` start the REPL with `clj -M:repl`.
 - Connect to the api's Clojure REPL, load `flow.dev`.
 - Start the local server with: `(server)`.
-- Seed the local DynamoDB instance with: `(seed)`.
+- Create a local DynamoDB table with: `(create-table)`.
+- Seed the local DynamoDB table with: `(seed-table)`.
 - The api will be running at `https://api.localhost:443`.
 
 ### Local app development setup
