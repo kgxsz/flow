@@ -11,11 +11,11 @@
     [:div
      {:class (u/bem [:cell :column :padding-top-huge])}
      [:div
-      {:class (u/bem [:icon :construction :font-size-xx-huge :align-center])}]
+      {:class (u/bem [:icon :construction :font-size-xxx-huge :align-center])}]
      [:div
-      {:class (u/bem [:text :font-size-xx-huge :align-center])
+      {:class (u/bem [:text :font-size-x-large :padding-top-medium])
        :on-click request-route-update}
-      "Unknown"]]]
+      "This page doesn't exist"]]]
    [:div
     {:class (u/bem [:page__footer])}]])
 

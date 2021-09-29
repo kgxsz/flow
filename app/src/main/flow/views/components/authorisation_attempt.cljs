@@ -86,7 +86,7 @@
          {:class (u/bem [:icon :font-size-medium :warning])}]
         [:div
          {:class (u/bem [:text :font-size-small :padding-left-tiny])}
-         "Something has gone wrong!"]])]))
+         "Something has gone wrong"]])]))
 
 
 (defn authorisation-attempt []

@@ -8,6 +8,7 @@
             [flow.styles.common.page :refer [page]]
             [flow.styles.widgets.input :refer [input]]
             [flow.styles.widgets.toggle :refer [toggle]]
+            [flow.styles.widgets.link :refer [link]]
             [flow.styles.widgets.button :refer [button]]
             [flow.styles.components.router :refer [router]]
             [flow.styles.components.authorisation-attempt :refer [authorisation-attempt]]
@@ -60,6 +61,7 @@
   icon
   input
   toggle
+  link
   button
   text
   cell
