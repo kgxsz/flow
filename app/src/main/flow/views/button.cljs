@@ -29,7 +29,7 @@
 (defn button [properties views behaviours]
   [view
    properties
-   {}
+   views
    behaviours])
 
 

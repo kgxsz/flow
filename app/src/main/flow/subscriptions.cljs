@@ -51,29 +51,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;; Input flow ;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(re-frame/reg-sub
- :input/value
- (fn [db [_ key]]
-   (:value (get-in db key))))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;; Button flow ;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; NOTE - Experimental
-(re-frame/reg-sub
- :button/pending?
- (fn [db [_ key]]
-   (let [context (get-in db key)]
-     (contains? #{:pending} (:status context)))))
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;; Authorisation attempt flow ;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -94,15 +71,30 @@
 
 
 (re-frame/reg-sub
+ :authorisation-attempt/email-address
+ (fn [db [_]]
+   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+         context (get-in db key)]
+     (:email-address context))))
+
+
+(re-frame/reg-sub
  :authorisation-attempt/initialisation-disabled?
  (fn [db [_]]
    (let [key [:views :app :views :pages.home :views :authorisation-attempt]
-         context (get-in db key)
-         email-address (get-in context [:views :email-address-input :value])]
+         context (get-in db key)]
      (not
       (and
        (contains? #{:idle :initialising} (:status context))
-       (s/valid? :user/email-address email-address))))))
+       (s/valid? :user/email-address (:email-address context)))))))
+
+
+(re-frame/reg-sub
+ :authorisation-attempt/initialisation-pending?
+ (fn [db [_]]
+   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+         context (get-in db key)]
+     (contains? #{:initialising} (:status context)))))
 
 
 (re-frame/reg-sub
@@ -114,22 +106,37 @@
 
 
 (re-frame/reg-sub
+ :authorisation-attempt/phrase
+ (fn [db [_]]
+   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+         context (get-in db key)]
+     (:phrase context))))
+
+
+(re-frame/reg-sub
  :authorisation-attempt/finalisation-disabled?
  (fn [db [_]]
    (let [key [:views :app :views :pages.home :views :authorisation-attempt]
-         context (get-in db key)
-         phrase (get-in context [:views :phrase-input :value])]
+         context (get-in db key)]
      (not
       (and
        (contains? #{:initialised :finalising :finalised-unsuccessfully} (:status context))
-       (s/valid? :authorisation/phrase phrase))))))
+       (s/valid? :authorisation/phrase (:phrase context)))))))
+
+
+(re-frame/reg-sub
+ :authorisation-attempt/finalisation-pending?
+ (fn [db [_]]
+   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+         context (get-in db key)]
+     (contains? #{:finalising} (:status context)))))
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;; Admin user page flow ;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+ 
 (re-frame/reg-sub
  :pages.admin.users/users
  (fn [db [_]]

@@ -24,11 +24,7 @@
 
 
 (defn input [properties views behaviours]
-  (let [{:keys [key]} properties
-        !value (re-frame/subscribe [:input/value key])]
-    (fn [properties views behaviours]
-      [view
-       (assoc properties :value @!value)
-       {}
-       {:on-change #(re-frame/dispatch [:input/update key %])}
-       behaviours])))
+  [view
+   properties
+   views
+   behaviours])

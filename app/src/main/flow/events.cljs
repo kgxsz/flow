@@ -7,37 +7,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;; Input flow ;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(re-frame/reg-event-fx
- :input/update
- [interceptors/validate-db]
- (fn [{:keys [db]} [_ key value]]
-   (let [valid-length? (<= (count value) 250)
-         sanitise #(string/replace % #"\n|\r| " "")]
-     (if valid-length?
-       {:db (update-in db key assoc :value (sanitise value))}
-       {:db db}))))
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;; Button flow ;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; NOTE - Experimental
-(re-frame/reg-event-fx
- :button/click
- [interceptors/validate-db]
- (fn [{:keys [db]} [_ key]]
-   (js/console.warn "BUTTON CLICKED: " key)
-   ;; TODO - experimental, think about what you need here
-   {:db (update-in db key assoc :status :pending)}))
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;; App flow ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -94,8 +63,8 @@
             (assoc-in [:views :app :routing :query-params] nil)
             (assoc-in [:views :app :session] session)
             (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :status] :idle)
-            (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :views :email-address-input :value] "")
-            (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :views :phrase-input :value] "")
+            (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :email-address] "")
+            (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :phrase] "")
             (update-in [:entities :users] merge users))}))
 
 
@@ -110,8 +79,8 @@
     :db (-> db
             (update-in [:views :app] dissoc :session)
             (assoc-in [:views :app :views :pages.home :views :authorisation-attempt] {:status :idle})
-            (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :views :email-address-input :value] "")
-            (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :views :phrase-input :value] "")
+            (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :email-address] "")
+            (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :phrase] "")
             (assoc-in [:entities] {}))}))
 
 
@@ -218,6 +187,19 @@
 ;;;;;;;;;;;;;;; Authorisation attempt flow ;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+(re-frame/reg-event-fx
+ :authorisation-attempt/update-email-address
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_ value]]
+   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+         valid-length? (<= (count value) 250)
+         sanitise #(string/replace % #"\n|\r| " "")]
+     (if valid-length?
+       {:db (update-in db key assoc :email-address (sanitise value))}
+       {:db db}))))
+
+
 (re-frame/reg-event-fx
  :authorisation-attempt/initialise
  [interceptors/validate-db]
@@ -225,7 +207,7 @@
    (let [key [:views :app :views :pages.home :views :authorisation-attempt]
          context (get-in db key)]
      {:api {:command {:initialise-authorisation-attempt
-                      {:user/email-address (get-in context [:views :email-address-input :value])}}
+                      {:user/email-address (:email-address context)}}
             :on-response :authorisation-attempt/complete-initialisation
             :on-error :app/error
             :delay (timeout 1000)}
@@ -241,14 +223,26 @@
 
 
 (re-frame/reg-event-fx
+ :authorisation-attempt/update-phrase
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_ value]]
+   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+         valid-length? (<= (count value) 250)
+         sanitise #(string/replace % #"\n|\r| " "")]
+     (if valid-length?
+       {:db (update-in db key assoc :phrase (sanitise value))}
+       {:db db}))))
+
+
+(re-frame/reg-event-fx
  :authorisation-attempt/finalise
  [interceptors/validate-db]
  (fn [{:keys [db]} [_]]
    (let [key [:views :app :views :pages.home :views :authorisation-attempt]
          context (get-in db [:views :app :views :pages.home :views :authorisation-attempt])]
      {:api {:command {:finalise-authorisation-attempt
-                      {:user/email-address (get-in context [:views :email-address-input :value])
-                       :authorisation/phrase (get-in context [:views :phrase-input :value])}}
+                      {:user/email-address (:email-address context)
+                       :authorisation/phrase (:phrase context)}}
             :query {:current-user {}}
             :on-response :authorisation-attempt/complete-finalisation
             :on-error :app/error
