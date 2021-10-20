@@ -21,13 +21,20 @@
 
 
 (defn constrained-string?
-  "Takes a number and a string, and returns
+  "Takes a number n and a string, and returns
    a boolean indication that the string has
    a positive length less than or equal to n."
   [n s]
   (and (string? s)
        (<= (count s) n)
        (not (string/blank? s))))
+
+
+(defn constrain-string
+  "Takes a number n and a string, and returns
+   the string constrained to length n."
+  [n s]
+  (apply str (take n s)))
 
 
 (defn sanitised-string?
@@ -39,6 +46,13 @@
   (and
    (string? s)
    (nil? (re-find #"\n|\r| " s))))
+
+
+(defn sanitise-string
+  "Takes a string, and santises it by removing whitespace,
+   newlines, and carriage return characters."
+  [s]
+  (string/replace s #"\n|\r| " ""))
 
 
 (defn email-address?

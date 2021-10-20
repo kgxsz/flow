@@ -192,12 +192,8 @@
  :authorisation-attempt/update-email-address
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ value]]
-   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
-         valid-length? (<= (count value) 250)
-         sanitise #(string/replace % #"\n|\r| " "")]
-     (if valid-length?
-       {:db (update-in db key assoc :email-address (sanitise value))}
-       {:db db}))))
+   (let [key [:views :app :views :pages.home :views :authorisation-attempt]]
+     {:db (update-in db key assoc :email-address (->> value (u/constrain-string 250) u/sanitise-string))})))
 
 
 (re-frame/reg-event-fx
@@ -226,12 +222,8 @@
  :authorisation-attempt/update-phrase
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ value]]
-   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
-         valid-length? (<= (count value) 250)
-         sanitise #(string/replace % #"\n|\r| " "")]
-     (if valid-length?
-       {:db (update-in db key assoc :phrase (sanitise value))}
-       {:db db}))))
+   (let [key [:views :app :views :pages.home :views :authorisation-attempt]]
+     {:db (update-in db key assoc :phrase (->> value (u/constrain-string 250) u/sanitise-string))})))
 
 
 (re-frame/reg-event-fx
