@@ -1,4 +1,4 @@
-(ns flow.styles.common.text
+(ns flow.styles.blocks.text
   (:require [flow.styles.constants :as c]
             [flow.styles.utils :as u]
             [garden.def :refer [defstyles]]

@@ -2,17 +2,16 @@
   (:require [flow.styles.constants :as c]
             [flow.styles.fonts :as fonts]
             [flow.styles.animations :as animations]
-            [flow.styles.common.text :refer [text]]
-            [flow.styles.common.icon :refer [icon]]
-            [flow.styles.common.cell :refer [cell]]
-            [flow.styles.common.page :refer [page]]
-            [flow.styles.widgets.input :refer [input]]
-            [flow.styles.widgets.toggle :refer [toggle]]
-            [flow.styles.widgets.link :refer [link]]
-            [flow.styles.widgets.button :refer [button]]
-            [flow.styles.components.router :refer [router]]
-            [flow.styles.components.authorisation-attempt :refer [authorisation-attempt]]
-            [flow.styles.components.deauthorisation :refer [deauthorisation]]
+            [flow.styles.blocks.text :refer [text]]
+            [flow.styles.blocks.icon :refer [icon]]
+            [flow.styles.blocks.cell :refer [cell]]
+            [flow.styles.blocks.page :refer [page]]
+            [flow.styles.blocks.input :refer [input]]
+            [flow.styles.blocks.toggle :refer [toggle]]
+            [flow.styles.blocks.link :refer [link]]
+            [flow.styles.blocks.button :refer [button]]
+            [flow.styles.blocks.app :refer [app]]
+            [flow.styles.blocks.authorisation-attempt :refer [authorisation-attempt]]
             [garden.def :refer [defstyles]]
             [garden.units :refer [px percent ms]]
             [normalize.core :refer [normalize]]))
@@ -56,6 +55,7 @@
 
   ;; animations
   animations/spin
+  animations/widen
 
   ;; components
   icon
@@ -65,7 +65,6 @@
   button
   text
   cell
-  router
+  app
   page
-  authorisation-attempt
-  deauthorisation)
+  authorisation-attempt)
