@@ -7,47 +7,64 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;; Router flow ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;; Input flow ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
- :router/initialisation-started
+ :input/update
  [interceptors/validate-db]
- (fn [{:keys [db]} event]
-   {:router {}
-    :db (assoc-in db [:flows :router :status] :initialisation-pending)}))
+ (fn [{:keys [db]} [_ key value]]
+   (let [valid-length? (<= (count value) 250)
+         sanitise #(string/replace % #"\n|\r| " "")]
+     (if valid-length?
+       {:db (update-in db key assoc :value (sanitise value))}
+       {:db db}))))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;; Button flow ;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; NOTE - Experimental
+(re-frame/reg-event-fx
+ :button/click
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_ key]]
+   (js/console.warn "BUTTON CLICKED: " key)
+   ;; TODO - experimental, think about what you need here
+   {:db (update-in db key assoc :status :pending)}))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;; App flow ;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-event-fx
+ :app/initialise
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_]]
+   (let [key [:views :app]]
+     {:db (update-in db key assoc :status :routing)})))
 
 
 (re-frame/reg-event-fx
- :router/initialisation-ended
+ :app/route
  [interceptors/validate-db]
- (fn [{:keys [db]} event]
-   {:db (assoc-in db [:flows :router :status] :initialisation-successful)}))
+ (fn [{:keys [db]} [_ route]]
+   (let [key [:views :app]]
+     {:router {:route route}
+      :db (update-in db key assoc :status :routing)})))
 
 
 (re-frame/reg-event-fx
- :router/updated
+ :app/error
  [interceptors/validate-db]
- (fn [{:keys [db]} [_ {:keys [route route-params query-params]}]]
-   (let [db (-> db
-                (assoc-in [:flows :router :route] route)
-                (assoc-in [:flows :router :route-params] route-params)
-                (assoc-in [:flows :router :query-params] query-params))]
-     (case route
-       :home {:db (assoc-in db [:flows :home-page :status] :idle)
-              :dispatch [:home-page/initialisation-started]}
-       :admin {:db db}
-       :admin.users {:db db
-                     :api {:query {:users {}}
-                           :on-response :todo/todo
-                           :on-error :todo/todo
-                           :delay (timeout 1000)}}
-       :admin.authorisations {:db db
-                              :api {:query {:authorisations {}}
-                                    :on-response :todo/todo
-                                    :on-error :todo/todo
-                                    :delay (timeout 1000)}}
-       :unknown {:db db}))))
+ (fn [{:keys [db]} [_]]
+   (let [key [:views :app]]
+     {:db (update-in db key assoc :status :error)})))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -55,46 +72,146 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
- :home-page/initialisation-started
+ :pages.home/initialise
  [interceptors/validate-db]
- (fn [{:keys [db]} [_]]
-   {:api {:query {:current-user {}}
-          :on-response :home-page/initialisation-ended
-          :on-error :home-page/initialisation-errored
-          :delay (timeout 0)}
-    :db (assoc-in db [:flows :home-page :status] :initialisation-pending)}))
+ (fn [{:keys [db]} [_ {:keys [route-params query-params]}]]
+   (let [key [:views :app]]
+     {:api {:query {:current-user {}}
+            :on-response :pages.home/complete-initialisation
+            :on-error :app/error
+            :delay (timeout 1000)}
+      :db (update-in db key assoc :status :routing)})))
 
 
 (re-frame/reg-event-fx
- :home-page/initialisation-ended
+ :pages.home/complete-initialisation
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ {:keys [users session]}]]
    {:db (-> db
-            (assoc-in [:flows :home-page :status] :initialisation-successful)
-            (assoc-in [:flows :home-page :current-user-id] (:current-user-id session))
-            (assoc-in [:flows :authorisation-attempt :status] :idle)
-            (assoc-in [:flows :deauthorisation :status] :idle)
+            (assoc-in [:views :app :status] :idle)
+            (assoc-in [:views :app :routing :route] :home)
+            (assoc-in [:views :app :routing :route-params] nil)
+            (assoc-in [:views :app :routing :query-params] nil)
+            (assoc-in [:views :app :session] session)
+            (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :status] :idle)
+            (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :views :email-address-input :value] "")
+            (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :views :phrase-input :value] "")
             (update-in [:entities :users] merge users))}))
 
 
 (re-frame/reg-event-fx
- :home-page/initialisation-errored
+ :pages.home/deauthorise
  [interceptors/validate-db]
- (fn [{:keys [db]} [_ response]]
+ (fn [{:keys [db]} [_]]
+   {:api {:command {:deauthorise {}}
+          :on-response :pages.home/complete-deauthorisation
+          :on-error :app/error
+          :delay (timeout 1000)}
+    :db (-> db
+            (update-in [:views :app] dissoc :session)
+            (assoc-in [:views :app :views :pages.home :views :authorisation-attempt] {:status :idle})
+            (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :views :email-address-input :value] "")
+            (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :views :phrase-input :value] "")
+            (assoc-in [:entities] {}))}))
+
+
+(re-frame/reg-event-fx
+ :pages.home/complete-deauthorisation
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_ {:keys [session]}]]
+   {:db (assoc-in db [:views :app :session] session)}))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;; Admin users page flow ;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-event-fx
+ :pages.admin.users/initialise
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_ {:keys [route-params query-params]}]]
+   {:api {:query {:current-user {}
+                  :users {}}
+          :on-response :pages.admin.users/complete-initialisation
+          :on-error :app/error
+          :delay (timeout 1000)}
+    :db (assoc-in db [:views :app :status] :routing)}))
+
+
+(re-frame/reg-event-fx
+ :pages.admin.users/complete-initialisation
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_ {:keys [users session]}]]
    {:db (-> db
-            (assoc-in [:flows :home-page :status] :initialisation-error))}))
+            (assoc-in [:views :app :status] :idle)
+            (assoc-in [:views :app :routing :route] :admin.users)
+            (assoc-in [:views :app :routing :route-params] nil)
+            (assoc-in [:views :app :routing :query-params] nil)
+            (assoc-in [:views :app :session] session)
+            (update-in [:entities :users] merge users))}))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;; Admin authorisations page flow ;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-event-fx
+ :pages.admin.authorisations/initialise
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_ {:keys [route-params query-params]}]]
+   {:api {:query {:current-user {}
+                  :authorisations {}}
+          :on-response :pages.admin.authorisations/complete-initialisation
+          :on-error :app/error
+          :delay (timeout 1000)}
+    :db (assoc-in db [:views :app :status] :routing)}))
+
+
+(re-frame/reg-event-fx
+ :pages.admin.authorisations/complete-initialisation
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_ {:keys [users authorisations session]}]]
+   {:db (-> db
+            (assoc-in [:views :app :status] :idle)
+            (assoc-in [:views :app :routing :route] :admin.authorisations)
+            (assoc-in [:views :app :routing :route-params] nil)
+            (assoc-in [:views :app :routing :query-params] nil)
+            (assoc-in [:views :app :session] session)
+            (update-in [:entities :users] merge users)
+            (update-in [:entities :authorisations] merge authorisations))}))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;; Unknown page flow ;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
 (re-frame/reg-event-fx
- :unknown-page/route-update-requested
+ :pages.unknown/initialise
  [interceptors/validate-db]
- (fn [{:keys [db]} [_]]
-   {:router {:route :home}
-    :db (update db :flows dissoc :unknown-page)}))
+ (fn [{:keys [db]} [_ {:keys [route-params query-params]}]]
+   {:api {:query {:current-user {}}
+          :on-response :pages.unknown/complete-initialisation
+          :on-error :app/error
+          :delay (timeout 1000)}
+    :db (assoc-in db [:views :app :status] :routing)}))
+
+
+(re-frame/reg-event-fx
+ :pages.unknown/complete-initialisation
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_ {:keys [users session]}]]
+   {:db (-> db
+            (assoc-in [:views :app :status] :idle)
+            (assoc-in [:views :app :routing :route] :unknown)
+            (assoc-in [:views :app :routing :route-params] nil)
+            (assoc-in [:views :app :routing :query-params] nil)
+            (assoc-in [:views :app :session] session)
+            (update-in [:entities :users] merge users))}))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -102,126 +219,54 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
- :authorisation-attempt/email-address-updated
- [interceptors/validate-db]
- (fn [{:keys [db]} [_ input-value]]
-   (let [valid-length? (<= (count input-value) 250)
-         sanitise #(string/replace % #"\n|\r| " "")]
-     (if valid-length?
-       {:db (assoc-in db
-                      [:flows :authorisation-attempt :user/email-address]
-                      (sanitise input-value))}
-       {:db db}))))
-
-
-(re-frame/reg-event-fx
- :authorisation-attempt/initialisation-started
+ :authorisation-attempt/initialise
  [interceptors/validate-db]
  (fn [{:keys [db]} [_]]
-   {:api {:command {:initialise-authorisation-attempt
-                    (-> db
-                        (get-in [:flows :authorisation-attempt])
-                        (select-keys [:user/email-address]))}
-          :on-response :authorisation-attempt/initialisation-ended
-          :on-error :authorisation-attempt/initialisation-errored
-          :delay (timeout 1000)}
-    :db (assoc-in db [:flows :authorisation-attempt :status] :initialisation-pending)}))
+   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+         context (get-in db key)]
+     {:api {:command {:initialise-authorisation-attempt
+                      {:user/email-address (get-in context [:views :email-address-input :value])}}
+            :on-response :authorisation-attempt/complete-initialisation
+            :on-error :app/error
+            :delay (timeout 1000)}
+      :db (update-in db key assoc :status :initialising)})))
 
 
 (re-frame/reg-event-fx
- :authorisation-attempt/initialisation-ended
+ :authorisation-attempt/complete-initialisation
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ response]]
-   {:db (assoc-in db [:flows :authorisation-attempt :status] :initialisation-successful)}))
+   (let [key [:views :app :views :pages.home :views :authorisation-attempt]]
+     {:db (update-in db key assoc :status :initialised)})))
 
 
 (re-frame/reg-event-fx
- :authorisation-attempt/initialisation-errored
- [interceptors/validate-db]
- (fn [{:keys [db]} [_ _]]
-   {:db (assoc-in db [:flows :authorisation-attempt :status] :initialisation-error)}))
-
-
-(re-frame/reg-event-fx
- :authorisation-attempt/phrase-updated
- [interceptors/validate-db]
- (fn [{:keys [db]} [_ input-value]]
-   (let [valid-length? (<= (count input-value) 250)
-         sanitise #(string/replace % #"\n|\r| " "")]
-     (if valid-length?
-       {:db (assoc-in db
-                      [:flows :authorisation-attempt :authorisation/phrase]
-                      (sanitise input-value))}
-       {:db db}))))
-
-
-(re-frame/reg-event-fx
- :authorisation-attempt/finalisation-started
+ :authorisation-attempt/finalise
  [interceptors/validate-db]
  (fn [{:keys [db]} [_]]
-   {:api {:command {:finalise-authorisation-attempt
-                    (-> db
-                        (get-in [:flows :authorisation-attempt])
-                        (select-keys [:user/email-address :authorisation/phrase]))}
-          :query {:current-user {}}
-          :on-response :authorisation-attempt/finalisation-ended
-          :on-error :authorisation-attempt/finalisation-errored
-          :delay (timeout 1000)}
-    :db (assoc-in db [:flows :authorisation-attempt :status] :finalisation-pending)}))
+   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+         context (get-in db [:views :app :views :pages.home :views :authorisation-attempt])]
+     {:api {:command {:finalise-authorisation-attempt
+                      {:user/email-address (get-in context [:views :email-address-input :value])
+                       :authorisation/phrase (get-in context [:views :phrase-input :value])}}
+            :query {:current-user {}}
+            :on-response :authorisation-attempt/complete-finalisation
+            :on-error :app/error
+            :delay (timeout 1000)}
+      :db (update-in db key assoc :status :finalising)})))
 
 
 (re-frame/reg-event-fx
- :authorisation-attempt/finalisation-ended
+ :authorisation-attempt/complete-finalisation
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ {:keys [users session]}]]
-   (if (:current-user-id session)
-     {:db (-> db
-              (assoc-in [:flows :authorisation-attempt :status] :finalisation-successful)
-              (assoc-in [:flows :deauthorisation :status] :idle)
-              (assoc-in [:flows :home-page :current-user-id] (:current-user-id session))
-              (update-in [:entities :users] merge users))}
-     {:db (assoc-in db [:flows :authorisation-attempt :status] :finalisation-unsuccessful)})))
-
-
-(re-frame/reg-event-fx
- :authorisation-attempt/finalisation-errored
- [interceptors/validate-db]
- (fn [{:keys [db]} [_ _]]
-   {:db (assoc-in db [:authorisation-attempt :status] :finalisation-error)}))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;; Deauthorisation flow ;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(re-frame/reg-event-fx
- :deauthorisation/started
- [interceptors/validate-db]
- (fn [{:keys [db]} [_]]
-   {:api {:command {:deauthorise {}}
-          :on-response :deauthorisation/ended
-          :on-error :deauthorisation/errored
-          :delay (timeout 1000)}
-    :db (assoc-in db [:flows :deauthorisation :status] :pending)}))
-
-
-(re-frame/reg-event-fx
- :deauthorisation/ended
- [interceptors/validate-db]
- (fn [{:keys [db]} [_]]
-   {:db (-> db
-            (assoc-in [:flows :deauthorisation :status] :successful)
-            (assoc-in [:flows :authorisation-attempt :status] :idle)
-            (update-in [:flows :authorisation-attempt] dissoc :user/email-address)
-            (update-in [:flows :authorisation-attempt] dissoc :authorisation/phrase)
-            (assoc-in [:flows :home-page :current-user-id] nil))}))
-
-
-(re-frame/reg-event-fx
- :deauthorisation/errored
- [interceptors/validate-db]
- (fn [{:keys [db]} [_]]
-   {:db (assoc-in db [:flows :deauthorisation :status] :error)}))
+   (let [key [:views :app :views :pages.home :views :authorisation-attempt]]
+     (if (:current-user-id session)
+       {:db (-> db
+                (update-in key assoc :status :finalised-successfully)
+                (assoc-in [:views :app :session] session)
+                (update-in [:entities :users] merge users))}
+       {:db (update-in db key assoc :status :finalised-unsuccessfully)}))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -9,29 +9,30 @@
 (defonce !history (atom nil))
 
 
-(def routes (silk/routes [[:home [[]]]
-                          [:admin [["admin"]]]
-                          [:admin.users [["admin" "users"]]]
-                          [:admin.authorisations [["admin" "authorisations"]]]]))
+(def routes
+  (silk/routes [[:home [[]]]
+                [:admin.users [["admin" "users"]]]
+                [:admin.authorisations [["admin" "authorisations"]]]]))
 
 
-(defn initialised?
-  []
-  (some? @!history))
-
-
-(defn initialise!
-  [on-update on-initialised]
+(defn initialise! []
   (reset! !history
           (pushy/pushy
-           #(on-update {:route (::silk/name %)
-                        :route-params (->> (medley.core/remove-keys namespace %)
-                                           (medley/map-vals string/lower-case))
-                        :query-params (->> % ::silk/url :query (medley/map-keys keyword))})
+           #(re-frame/dispatch
+             [(case (::silk/name %)
+                :home :pages.home/initialise
+                :admin.users :pages.admin.users/initialise
+                :admin.authorisations :pages.admin.authorisations/initialise
+                :unknown :pages.unknown/initialise)
+              {:route-params (->> (medley.core/remove-keys namespace %)
+                                  (medley/map-vals string/lower-case))
+               :query-params (->> % ::silk/url :query (medley/map-keys keyword))}])
            #(or (silk/arrive routes %)
-                {::silk/name :unknown, ::silk/url {:query {}}})))
-  (pushy/start! @!history)
-  (on-initialised))
+                {::silk/name :unknown, ::silk/url {:query {}}}))))
+
+
+(defn start! []
+  (pushy/start! @!history))
 
 
 (defn update! [{:keys [route route-params]}]

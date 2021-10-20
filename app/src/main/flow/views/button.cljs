@@ -1,4 +1,4 @@
-(ns flow.views.widgets.button
+(ns flow.views.button
   (:require [re-frame.core :as re-frame]
             [flow.utils :as u]))
 
@@ -26,27 +26,10 @@
        {:class (u/bem [:icon icon])}])]])
 
 
-(defn button [properties behaviours]
-  (let [!disabled? (re-frame/subscribe [(get-in properties [:subscriptions :disabled?])])
-        !pending? (re-frame/subscribe [(get-in properties [:subscriptions :pending?])])]
-    (fn [properties behaviours]
-      [view
-       (assoc properties
-              :disabled? @!disabled?
-              :pending? @!pending?)
-       {}
-       behaviours])))
-
-
-(defn primary-button [properties behaviours]
-  [button
-   (assoc properties
-          :type :primary)
+(defn button [properties views behaviours]
+  [view
+   properties
+   {}
    behaviours])
 
 
-(defn secondary-button [properties behaviours]
-  [button
-   (assoc properties
-          :type :secondary)
-   behaviours])

@@ -1,9 +1,10 @@
+;; TODO - delete this page
 (ns flow.views.pages.admin-page
   (:require [re-frame.core :as re-frame]
             [flow.utils :as u]
-            [flow.views.widgets.input :as input]
-            [flow.views.widgets.toggle :as toggle]
-            [flow.views.widgets.button :as button]
+            [flow.views.input :as input]
+            [flow.views.toggle :as toggle]
+            [flow.views.button :as button]
             [cljs-time.coerce :as t.coerce]
             [cljs-time.format :as t.format]))
 

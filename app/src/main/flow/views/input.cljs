@@ -1,4 +1,4 @@
-(ns flow.views.widgets.input
+(ns flow.views.input
   (:require [re-frame.core :as re-frame]
             [flow.utils :as u]))
 
@@ -18,18 +18,17 @@
     {:class (u/bem [:input__body])
      :type :text
      :value value
-     :disabled disabled?
      :placeholder placeholder
+     :disabled disabled?
      :on-change #(on-change (.. % -target -value))}]])
 
 
-(defn input [properties behaviours]
-  (let [!value (re-frame/subscribe [(get-in properties [:subscriptions :value])])
-        !disabled? (re-frame/subscribe [(get-in properties [:subscriptions :disabled?])])]
-    (fn [properties behaviours]
+(defn input [properties views behaviours]
+  (let [{:keys [key]} properties
+        !value (re-frame/subscribe [:input/value key])]
+    (fn [properties views behaviours]
       [view
-       (assoc properties
-              :value @!value
-              :disabled? @!disabled?)
+       (assoc properties :value @!value)
        {}
+       {:on-change #(re-frame/dispatch [:input/update key %])}
        behaviours])))

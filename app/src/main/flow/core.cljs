@@ -4,14 +4,19 @@
             [flow.effects :as effects]
             [flow.events :as events]
             [flow.subscriptions :as subscriptions]
-            [flow.views.components.router :as router]))
+            [flow.router :as router]
+            [flow.views.app :as app]))
 
 
 (defn mount []
   (re-frame/clear-subscription-cache!)
-  (reagent/render [router/router] (.getElementById js/document "container")))
+  (reagent/render
+   [app/app {} {} {}]
+   (.getElementById js/document "container")))
 
 
 (defn initialise []
-  (re-frame/dispatch-sync [:router/initialisation-started])
+  (router/initialise!)
+  (router/start!)
+  (re-frame/dispatch-sync [:app/initialise])
   (mount))

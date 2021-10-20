@@ -6,35 +6,71 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;; Router flow ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;; App flow ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-sub
- :router/status
+ :app/route
  (fn [db [_]]
-   (get-in db [:flows :router :status])))
+   (let [key [:views :app]
+         context (get-in db key)]
+     (get-in context [:routing :route]))))
 
 
 (re-frame/reg-sub
- :router/route
+ :app/routing?
  (fn [db [_]]
-   (get-in db [:flows :router :route])))
+   (let [key [:views :app]
+         context (get-in db key)]
+     (contains? #{:routing} (:status context)))))
+
+
+(re-frame/reg-sub
+ :app/error?
+ (fn [db [_]]
+   (let [key [:views :app]
+         context (get-in db key)]
+     (contains? #{:error} (:status context)))))
+
+
+(re-frame/reg-sub
+ :app/authorised?
+ (fn [db [_]]
+   (let [key [:views :app]
+         context (get-in db key)]
+     (some? (get-in context [:session :current-user-id])))))
+
+
+(re-frame/reg-sub
+ :app/current-user
+ (fn [db [_]]
+   (let [key [:views :app]
+         context (get-in db key)]
+     (get-in db [:entities :users (get-in context [:session :current-user-id])]))))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;; Home page flow ;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;; Input flow ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-sub
- :home-page/status
- (fn [db [_]]
-   (get-in db [:flows :home-page :status])))
+ :input/value
+ (fn [db [_ key]]
+   (:value (get-in db key))))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;; Button flow ;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; NOTE - Experimental
 (re-frame/reg-sub
- :home-page/authorised?
- (fn [db [_]]
-   (some? (get-in db [:flows :home-page :current-user-id]))))
+ :button/pending?
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
+     (contains? #{:pending} (:status context)))))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -44,115 +80,73 @@
 (re-frame/reg-sub
  :authorisation-attempt/status
  (fn [db [_]]
-   (get-in db [:flows :authorisation-attempt :status])))
-
-
-(re-frame/reg-sub
-   :authorisation-attempt/email-address
-   (fn [db [_]]
-     (get-in db [:flows :authorisation-attempt :user/email-address])))
+   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+         context (get-in db key)]
+     (:status context))))
 
 
 (re-frame/reg-sub
  :authorisation-attempt/email-address-update-disabled?
  (fn [db [_]]
-   (let [{:keys [status]} (get-in db [:flows :authorisation-attempt])]
-     (not (contains? #{:idle} status)))))
+   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+         context (get-in db key)]
+     (not (contains? #{:idle} (:status context))))))
 
 
 (re-frame/reg-sub
  :authorisation-attempt/initialisation-disabled?
  (fn [db [_]]
-   (let [{:keys [status]} (get-in db [:flows :authorisation-attempt])
-         email-address (get-in db [:flows :authorisation-attempt :user/email-address])]
+   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+         context (get-in db key)
+         email-address (get-in context [:views :email-address-input :value])]
      (not
       (and
-       (contains? #{:idle :initialisation-pending} status)
+       (contains? #{:idle :initialising} (:status context))
        (s/valid? :user/email-address email-address))))))
-
-
-(re-frame/reg-sub
- :authorisation-attempt/initialisation-pending?
- (fn [db [_]]
-   (let [status (get-in db [:flows :authorisation-attempt :status])]
-     (contains? #{:initialisation-pending} status))))
-
-
-(re-frame/reg-sub
- :authorisation-attempt/phrase
- (fn [db [_]]
-   (get-in db [:flows :authorisation-attempt :authorisation/phrase])))
 
 
 (re-frame/reg-sub
  :authorisation-attempt/phrase-update-disabled?
  (fn [db [_]]
-   (let [{:keys [status]} (get-in db [:flows :authorisation-attempt])]
-     (not (contains? #{:initialisation-successful :finalisation-unsuccessful} status)))))
+   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+         context (get-in db key)]
+     (not (contains? #{:initialised :finalised-unsuccessfully} (:status context))))))
 
 
 (re-frame/reg-sub
  :authorisation-attempt/finalisation-disabled?
  (fn [db [_]]
-   (let [{:keys [status]} (get-in db [:flows :authorisation-attempt])
-         phrase (get-in db [:flows :authorisation-attempt :authorisation/phrase])]
+   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+         context (get-in db key)
+         phrase (get-in context [:views :phrase-input :value])]
      (not
       (and
-       (contains? #{:initialisation-successful :finalisation-pending :finalisation-unsuccessful} status)
+       (contains? #{:initialised :finalising :finalised-unsuccessfully} (:status context))
        (s/valid? :authorisation/phrase phrase))))))
 
 
-(re-frame/reg-sub
- :authorisation-attempt/finalisation-pending?
- (fn [db [_]]
-   (let [status (get-in db [:flows :authorisation-attempt :status])]
-     (contains? #{:finalisation-pending} status))))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;; Deauthorisation flow ;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;; Admin user page flow ;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-sub
- :deauthorisation/status
+ :pages.admin.users/users
  (fn [db [_]]
-   (get-in db [:flows :deauthorisation :status])))
+   (vals (get-in db [:entities :users]))))
 
-
-(re-frame/reg-sub
- :deauthorisation/disabled?
- (fn [db [_]]
-   (let [{:keys [status]} (get-in db [:flows :deauthorisation])]
-     (not (contains? #{:idle :pending} status)))))
-
-
-(re-frame/reg-sub
- :deauthorisation/pending?
- (fn [db [_]]
-   (let [{:keys [status]} (get-in db [:flows :deauthorisation])]
-     (contains? #{:pending} status))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;; Admin authorisations page flow ;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-#_(re-frame/reg-sub
- :current-user
+(re-frame/reg-sub
+ :pages.admin.authorisations/authorisations
  (fn [db [_]]
-   (let [{:keys [current-user-id]} (:session db)]
-     (get-in db [:users current-user-id]))))
+   (vals (get-in db [:entities :authorisations]))))
 
-
-#_(re-frame/reg-sub
- :users
- (fn [db [_]]
-   (vals (:users db))))
-
-
-#_(re-frame/reg-sub
- :authorisations
- (fn [db [_]]
-   (vals (:authorisations db))))
+;;;;;;;;;;;;;;;;;;;;;
 
 
 #_(re-frame/reg-sub
