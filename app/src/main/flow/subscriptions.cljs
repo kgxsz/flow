@@ -90,7 +90,7 @@
 
 
 (re-frame/reg-sub
- :authorisation-attempt/initialisation-pending?
+ :authorisation-attempt/initialising?
  (fn [db [_]]
    (let [key [:views :app :views :pages.home :views :authorisation-attempt]
          context (get-in db key)]
@@ -125,7 +125,7 @@
 
 
 (re-frame/reg-sub
- :authorisation-attempt/finalisation-pending?
+ :authorisation-attempt/finalising?
  (fn [db [_]]
    (let [key [:views :app :views :pages.home :views :authorisation-attempt]
          context (get-in db key)]
@@ -136,11 +136,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;; Admin user page flow ;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
- 
+
 (re-frame/reg-sub
- :pages.admin.users/users
+ :pages.admin.users/ids
  (fn [db [_]]
-   (vals (get-in db [:entities :users]))))
+   (keys (get-in db [:entities :users]))))
 
 
 
@@ -153,7 +153,37 @@
  (fn [db [_]]
    (vals (get-in db [:entities :authorisations]))))
 
-;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;; User flow ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(re-frame/reg-sub
+ :user/user
+ (fn [db [_ id]]
+   (get-in db [:entities :users id])))
+
+
+(re-frame/reg-sub
+ :user/deletion-disabled?
+ (fn [db [_ id]]
+   (let [current-user-id (get-in db [:views :app :session :current-user-id])
+         user (get-in db [:entities :users id])]
+     (or
+      (= id (get-in db [:views :app :session :current-user-id]))
+      (some? (get-in db [:entities :users id :user/deleted-at]))))))
+
+
+(re-frame/reg-sub
+ :user/deleting?
+ (fn [db [_ id]]
+   (let [key [:views :app :views :pages.admin.users :views :user id]
+         context (get-in db key)]
+     (contains? #{:deleting} (:status context)))))
+
+
 
 
 #_(re-frame/reg-sub

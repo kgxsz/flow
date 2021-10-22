@@ -52,11 +52,11 @@
         !email-address-update-disabled? (re-frame/subscribe [:authorisation-attempt/email-address-update-disabled?])
         !email-address (re-frame/subscribe [:authorisation-attempt/email-address])
         !initialisation-disabled? (re-frame/subscribe [:authorisation-attempt/initialisation-disabled?])
-        !initialisation-pending? (re-frame/subscribe [:authorisation-attempt/initialisation-pending?])
+        !initialising? (re-frame/subscribe [:authorisation-attempt/initialising?])
         !phrase-update-disabled? (re-frame/subscribe [:authorisation-attempt/phrase-update-disabled?])
         !phrase (re-frame/subscribe [:authorisation-attempt/phrase])
         !finalisation-disabled? (re-frame/subscribe [:authorisation-attempt/finalisation-disabled?])
-        !finalisation-pending? (re-frame/subscribe [:authorisation-attempt/finalisation-pending?])]
+        !finalising? (re-frame/subscribe [:authorisation-attempt/finalising?])]
     (fn [properties views behaviours]
       [view
        {:status @!status}
@@ -72,7 +72,7 @@
                              :label "Continue"
                              :icon :arrow-right
                              :disabled? @!initialisation-disabled?
-                             :pending? @!initialisation-pending?}
+                             :pending? @!initialising?}
                             {}
                             {:on-click #(re-frame/dispatch [:authorisation-attempt/initialise])}]
         :phrase-input [input/input
@@ -88,7 +88,7 @@
                            :label "Sign in"
                            :icon :arrow-right
                            :disabled? @!finalisation-disabled?
-                           :pending? @!finalisation-pending?}
+                           :pending? @!finalising?}
                           {}
                           {:on-click #(re-frame/dispatch [:authorisation-attempt/finalise])}]}
        {}])))

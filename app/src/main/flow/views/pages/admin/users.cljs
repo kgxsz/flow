@@ -1,14 +1,15 @@
 (ns flow.views.pages.admin.users
   (:require [re-frame.core :as re-frame]
             [flow.views.link :as link]
+            [flow.views.user :as user]
             [flow.utils :as u]
             [cljs-time.coerce :as t.coerce]
             [cljs-time.format :as t.format]))
 
 
-(defn view [{:keys [authorised?
+(defn view [{:keys [authorised?]}
+            {:keys [route-to-home-link
                     users]}
-            {:keys [route-to-home-link]}
             _]
   [:div
    {:class (u/bem [:page])}
@@ -29,38 +30,7 @@
          route-to-home-link]]
        [:div
         {:class (u/bem [:cell :column :align-start :padding-top-medium])}
-        (doall
-         (for [user users]
-           [:div
-            {:key (:user/id user)
-             :class (u/bem [:cell :column :align-start :padding-top-small])}
-            [:div
-             {:class (u/bem [:text :font-size-medium :font-weight-bold :padding-left-tiny])}
-             (str (:user/id user))]
-            [:div
-             {:class (u/bem [:text :font-size-x-small :padding-left-tiny])}
-             (str (:user/name user))]
-            [:div
-             {:class (u/bem [:text :font-size-x-small :padding-left-tiny])}
-             (str (:user/email-address user))]
-            [:div
-             {:class (u/bem [:text :font-size-x-small :padding-left-tiny])}
-             (->> (:user/created-at user)
-                  (t.coerce/from-date)
-                  (t.format/unparse (t.format/formatter "MMM dd, yyyy - HH:mm.ss")))]
-            [:div
-             {:class (u/bem [:text :font-size-x-small :padding-left-tiny])}
-             (or
-              (some->> (:user/deleted-at user)
-                       (t.coerce/from-date)
-                       (t.format/unparse (t.format/formatter "MMM dd, yyyy - HH:mm.ss")))
-              "n/a")]
-            [:div
-             {:class (u/bem [:text :font-size-x-small :padding-left-tiny])}
-             (->> (:user/roles user)
-                  (map name)
-                  (interpose ", ")
-                  (apply str))]]))]]
+        users]]
 
       [:div
        {:class (u/bem [:cell :column :padding-top-huge])}
@@ -82,13 +52,18 @@
 
 
 (defn page [properties views behaviours]
-  (let [!users (re-frame/subscribe [:pages.admin.users/users])]
+  (let [!ids (re-frame/subscribe [:pages.admin.users/ids])]
     (fn [properties views behaviours]
       [view
-       (assoc properties
-              :users @!users)
+       properties
        {:route-to-home-link [link/link
                              {:label "Go home"}
                              {}
-                             {:on-click #(re-frame/dispatch [:app/route :home])}]}
+                             {:on-click #(re-frame/dispatch [:app/route :home])}]
+        :users (for [id @!ids]
+                 ^{:key id}
+                 [user/user
+                  {:user/id id}
+                  {}
+                  {}])}
        {}])))

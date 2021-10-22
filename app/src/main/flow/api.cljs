@@ -21,6 +21,6 @@
   (ajax/POST (make-url)
              {:params parameters
               :with-credentials true
-              :handler #(go (<! delay) (re-frame/dispatch [on-response %]))
-              :error-handler #(go (<! delay) (re-frame/dispatch [on-error %]))
+              :handler #(go (<! delay) (re-frame/dispatch (into on-response [%])))
+              :error-handler #(go (<! delay) (re-frame/dispatch (into on-error [%])))
               :response-format (ajax/transit-response-format {:handlers {"u" ->UUID "n" long}})}))
