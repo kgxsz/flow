@@ -15,9 +15,9 @@
 (def widen
   (at-keyframes
    "widen"
-   ["0%"
+   [:from
     {:width (percent 0)}]
    ["10%"
     {:width (percent 90)}]
-   ["100%"
+   [:to
     {:width (percent 95)}]))
