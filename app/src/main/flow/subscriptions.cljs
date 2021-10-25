@@ -149,9 +149,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-sub
- :pages.admin.authorisations/authorisations
+ :pages.admin.authorisations/ids
  (fn [db [_]]
-   (vals (get-in db [:entities :authorisations]))))
+   (keys (get-in db [:entities :authorisations]))))
 
 
 
@@ -184,6 +184,15 @@
      (contains? #{:deleting} (:status context)))))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;; Authoirsation flow ;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(re-frame/reg-sub
+ :authorisation/authorisation
+ (fn [db [_ id]]
+   (get-in db [:entities :authorisations id])))
 
 
 #_(re-frame/reg-sub

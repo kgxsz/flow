@@ -1,14 +1,15 @@
 (ns flow.views.pages.admin.authorisations
   (:require [re-frame.core :as re-frame]
             [flow.views.link :as link]
+            [flow.views.authorisation :as authorisation]
             [flow.utils :as u]
             [cljs-time.coerce :as t.coerce]
             [cljs-time.format :as t.format]))
 
 
-(defn view [{:keys [authorised?
+(defn view [{:keys [authorised?]}
+            {:keys [route-to-home-link
                     authorisations]}
-            {:keys [route-to-home-link]}
             _]
   [:div
    {:class (u/bem [:page])}
@@ -29,33 +30,7 @@
          route-to-home-link]]
        [:div
         {:class (u/bem [:cell :column :align-start :padding-top-medium])}
-        (doall
-         (for [authorisation authorisations]
-           [:div
-            {:key (:authorisation/id authorisation)
-             :class (u/bem [:cell :column :align-start :padding-top-small])}
-            [:div
-             {:class (u/bem [:text :font-size-x-medium :font-weight-bold :padding-left-tiny])}
-             (str (:authorisation/id authorisation))]
-            [:div
-             {:class (u/bem [:text :font-size-x-small :padding-left-tiny])}
-             (str (:authorisation/phrase authorisation))]
-            [:div
-             {:class (u/bem [:text :font-size-x-small :padding-left-tiny])}
-             (str (:user/id authorisation))]
-            [:div
-             {:class (u/bem [:text :font-size-x-small :padding-left-tiny])}
-             (->> (:authorisation/created-at authorisation)
-                  (t.coerce/from-date)
-                  (t.format/unparse (t.format/formatter "MMM dd, yyyy 'at' HH:mm.ss")))]
-            [:div
-             {:class (u/bem [:text :font-size-x-small :padding-left-tiny])}
-             (or
-              (some->> (:authorisation/granted-at authorisation)
-                       (t.coerce/from-date)
-                       (t.format/unparse (t.format/formatter "MMM dd, yyyy 'at' HH:mm.ss")))
-              "n/a")]]))]]
-
+        authorisations]]
 
       [:div
        {:class (u/bem [:cell :column :padding-top-huge])}
@@ -77,13 +52,18 @@
 
 
 (defn page [properties views behaviours]
-  (let [!authorisations (re-frame/subscribe [:pages.admin.authorisations/authorisations])]
+  (let [!ids (re-frame/subscribe [:pages.admin.authorisations/ids])]
     (fn [properties views behaviours]
       [view
-       (assoc properties
-              :authorisations @!authorisations)
+       properties
        {:route-to-home-link [link/link
                              {:label "Go home"}
                              {}
-                             {:on-click #(re-frame/dispatch [:app/route :home])}]}
+                             {:on-click #(re-frame/dispatch [:app/route :home])}]
+        :authorisations (for [id @!ids]
+                          ^{:key id}
+                          [authorisation/authorisation
+                           {:authorisation/id id}
+                           {}
+                           {}])}
        {}])))
