@@ -7,9 +7,9 @@
 
 (defn view [{:keys [status]}
             {:keys [email-address-input
-                    initialise-button
+                    start-initialisation-button
                     phrase-input
-                    finalise-button]}
+                    start-finalisation-button]}
             _]
 
   (case status
@@ -24,7 +24,7 @@
      email-address-input
      [:div
       {:class (u/bem [:cell :row :margin-top-small])}
-      initialise-button]]
+      start-initialisation-button]]
 
     (:initialised :finalising :finalised-successfully :finalised-unsuccessfully)
     [:div
@@ -36,7 +36,7 @@
      phrase-input
      [:div
       {:class (u/bem [:cell :row :margin-top-small])}
-      finalise-button]
+      start-finalisation-button]
      (when (= status :finalised-unsuccessfully)
        [:div
         {:class (u/bem [:cell :row :padding-top-small])}
@@ -67,14 +67,14 @@
                                :disabled? @!email-address-update-disabled?}
                               {}
                               {:on-change #(re-frame/dispatch [:authorisation-attempt/update-email-address %])}]
-        :initialise-button [button/button
-                            {:type :primary
-                             :label "Continue"
-                             :icon :arrow-right
-                             :disabled? @!initialisation-disabled?
-                             :pending? @!initialising?}
-                            {}
-                            {:on-click #(re-frame/dispatch [:authorisation-attempt/initialise])}]
+        :start-initialisation-button [button/button
+                                      {:type :primary
+                                       :label "Continue"
+                                       :icon :arrow-right
+                                       :disabled? @!initialisation-disabled?
+                                       :pending? @!initialising?}
+                                      {}
+                                      {:on-click #(re-frame/dispatch [:authorisation-attempt/start-initialisation])}]
         :phrase-input [input/input
                        {:key [:views :app :views :pages.home :views :authorisation-attempt :views :phrase-input]
                         :placeholder "donkey-purple-kettle"
@@ -83,12 +83,12 @@
                         :disabled? @!phrase-update-disabled?}
                        {}
                        {:on-change #(re-frame/dispatch [:authorisation-attempt/update-phrase %])}]
-        :finalise-button [button/button
-                          {:type :primary
-                           :label "Sign in"
-                           :icon :arrow-right
-                           :disabled? @!finalisation-disabled?
-                           :pending? @!finalising?}
-                          {}
-                          {:on-click #(re-frame/dispatch [:authorisation-attempt/finalise])}]}
+        :start-finalisation-button [button/button
+                                    {:type :primary
+                                     :label "Sign in"
+                                     :icon :arrow-right
+                                     :disabled? @!finalisation-disabled?
+                                     :pending? @!finalising?}
+                                    {}
+                                    {:on-click #(re-frame/dispatch [:authorisation-attempt/start-finalisation])}]}
        {}])))

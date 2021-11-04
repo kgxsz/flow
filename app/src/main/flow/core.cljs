@@ -18,5 +18,4 @@
 (defn initialise []
   (router/initialise!)
   (router/start!)
-  (re-frame/dispatch-sync [:app/initialise])
   (mount))

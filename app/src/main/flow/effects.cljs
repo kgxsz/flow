@@ -1,7 +1,8 @@
 (ns flow.effects
   (:require [flow.router :as router]
             [flow.api :as api]
-            [re-frame.core :as re-frame]))
+            [re-frame.core :as re-frame]
+            [cljs.core.async :refer [timeout]]))
 
 
 (re-frame/reg-fx
@@ -20,4 +21,4 @@
      :session (or session {})}
     on-response
     on-error
-    delay)))
+    (timeout delay))))

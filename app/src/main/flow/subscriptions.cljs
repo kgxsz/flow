@@ -159,7 +159,6 @@
 ;;;;;;;;;;;;;;;;;;;; User flow ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
 (re-frame/reg-sub
  :user/user
  (fn [db [_ id]]
@@ -184,15 +183,18 @@
      (contains? #{:deleting} (:status context)))))
 
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;; Authoirsation flow ;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 (re-frame/reg-sub
  :authorisation/authorisation
  (fn [db [_ id]]
    (get-in db [:entities :authorisations id])))
+
+
+
 
 
 #_(re-frame/reg-sub

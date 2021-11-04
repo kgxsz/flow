@@ -20,10 +20,10 @@
           (pushy/pushy
            #(re-frame/dispatch
              [(case (::silk/name %)
-                :home :pages.home/initialise
-                :admin.users :pages.admin.users/initialise
-                :admin.authorisations :pages.admin.authorisations/initialise
-                :unknown :pages.unknown/initialise)
+                :home :pages.home/start-initialisation
+                :admin.users :pages.admin.users/start-initialisation
+                :admin.authorisations :pages.admin.authorisations/start-initialisation
+                :unknown :pages.unknown/start-initialisation)
               {:route-params (->> (medley.core/remove-keys namespace %)
                                   (medley/map-vals string/lower-case))
                :query-params (->> % ::silk/url :query (medley/map-keys keyword))}])
