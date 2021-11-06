@@ -12,6 +12,7 @@
             [flow.styles.blocks.button :refer [button]]
             [flow.styles.blocks.app :refer [app]]
             [flow.styles.blocks.authorisation-attempt :refer [authorisation-attempt]]
+            [flow.styles.blocks.user-addition :refer [user-addition]]
             [garden.def :refer [defstyles]]
             [garden.units :refer [px percent ms]]
             [normalize.core :refer [normalize]]))
@@ -67,4 +68,5 @@
   cell
   app
   page
-  authorisation-attempt)
+  authorisation-attempt
+  user-addition)
