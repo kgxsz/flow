@@ -61,11 +61,11 @@
 
 
 (re-frame/reg-event-fx
- :pages.home/deauthorise
+ :pages.home/start-deauthorisation
  [interceptors/validate-db]
  (fn [{:keys [db]} [_]]
    {:api {:command {:deauthorise {}}
-          :on-response [:pages.home/complete-deauthorisation]
+          :on-response [:pages.home/end-deauthorisation]
           :on-error [:app/error]
           :delay 1000}
     :db (-> db
@@ -78,7 +78,7 @@
 
 
 (re-frame/reg-event-fx
- :pages.home/complete-deauthorisation
+ :pages.home/end-deauthorisation
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ {:keys [session]}]]
    {:db (assoc-in db [:views :app :session] session)}))
@@ -110,6 +110,11 @@
             (assoc-in [:views :app :routing :route] :admin.users)
             (assoc-in [:views :app :routing :route-params] nil)
             (assoc-in [:views :app :routing :query-params] nil)
+            ;; TODO - should this really be required?
+            (assoc-in [:views :app :views :pages.admin.users :views :user-addition :status] :idle)
+            (assoc-in [:views :app :views :pages.admin.users :views :user-addition :name] "")
+            (assoc-in [:views :app :views :pages.admin.users :views :user-addition :email-address] "")
+            (assoc-in [:views :app :views :pages.admin.users :views :user-addition :roles] #{:customer})
             (assoc-in [:views :app :session] session)
             (update-in [:entities :users] merge users))}))
 
@@ -132,7 +137,7 @@
 
 
 (re-frame/reg-event-fx
- :pages.admin.authorisations/start-initialisation
+ :pages.admin.authorisations/end-initialisation
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ {:keys [users authorisations session]}]]
    {:db (-> db
@@ -198,7 +203,7 @@
             :on-response [:authorisation-attempt/end-initialisation]
             :on-error [:app/error]
             :delay 1000}
-      :db (update-in db key assoc :status :initialising)})))
+      :db (update-in db key assoc :status :initialisation-pending)})))
 
 
 (re-frame/reg-event-fx
@@ -206,7 +211,7 @@
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ response]]
    (let [key [:views :app :views :pages.home :views :authorisation-attempt]]
-     {:db (update-in db key assoc :status :initialised)})))
+     {:db (update-in db key assoc :status :initialisation-successful)})))
 
 
 (re-frame/reg-event-fx
@@ -222,7 +227,7 @@
  [interceptors/validate-db]
  (fn [{:keys [db]} [_]]
    (let [key [:views :app :views :pages.home :views :authorisation-attempt]
-         context (get-in db [:views :app :views :pages.home :views :authorisation-attempt])]
+         context (get-in db key)]
      {:api {:command {:finalise-authorisation-attempt
                       {:user/email-address (:email-address context)
                        :authorisation/phrase (:phrase context)}}
@@ -231,7 +236,7 @@
             ;; TODO - where should this knowledge come from?
             :on-error [:app/error]
             :delay 1000}
-      :db (update-in db key assoc :status :finalising)})))
+      :db (update-in db key assoc :status :finalisation-pending)})))
 
 
 (re-frame/reg-event-fx
@@ -241,12 +246,59 @@
    (let [key [:views :app :views :pages.home :views :authorisation-attempt]]
      (if (:current-user-id session)
        {:db (-> db
-                (update-in key assoc :status :finalised-successfully)
+                (update-in key assoc :status :finalisation-successful)
                 ;; TODO - where should this knowledge come from?
                 (assoc-in [:views :app :session] session)
                 (update-in [:entities :users] merge users))}
-       {:db (update-in db key assoc :status :finalised-unsuccessfully)}))))
+       {:db (update-in db key assoc :status :finalisation-unsuccessful)}))))
 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;; User addition flow ;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-event-fx
+ :user-addition/update-email-address
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_ value]]
+   (let [key [:views :app :views :pages.admin.users :views :user-addition]]
+     {:db (update-in db key assoc :email-address (->> value (u/constrain-string 250) u/sanitise-string))})))
+
+
+(re-frame/reg-event-fx
+ :user-addition/update-name
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_ value]]
+   (let [key [:views :app :views :pages.admin.users :views :user-addition]]
+     {:db (update-in db key assoc :name (->> value (u/constrain-string 250) u/sanitise-string))})))
+
+
+(re-frame/reg-event-fx
+ :user-addition/toggle-admin-role
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_]]
+   (let [key [:views :app :views :pages.admin.users :views :user-addition]
+         admin-role? (contains? (:roles (get-in db key)) :admin)]
+     {:db (update-in db key assoc :roles (if admin-role? #{:customer} #{:customer :admin}))})))
+
+
+#_(re-frame/reg-event-fx
+ :user-addition/start
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_]]
+   (let [id (random-uuid)
+         key [:views :app :views :pages.admin.users :views :user-addition]
+         context (get-in db key)]
+     {:api {:command {:add-user {:user/id id
+                                 :user/email-address (:email-address context)
+                                 :user/name (:name context)
+                                 :user/roles (:roles context)}}
+            :query {:user {:user/id id}}
+            :on-response [:user-addition/end id]
+            :on-error [:app/error]
+            :delay 1000}
+      :db (update-in db key assoc :status :adding)})))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -254,25 +306,25 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
- :user/delete
+ :user/start-deletion
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ id]]
    (let [key [:views :app :views :pages.admin.users :views :user id]]
      {:api {:command {:delete-user {:user/id id}}
             :query {:user {:user/id id}}
-            :on-response [:user/complete-deletion id]
+            :on-response [:user/end-deletion id]
             :on-error [:app/error]
             :delay 1000}
-      :db (update-in db key assoc :status :deleting)})))
+      :db (update-in db key assoc :status :deletion-pending)})))
 
 
 (re-frame/reg-event-fx
- :user/complete-deletion
+ :user/end-deletion
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ id {:keys [users]}]]
    (let [key [:views :app :views :pages.admin.users :views :user id]]
      {:db (-> db
-              (update-in key assoc :status :deleted)
+              (update-in key dissoc :status)
               (update-in [:entities :users] merge users))})))
 
 
