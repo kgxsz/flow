@@ -11,7 +11,7 @@
             {:keys [authorisation-attempt
                     route-to-users-link
                     route-to-authorisations-link
-                    deauthorisation-link]}
+                    start-deauthorisation-link]}
             _]
   [:div
    {:class (u/bem [:page])}
@@ -35,7 +35,7 @@
           {:class (u/bem [:cell :column :padding-top-large])}
           route-to-users-link
           route-to-authorisations-link
-          deauthorisation-link]]
+          start-deauthorisation-link]]
 
         authorisation-attempt)]]]
 
@@ -58,8 +58,8 @@
                                    {:label "See authorisations"}
                                    {}
                                    {:on-click #(re-frame/dispatch [:app/route :admin.authorisations])}]
-    :deauthorisation-link [link/link
-                           {:label "Sign out"}
-                           {}
-                           {:on-click #(re-frame/dispatch [:pages.home/deauthorise])}]}
+    :start-deauthorisation-link [link/link
+                                 {:label "Sign out"}
+                                 {}
+                                 {:on-click #(re-frame/dispatch [:pages.home/start-deauthorisation])}]}
    {}])

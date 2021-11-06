@@ -2,6 +2,7 @@
   (:require [re-frame.core :as re-frame]
             [flow.views.link :as link]
             [flow.views.user :as user]
+            [flow.views.user-addition :as user-addition]
             [flow.utils :as u]
             [cljs-time.coerce :as t.coerce]
             [cljs-time.format :as t.format]))
@@ -9,6 +10,7 @@
 
 (defn view [{:keys [authorised?]}
             {:keys [route-to-home-link
+                    user-addition
                     users]}
             _]
   [:div
@@ -28,6 +30,9 @@
         [:div
          {:class (u/bem [:cell :column :padding-top-large])}
          route-to-home-link]]
+       [:div
+        {:class (u/bem [:cell :column :align-start :padding-top-medium])}
+        user-addition]
        [:div
         {:class (u/bem [:cell :column :align-start :padding-top-medium])}
         users]]
@@ -60,10 +65,15 @@
                              {:label "Go home"}
                              {}
                              {:on-click #(re-frame/dispatch [:app/route :home])}]
+        :user-addition [user-addition/user-addition
+                        {}
+                        {}
+                        {}]
         :users (for [id @!ids]
                  ^{:key id}
                  [user/user
                   {:user/id id}
                   {}
                   {}])}
+       {}
        {}])))

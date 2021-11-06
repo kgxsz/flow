@@ -7,7 +7,7 @@
 
 
 (defn view [{:keys [user]}
-            {:keys [delete-button]}
+            {:keys [start-deletion-button]}
             {:keys []}]
   [:div
    {:class (u/bem [:cell :column :align-start :padding-top-small])}
@@ -38,23 +38,23 @@
          (map name)
          (interpose ", ")
          (apply str))]
-   delete-button])
+   start-deletion-button])
 
 
 (defn user [{:keys [user/id] :as properties} views behaviours]
   (let [!user (re-frame/subscribe [:user/user id])
         !deletion-disabled? (re-frame/subscribe [:user/deletion-disabled? id])
-        !deleting? (re-frame/subscribe [:user/deleting? id])]
+        !deletion-pending? (re-frame/subscribe [:user/deletion-pending? id])]
     (fn [properties views behaviours]
       [view
        (assoc properties
               :user @!user)
-       {:delete-button [button/button
-                        {:type :primary
-                         :label "Delete"
-                         :icon :trash
-                         :disabled? @!deletion-disabled?
-                         :pending? @!deleting?}
-                        {}
-                        {:on-click #(re-frame/dispatch [:user/delete id])}]}
+       {:start-deletion-button [button/button
+                                {:type :primary
+                                 :label "Delete"
+                                 :icon :trash
+                                 :disabled? @!deletion-disabled?
+                                 :pending? @!deletion-pending?}
+                                {}
+                                {:on-click #(re-frame/dispatch [:user/start-deletion id])}]}
        {}])))

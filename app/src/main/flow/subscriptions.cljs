@@ -67,6 +67,7 @@
  (fn [db [_]]
    (let [key [:views :app :views :pages.home :views :authorisation-attempt]
          context (get-in db key)]
+     ;; TODO - could this just be empty?
      (not (contains? #{:idle} (:status context))))))
 
 
@@ -85,16 +86,16 @@
          context (get-in db key)]
      (not
       (and
-       (contains? #{:idle :initialising} (:status context))
+       (contains? #{:idle :initialisation-pending} (:status context))
        (s/valid? :user/email-address (:email-address context)))))))
 
 
 (re-frame/reg-sub
- :authorisation-attempt/initialising?
+ :authorisation-attempt/initialisation-pending?
  (fn [db [_]]
    (let [key [:views :app :views :pages.home :views :authorisation-attempt]
          context (get-in db key)]
-     (contains? #{:initialising} (:status context)))))
+     (contains? #{:initialisation-pending} (:status context)))))
 
 
 (re-frame/reg-sub
@@ -102,7 +103,10 @@
  (fn [db [_]]
    (let [key [:views :app :views :pages.home :views :authorisation-attempt]
          context (get-in db key)]
-     (not (contains? #{:initialised :finalised-unsuccessfully} (:status context))))))
+     (not (contains?
+           #{:initialisation-successful
+             :finalisation-unsuccessful}
+           (:status context))))))
 
 
 (re-frame/reg-sub
@@ -120,16 +124,20 @@
          context (get-in db key)]
      (not
       (and
-       (contains? #{:initialised :finalising :finalised-unsuccessfully} (:status context))
+       (contains?
+        #{:initialisation-successful
+          :finalisation-pending
+          :finalisation-unsuccessful}
+        (:status context))
        (s/valid? :authorisation/phrase (:phrase context)))))))
 
 
 (re-frame/reg-sub
- :authorisation-attempt/finalising?
+ :authorisation-attempt/finalisation-pending?
  (fn [db [_]]
    (let [key [:views :app :views :pages.home :views :authorisation-attempt]
          context (get-in db key)]
-     (contains? #{:finalising} (:status context)))))
+     (contains? #{:finalisation-pending} (:status context)))))
 
 
 
@@ -141,6 +149,55 @@
  :pages.admin.users/ids
  (fn [db [_]]
    (keys (get-in db [:entities :users]))))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; User addition flow ;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-sub
+ :user-addition/email-address
+ (fn [db [_]]
+   (let [key [:views :app :views :pages.admin.users :views :user-addition]
+         context (get-in db key)]
+     (:email-address context))))
+
+
+(re-frame/reg-sub
+ :user-addition/name
+ (fn [db [_]]
+   (let [key [:views :app :views :pages.admin.users :views :user-addition]
+         context (get-in db key)]
+     (:name context))))
+
+
+(re-frame/reg-sub
+ :user-addition/admin-role?
+ (fn [db [_]]
+   (let [key [:views :app :views :pages.admin.users :views :user-addition]
+         context (get-in db key)]
+     (contains? (:roles context) :admin))))
+
+
+(re-frame/reg-sub
+ :user-addition/disabled?
+ (fn [db [_]]
+   (let [key [:views :app :views :pages.admin.users :views :user-addition]
+         context (get-in db key)]
+     (or
+      (not (s/valid? :user/name (:name context)))
+      (not (s/valid? :user/email-address (:email-address context)))
+      (not (s/valid? :user/roles (:roles context)))
+      (contains? #{:pending} (:status context))))))
+
+
+(re-frame/reg-sub
+ :user-addition/pending?
+ (fn [db [_]]
+   (let [key [:views :app :views :pages.admin.users :views :user-addition]
+         context (get-in db key)]
+     (contains? #{:pending} (:status context)))))
 
 
 
@@ -176,11 +233,11 @@
 
 
 (re-frame/reg-sub
- :user/deleting?
+ :user/deletion-pending?
  (fn [db [_ id]]
    (let [key [:views :app :views :pages.admin.users :views :user id]
          context (get-in db key)]
-     (contains? #{:deleting} (:status context)))))
+     (contains? #{:deletion-pending} (:status context)))))
 
 
 
@@ -192,33 +249,4 @@
  :authorisation/authorisation
  (fn [db [_ id]]
    (get-in db [:entities :authorisations id])))
-
-
-
-
-
-#_(re-frame/reg-sub
- :user-addition-name
- (fn [db [_]]
-   (:user-addition-name db)))
-
-
-#_(re-frame/reg-sub
- :user-addition-email-address
- (fn [db [_]]
-   (:user-addition-email-address db)))
-
-
-#_(re-frame/reg-sub
- :user-addition-admin-role?
- (fn [db [_]]
-   ;; TODO - if the key doesn't exist, what should be done here?
-   (:user-addition-admin-role? db)))
-
-
-#_(re-frame/reg-sub
- :user-addition-disabled?
- (fn [db [_]]
-   (or
-    (not (u/email-address? (:user-addition-email-address db)))
-    (string/blank? (:user-addition-name db)))))
+ 

@@ -14,7 +14,7 @@
 
   (case status
 
-    (:idle :initialising)
+    (:idle :initialisation-pending)
     [:div
      {:key status
       :class (u/bem [:authorisation-attempt])}
@@ -26,7 +26,10 @@
       {:class (u/bem [:cell :row :margin-top-small])}
       start-initialisation-button]]
 
-    (:initialised :finalising :finalised-successfully :finalised-unsuccessfully)
+    (:initialisation-successful
+     :finalisation-pending
+     :finalisation-successful
+     :finalisation-unsuccessful)
     [:div
      {:key status
       :class (u/bem [:authorisation-attempt])}
@@ -37,7 +40,7 @@
      [:div
       {:class (u/bem [:cell :row :margin-top-small])}
       start-finalisation-button]
-     (when (= status :finalised-unsuccessfully)
+     (when (= status :finalisation-unsuccessful)
        [:div
         {:class (u/bem [:cell :row :padding-top-small])}
         [:div
@@ -52,11 +55,11 @@
         !email-address-update-disabled? (re-frame/subscribe [:authorisation-attempt/email-address-update-disabled?])
         !email-address (re-frame/subscribe [:authorisation-attempt/email-address])
         !initialisation-disabled? (re-frame/subscribe [:authorisation-attempt/initialisation-disabled?])
-        !initialising? (re-frame/subscribe [:authorisation-attempt/initialising?])
+        !initialisation-pending? (re-frame/subscribe [:authorisation-attempt/initialisation-pending?])
         !phrase-update-disabled? (re-frame/subscribe [:authorisation-attempt/phrase-update-disabled?])
         !phrase (re-frame/subscribe [:authorisation-attempt/phrase])
         !finalisation-disabled? (re-frame/subscribe [:authorisation-attempt/finalisation-disabled?])
-        !finalising? (re-frame/subscribe [:authorisation-attempt/finalising?])]
+        !finalisation-pending? (re-frame/subscribe [:authorisation-attempt/finalisation-pending?])]
     (fn [properties views behaviours]
       [view
        {:status @!status}
@@ -72,12 +75,11 @@
                                        :label "Continue"
                                        :icon :arrow-right
                                        :disabled? @!initialisation-disabled?
-                                       :pending? @!initialising?}
+                                       :pending? @!initialisation-pending?}
                                       {}
                                       {:on-click #(re-frame/dispatch [:authorisation-attempt/start-initialisation])}]
         :phrase-input [input/input
-                       {:key [:views :app :views :pages.home :views :authorisation-attempt :views :phrase-input]
-                        :placeholder "donkey-purple-kettle"
+                       {:placeholder "donkey-purple-kettle"
                         :icon :magic-wand
                         :value @!phrase
                         :disabled? @!phrase-update-disabled?}
@@ -88,7 +90,7 @@
                                      :label "Sign in"
                                      :icon :arrow-right
                                      :disabled? @!finalisation-disabled?
-                                     :pending? @!finalising?}
+                                     :pending? @!finalisation-pending?}
                                     {}
                                     {:on-click #(re-frame/dispatch [:authorisation-attempt/start-finalisation])}]}
        {}])))
