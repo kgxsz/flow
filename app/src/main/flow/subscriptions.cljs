@@ -67,7 +67,6 @@
  (fn [db [_]]
    (let [key [:views :app :views :pages.home :views :authorisation-attempt]
          context (get-in db key)]
-     ;; TODO - could this just be empty?
      (not (contains? #{:idle} (:status context))))))
 
 
@@ -103,10 +102,11 @@
  (fn [db [_]]
    (let [key [:views :app :views :pages.home :views :authorisation-attempt]
          context (get-in db key)]
-     (not (contains?
-           #{:initialisation-successful
-             :finalisation-unsuccessful}
-           (:status context))))))
+     (not
+      (contains?
+       #{:initialisation-successful
+         :finalisation-unsuccessful}
+       (:status context))))))
 
 
 (re-frame/reg-sub
@@ -157,6 +157,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-sub
+ :user-addition/status
+ (fn [db [_]]
+   (let [key [:views :app :views :pages.admin.users :views :user-addition]
+         context (get-in db key)]
+     (:status context))))
+
+
+(re-frame/reg-sub
  :user-addition/email-address
  (fn [db [_]]
    (let [key [:views :app :views :pages.admin.users :views :user-addition]
@@ -188,8 +196,7 @@
      (or
       (not (s/valid? :user/name (:name context)))
       (not (s/valid? :user/email-address (:email-address context)))
-      (not (s/valid? :user/roles (:roles context)))
-      (contains? #{:pending} (:status context))))))
+      (not (s/valid? :user/roles (:roles context)))))))
 
 
 (re-frame/reg-sub
@@ -198,6 +205,7 @@
    (let [key [:views :app :views :pages.admin.users :views :user-addition]
          context (get-in db key)]
      (contains? #{:pending} (:status context)))))
+
 
 
 
@@ -249,4 +257,3 @@
  :authorisation/authorisation
  (fn [db [_ id]]
    (get-in db [:entities :authorisations id])))
- 

@@ -29,6 +29,8 @@
          {:class (u/bem [:cell :column :padding-top-large])}
          route-to-home-link]]
        [:div
+        {:class (u/bem [:cell :margin-top-large :width-cover :height-xxx-tiny :colour-grey-four])}]
+       [:div
         {:class (u/bem [:cell :column :align-start :padding-top-medium])}
         authorisations]]
 

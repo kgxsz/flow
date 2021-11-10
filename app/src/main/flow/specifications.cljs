@@ -59,6 +59,7 @@
 
 
 ;; DB
+;; TODO - this has all changed now
 (s/def :db/routing (s/keys :req-un [:routing/route
                                     :routing/route-params
                                     :routing/query-params]))

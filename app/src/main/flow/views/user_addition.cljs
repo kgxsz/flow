@@ -14,19 +14,38 @@
             _]
 
   [:div
-   {:key status
-    :class (u/bem [:user-addition])}
+   {:class (u/bem [:user-addition])}
    [:div
     {:class (u/bem [:text :align-center :padding-top-medium])}
-    "Add a user"]
+    "Add a new user"]
    name-input
    email-address-input
-   admin-role-toggle
-   start-button])
+   [:div
+    {:class (u/bem [:cell :margin-top-small])}
+    admin-role-toggle]
+   [:div
+    {:class (u/bem [:cell :margin-top-small])}
+    start-button]
+   (when (= status :unsuccessful)
+     [:div
+      {:class (u/bem [:cell :row :padding-top-small])}
+      [:div
+       {:class (u/bem [:icon :font-size-medium :warning])}]
+      [:div
+       {:class (u/bem [:text :font-size-small :padding-left-tiny])}
+       "The user could not be added"]])
+   (when (= status :successful)
+     [:div
+      {:class (u/bem [:cell :row :padding-top-small])}
+      [:div
+       {:class (u/bem [:icon :font-size-medium :checkmark-circle])}]
+      [:div
+       {:class (u/bem [:text :font-size-small :padding-left-tiny])}
+       "The user was added successfully"]])])
 
 
 (defn user-addition [properties views behaviours]
-  (let [;!status (re-frame/subscribe [:user-addition/status])
+  (let [!status (re-frame/subscribe [:user-addition/status])
         !name (re-frame/subscribe [:user-addition/name])
         !email-address (re-frame/subscribe [:user-addition/email-address])
         !admin-role? (re-frame/subscribe [:user-addition/admin-role?])
@@ -35,8 +54,7 @@
         ]
     (fn [properties views behaviours]
       [view
-       ;{:status @!status}
-       {}
+       {:status @!status}
        {:name-input [input/input
                      {:placeholder "Jane"
                       :icon :user

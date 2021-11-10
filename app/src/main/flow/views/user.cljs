@@ -8,11 +8,12 @@
 
 (defn view [{:keys [user]}
             {:keys [start-deletion-button]}
-            {:keys []}]
+            _]
   [:div
-   {:class (u/bem [:cell :column :align-start :padding-top-small])}
+   {:class (u/bem [:user]
+                  [:cell :column :align-start :padding-top-small])}
    [:div
-    {:class (u/bem [:text :font-size-medium :font-weight-bold :padding-left-tiny])}
+    {:class (u/bem [:text :font-size-small :font-weight-bold :padding-left-tiny])}
     (str (:user/id user))]
    [:div
     {:class (u/bem [:text :font-size-x-small :padding-left-tiny])}

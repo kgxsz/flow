@@ -9,9 +9,10 @@
             {:keys []}
             {:keys []}]
   [:div
-   {:class (u/bem [:cell :column :align-start :padding-top-small])}
+   {:class (u/bem [:authorisation]
+                  [:cell :column :align-start :padding-top-small])}
    [:div
-    {:class (u/bem [:text :font-size-x-medium :font-weight-bold :padding-left-tiny])}
+    {:class (u/bem [:text :font-size-small :font-weight-bold :padding-left-tiny])}
     (str (:authorisation/id authorisation))]
    [:div
     {:class (u/bem [:text :font-size-x-small :padding-left-tiny])}

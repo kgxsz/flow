@@ -13,6 +13,8 @@
             [flow.styles.blocks.app :refer [app]]
             [flow.styles.blocks.authorisation-attempt :refer [authorisation-attempt]]
             [flow.styles.blocks.user-addition :refer [user-addition]]
+            [flow.styles.blocks.user :refer [user]]
+            [flow.styles.blocks.authorisation :refer [authorisation]]
             [garden.def :refer [defstyles]]
             [garden.units :refer [px percent ms]]
             [normalize.core :refer [normalize]]))
@@ -69,4 +71,6 @@
   app
   page
   authorisation-attempt
-  user-addition)
+  user-addition
+  user
+  authorisation)
