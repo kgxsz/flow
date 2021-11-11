@@ -9,7 +9,8 @@
    provided to the email address provided."
   [email-address {:keys [subject body]}]
   (slingshot/try+
-   (mailer/send-email
+   true
+   #_(mailer/send-email
     {}
     "Flow <noreply@flow.keigo.io>"
     (u/validate :email/email-address email-address)

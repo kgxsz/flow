@@ -61,4 +61,19 @@
 
   (authorisation/fetch-all)
 
+  (doall
+   (for [i (range 5000)]
+     (user/create! (str "jimmy+" i "@gmail.com") (str "Jimmy+" i) #{:admin :customer})))
+
+  (count (user/fetch-all))
+
+  (meta (faraday/scan
+        {:access-key (System/getenv "ACCESS_KEY")
+         :secret-key (System/getenv "SECRET_KEY")
+         :endpoint (System/getenv "DB_ENDPOINT")
+         :batch-write-limit 25}
+        :flow
+        {:attr-conds {:partition [:begins-with :user]}
+         #_:last-prim-kvs #_{:partition "user:d36ab9e3-cda5-5960-8fe2-8e6b9b603f66"}}))
+
 )

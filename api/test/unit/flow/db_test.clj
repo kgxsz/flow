@@ -49,11 +49,16 @@
 
   (testing "Returns an empty vector when no underlying entities exist."
     (with-redefs [faraday/scan (constantly [])]
-      (is (= [] (fetch-entities :authorisations)))))
+      (is (= [] (fetch-entities :authorisations {})))))
 
   (testing "Returns a vector of entities when any underlying entities exist."
     (with-redefs [faraday/scan (constantly [{:entity user} {:entity user}])]
-      (is (= [user user] (fetch-entities :user))))))
+      (is (= [user user] (fetch-entities :user {})))))
+
+  ;; TODO - Returns a vector of size not exceeding limit
+  ;; TODO - Returns a vector offset by the previous entity
+
+  )
 
 
 (deftest test-create-entity!
