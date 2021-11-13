@@ -62,12 +62,13 @@
       (is (= 2 (count (fetch-entities :user {:limit 2}))))
       (is (= 1 (count (fetch-entities :user {:limit 1}))))))
 
-  (testing "Returns a vector where the entities are offset by the previous entity."
+  (testing "Returns a vector where the entities are offset."
     (with-redefs [faraday/scan (constantly [{:entity (nth d/users 1)} {:entity user} {:entity (nth d/users 2)}])]
-      (is (= [user (nth d/users 2)] (fetch-entities :user {:limit 3 :previous (:user/id (nth d/users 1))})))
-      (is (= [user] (fetch-entities :user {:limit 1 :previous (:user/id (nth d/users 1))})))
-      (is (= [(nth d/users 2)] (fetch-entities :user {:limit 3 :previous (:user/id user)})))
-      (is (= [] (fetch-entities :user {:limit 3 :previous (:user/id (nth d/users 2))}))))))
+      (is (= [(nth d/users 1) user (nth d/users 2)] (fetch-entities :user {:limit 3 :offset-entity-id nil})))
+      (is (= [user (nth d/users 2)] (fetch-entities :user {:limit 3 :offset-entity-id (:user/id (nth d/users 1))})))
+      (is (= [user] (fetch-entities :user {:limit 1 :offset-entity-id (:user/id (nth d/users 1))})))
+      (is (= [(nth d/users 2)] (fetch-entities :user {:limit 3 :offset-entity-id (:user/id user)})))
+      (is (= [] (fetch-entities :user {:limit 3 :offset-entity-id (:user/id (nth d/users 2))}))))))
 
 
 (deftest test-create-entity!
