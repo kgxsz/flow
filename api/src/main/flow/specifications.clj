@@ -76,13 +76,20 @@
 (s/def :query/user (s/keys :req [:user/id]))
 (s/def :query/authorisations (s/and map? empty?))
 (s/def :query/method #{:current-user
-                      :users
-                      :user
-                      :authorisations})
+                       :users
+                       :user
+                       :authorisations})
 
 
 ;; Metadata
-(s/def :metadata/id-resolution (s/map-of :user/id :user/id))
+(s/def :metadata/id-resolution (s/map-of uuid? uuid?))
+
+(s/def :metadata/limit (s/and number? pos?))
+(s/def :metadata/offset uuid?)
+(s/def :metadata/options (s/keys :req-un [:metadata/limit]
+                                 :opt-un [:metadata/offset]))
+(s/def :metadata/users (s/keys :req-un [:metadata/options]))
+(s/def :metadata/authorisations (s/keys :req-un [:metadata/options]))
 
 
 ;; Session
@@ -101,7 +108,9 @@
                                               :query/users
                                               :query/user
                                               :query/authorisations])))
-(s/def :request/metadata (s/and map? empty?))
+(s/def :request/metadata (s/and (s/map-of #{:users :authorisations} any?)
+                                (s/keys :opt-un [:metadata/users
+                                                 :metadata/authorisations])))
 (s/def :request/session (s/and map? empty?))
 (s/def :request/body-params (s/and (s/map-of #{:command :query :metadata :session} any?)
                                    (s/keys :req-un [:request/command

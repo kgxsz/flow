@@ -64,11 +64,11 @@
 
   (testing "Returns a vector where the entities are offset."
     (with-redefs [faraday/scan (constantly [{:entity (nth d/users 1)} {:entity user} {:entity (nth d/users 2)}])]
-      (is (= [(nth d/users 1) user (nth d/users 2)] (fetch-entities :user {:limit 3 :offset-entity-id nil})))
-      (is (= [user (nth d/users 2)] (fetch-entities :user {:limit 3 :offset-entity-id (:user/id (nth d/users 1))})))
-      (is (= [user] (fetch-entities :user {:limit 1 :offset-entity-id (:user/id (nth d/users 1))})))
-      (is (= [(nth d/users 2)] (fetch-entities :user {:limit 3 :offset-entity-id (:user/id user)})))
-      (is (= [] (fetch-entities :user {:limit 3 :offset-entity-id (:user/id (nth d/users 2))}))))))
+      (is (= [(nth d/users 1) user (nth d/users 2)] (fetch-entities :user {:limit 3 :offset nil})))
+      (is (= [user (nth d/users 2)] (fetch-entities :user {:limit 3 :offset (:user/id (nth d/users 1))})))
+      (is (= [user] (fetch-entities :user {:limit 1 :offset (:user/id (nth d/users 1))})))
+      (is (= [(nth d/users 2)] (fetch-entities :user {:limit 3 :offset (:user/id user)})))
+      (is (= [] (fetch-entities :user {:limit 3 :offset (:user/id (nth d/users 2))}))))))
 
 
 (deftest test-create-entity!
