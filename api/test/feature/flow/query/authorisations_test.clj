@@ -25,7 +25,9 @@
 (deftest test-authorisations
 
   (testing "The handler negotiates the authorisations query when no session is provided."
-    (let [request (h/request {:query {:authorisations {}}})
+    (let [request (h/request
+                   {:metadata {:authorisations {:options {:limit 10}}}
+                    :query {:authorisations {}} })
           {:keys [status headers body] :as response} (handler request)]
       (is (= 200 status))
       (is (= {:users {}
@@ -37,6 +39,7 @@
   (testing "The handler negotiates the authorisations query when an unauthorised session is provided."
     (let [request (h/request
                    {:session :unauthorised
+                    :metadata {:authorisations {:options {:limit 10}}}
                     :query {:authorisations {}}})
           {:keys [status headers body] :as response} (handler request)]
       (is (= 200 status))
@@ -50,6 +53,7 @@
             for a user with a customer role."
     (let [request (h/request
                    {:session "success+1@simulator.amazonses.com"
+                    :metadata {:authorisations {:options {:limit 10}}}
                     :query {:authorisations {}}})
           {:keys [status headers body] :as response} (handler request)]
       (is (= 200 status))
@@ -63,6 +67,7 @@
             with both a customer and admin role is provided."
     (let [request (h/request
                    {:session "success+2@simulator.amazonses.com"
+                    :metadata {:authorisations {:options {:limit 10}}}
                     :query {:authorisations {}}})
           {:keys [status headers body] :as response} (handler request)]
       (is (= 200 status))

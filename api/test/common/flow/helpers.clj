@@ -110,7 +110,7 @@
    a unauthorised session cookie, or set the session to one of the
    users by providing the email addresses."
   ([] (request {}))
-  ([{:keys [method session command query]}]
+  ([{:keys [method session metadata command query]}]
    {:request-method (or method :post)
     :uri "/"
     :headers (cond-> {"content-type" "application/transit+json"
@@ -122,7 +122,7 @@
            :transit
            {:command (or command {})
             :query (or query {})
-            :metadata {}
+            :metadata (or metadata {})
             :session {}})}))
 
 
@@ -187,4 +187,4 @@
   [user-id]
   (filter
    #(= (:user/id %) user-id)
-   (authorisation/fetch-all)))
+   (authorisation/fetch-all {:limit 1000})))

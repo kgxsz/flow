@@ -13,8 +13,8 @@
 
 
 (defmethod handle :users
-  [_ _ _ _]
-  {:users (apply user/index (user/fetch-all))})
+  [_ _ {:keys [users]} _]
+  {:users (apply user/index (user/fetch-all (:options users)))})
 
 
 (defmethod handle :user
@@ -23,8 +23,8 @@
 
 
 (defmethod handle :authorisations
-  [_ _ _ _]
-  {:authorisations (apply authorisation/index (authorisation/fetch-all))})
+  [_ _ {:keys [authorisations]} _]
+  {:authorisations (apply authorisation/index (authorisation/fetch-all (:options authorisations)))})
 
 
 (defmethod handle :default
