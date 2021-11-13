@@ -50,21 +50,24 @@
 
 (deftest test-handle-query
 
-  (testing "Returns any metadata and session returned from queries merged into the metadata
-            and session provided, and returns any entities returned from the queries."
+  (testing "Returns any session returned from queries merged into the session provided,
+            strips out everything from metadata other than ID resolution, and returns
+            any entities returned from the queries."
     (with-redefs [query/handle (constantly {:users {"some-id" {:hello "world"}}
                                             :authorisations {"some-id" {:hello "world"}
                                                              "some-other-id" {:hello "world"}}
-                                            :metadata {:hello "world"}
+                                            :metadata {}
                                             :session {:hello "world"}})]
       (is (= {:users {"some-id" {:hello "world"}}
               :authorisations {"some-id" {:hello "world"}
                                "some-other-id" {:hello "world"}}
-              :metadata {:hello "world"
-                         :something "something"}
+              :metadata {:id-resolution {"some-id" "some-resolved-id"
+                                         "yet-another-id" "yet-another-resolved-id"}}
               :session {:hello "world"
                         :something "something"}}
              (handle-query {:query {:some-query {}
                                     :some-other-query {}}
-                            :metadata {:something "something"}
+                            :metadata {:something "something"
+                                       :id-resolution {"some-id" "some-resolved-id"
+                                                       "yet-another-id" "yet-another-resolved-id"}}
                             :session {:something "something"}}))))))
