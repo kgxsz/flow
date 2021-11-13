@@ -49,16 +49,25 @@
 
   (testing "Returns an empty vector when no underlying entities exist."
     (with-redefs [faraday/scan (constantly [])]
-      (is (= [] (fetch-entities :authorisations {})))))
+      (is (= [] (fetch-entities :authorisations {:limit 10})))))
 
   (testing "Returns a vector of entities when any underlying entities exist."
     (with-redefs [faraday/scan (constantly [{:entity user} {:entity user}])]
-      (is (= [user user] (fetch-entities :user {})))))
+      (is (= [user user] (fetch-entities :user {:limit 10})))))
 
-  ;; TODO - Returns a vector of size not exceeding limit
-  ;; TODO - Returns a vector offset by the previous entity
+  (testing "Returns a vector with the number of entities less than or equal to the limit."
+    (with-redefs [faraday/scan (constantly [{:entity user} {:entity user} {:entity user}])]
+      (is (= 3 (count (fetch-entities :user {:limit 4}))))
+      (is (= 3 (count (fetch-entities :user {:limit 3}))))
+      (is (= 2 (count (fetch-entities :user {:limit 2}))))
+      (is (= 1 (count (fetch-entities :user {:limit 1}))))))
 
-  )
+  (testing "Returns a vector where the entities are offset by the previous entity."
+    (with-redefs [faraday/scan (constantly [{:entity (nth d/users 1)} {:entity user} {:entity (nth d/users 2)}])]
+      (is (= [user (nth d/users 2)] (fetch-entities :user {:limit 3 :previous (:user/id (nth d/users 1))})))
+      (is (= [user] (fetch-entities :user {:limit 1 :previous (:user/id (nth d/users 1))})))
+      (is (= [(nth d/users 2)] (fetch-entities :user {:limit 3 :previous (:user/id user)})))
+      (is (= [] (fetch-entities :user {:limit 3 :previous (:user/id (nth d/users 2))}))))))
 
 
 (deftest test-create-entity!

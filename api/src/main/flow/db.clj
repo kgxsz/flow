@@ -40,8 +40,8 @@
 (defn fetch-entities
   "Fetches all entities of the given entity type, sorted by the
    entity's primary key, with a maximum number of items given by
-   the limit, offset from the item identified with the primary key
-   provided by the previous variable."
+   the limit variable, offset from the item identified with the
+   primary key provided by the previous variable."
   [entity-type {:keys [limit previous]}]
   (let [primary-key (keyword (name entity-type) "id")
         result (slingshot/try+
@@ -55,7 +55,8 @@
          (map :entity)
          (sort-by primary-key)
          (partition-by #(= previous (get % primary-key)))
-         (first)
+         (last)
+         (remove #(= previous (get % primary-key)))
          (take limit)
          (into []))))
 
