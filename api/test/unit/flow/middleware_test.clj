@@ -181,7 +181,17 @@
                                                            :query {}
                                                            :metadata {}
                                                            :session {}
-                                                           :hello "world"}))))))
+                                                           :hello "world"}))))
+      (is (thrown+? [:type :flow/unsupported-request]
+                    (handler' (assoc request :body-params {:command {}
+                                                           :query {:user {:user/id 1}}
+                                                           :metadata {}
+                                                           :session {}}))))
+      (is (thrown+? [:type :flow/unsupported-request]
+                    (handler' (assoc request :body-params {:command {}
+                                                           :query {:users {}}
+                                                           :metadata {:users {}}
+                                                           :session {}}))))))
 
   (testing "The wrapped handler throws an exception when the response's content is invalid."
     (let [handler' (wrap-content-validation handler)]

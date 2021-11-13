@@ -91,4 +91,44 @@
               :authorisations {}
               :metadata {}
               :session {:current-user-id (user/id "success+2@simulator.amazonses.com")}}
+             (h/decode :transit body)))))
+
+(testing "The handler negotiates the users query when a limit is provided."
+    (let [request (h/request
+                   {:session "success+1@simulator.amazonses.com"
+                    :metadata {:users {:options {:limit 2}}}
+                    :query {:users {}}})
+          {:keys [status headers body] :as response} (handler request)]
+      (is (= 200 status))
+      (is (= {:users {(user/id "success+2@simulator.amazonses.com")
+                      (-> (user/id "success+2@simulator.amazonses.com")
+                          (user/fetch)
+                          (select-keys (get-in h/accessible-keys [:user #{:customer}])))
+                      (user/id "success+3@simulator.amazonses.com")
+                      (-> (user/id "success+3@simulator.amazonses.com")
+                          (user/fetch)
+                          (select-keys (get-in h/accessible-keys [:user #{:customer}])))}
+              :authorisations {}
+              :metadata {}
+              :session {:current-user-id (user/id "success+1@simulator.amazonses.com")}}
+             (h/decode :transit body)))))
+
+(testing "The handler negotiates the users query when an offset is provided."
+    (let [request (h/request
+                   {:session "success+1@simulator.amazonses.com"
+                    :metadata {:users {:options {:limit 2 :offset (user/id "success+3@simulator.amazonses.com")}}}
+                    :query {:users {}}})
+          {:keys [status headers body] :as response} (handler request)]
+      (is (= 200 status))
+      (is (= {:users {(user/id "success+1@simulator.amazonses.com")
+                      (-> (user/id "success+1@simulator.amazonses.com")
+                          (user/fetch)
+                          (select-keys (get-in h/accessible-keys [:user #{:owner :customer}])))
+                      (user/id "success+2@simulator.amazonses.com")
+                      (-> (user/id "success+2@simulator.amazonses.com")
+                          (user/fetch)
+                          (select-keys (get-in h/accessible-keys [:user #{:customer}])))}
+              :authorisations {}
+              :metadata {}
+              :session {:current-user-id (user/id "success+1@simulator.amazonses.com")}}
              (h/decode :transit body))))))
