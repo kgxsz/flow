@@ -22,8 +22,8 @@
 
 (defn fetch-all
   "Authorisation entity specific wrapper."
-  []
-  (db/fetch-entities :authorisation {:limit 10 :previous nil}))
+  [options]
+  (db/fetch-entities :authorisation options))
 
 
 (defn create!

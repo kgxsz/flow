@@ -21,8 +21,8 @@
 
 (defn fetch-all
   "User entity specific wrapper."
-  []
-  (db/fetch-entities :user {:limit 10 :previous nil}))
+  [options]
+  (db/fetch-entities :user options))
 
 
 (defn create!
