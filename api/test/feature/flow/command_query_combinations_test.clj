@@ -27,7 +27,6 @@
   (testing "The handler negotiates multiple queries at once."
     (let [request (h/request
                    {:session "success+1@simulator.amazonses.com"
-                    :metadata {:authorisations {:options {:limit 10}}}
                     :query {:user {:user/id (user/id "success+2@simulator.amazonses.com")}
                             :current-user {}
                             :authorisations {}}})
@@ -87,8 +86,6 @@
   (testing "The handler negotiates simultaneous commands and queries."
     (let [request (h/request
                    {:session "success+1@simulator.amazonses.com"
-                    :metadata {:users {:options {:limit 10}}
-                               :authorisations {:options {:limit 10}}}
                     :command {:add-user
                               {:user/id #uuid "00000000-0000-0000-0000-000000000000"
                                :user/email-address "success+6@simulator.amazonses.com"
