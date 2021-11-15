@@ -27,7 +27,7 @@
   (testing "The handler negotiates multiple queries at once."
     (let [request (h/request
                    {:session "success+1@simulator.amazonses.com"
-                    :metadata {:authorisations {:options {:limit 1}}}
+                    :metadata {:authorisations {:limit 1 :offset nil}}
                     :query {:user {:user/id (user/id "success+2@simulator.amazonses.com")}
                             :current-user {}
                             :authorisations {}}})
@@ -46,7 +46,10 @@
                                    (authorisation/id "some-phrase")
                                    (authorisation/fetch)
                                    (select-keys (get-in h/accessible-keys [:authorisation #{:customer :admin}])))}
-              :metadata {}
+              :metadata {:authorisations
+                         {:limit 1
+                          :offset nil
+                          :next-offset (authorisation/id (user/id "success+2@simulator.amazonses.com") "some-phrase")}}
               :session {:current-user-id (user/id "success+1@simulator.amazonses.com")}}
              (h/decode :transit body)))))
 

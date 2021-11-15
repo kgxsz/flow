@@ -187,4 +187,4 @@
   [user-id]
   (filter
    #(= (:user/id %) user-id)
-   (authorisation/fetch-all {:limit 1000})))
+   (authorisation/fetch-all 100 nil)))

@@ -190,7 +190,7 @@
       (is (thrown+? [:type :flow/unsupported-request]
                     (handler' (assoc request :body-params {:command {}
                                                            :query {:users {}}
-                                                           :metadata {:users {}}
+                                                           :metadata {:users {:limit "hi"}}
                                                            :session {}}))))))
 
   (testing "The wrapped handler throws an exception when the response's content is invalid."

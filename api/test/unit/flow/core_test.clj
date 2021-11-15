@@ -50,24 +50,37 @@
 
 (deftest test-handle-query
 
-  (testing "Returns any session returned from queries merged into the session provided,
-            strips out everything from metadata other than ID resolution, and returns
-            any entities returned from the queries."
+  (testing "Returns any metadata and session returned from queries merged into the metadata
+            and session provided, and returns any entities returned from the queries."
     (with-redefs [query/handle (constantly {:users {"some-id" {:hello "world"}}
                                             :authorisations {"some-id" {:hello "world"}
                                                              "some-other-id" {:hello "world"}}
-                                            :metadata {}
+                                            :metadata {:hello "world"}
                                             :session {:hello "world"}})]
       (is (= {:users {"some-id" {:hello "world"}}
               :authorisations {"some-id" {:hello "world"}
                                "some-other-id" {:hello "world"}}
-              :metadata {:id-resolution {"some-id" "some-resolved-id"
-                                         "yet-another-id" "yet-another-resolved-id"}}
+              :metadata {:hello "world"
+                         :something "something"}
               :session {:hello "world"
                         :something "something"}}
              (handle-query {:query {:some-query {}
                                     :some-other-query {}}
-                            :metadata {:something "something"
-                                       :id-resolution {"some-id" "some-resolved-id"
-                                                       "yet-another-id" "yet-another-resolved-id"}}
+                            :metadata {:something "something"}
                             :session {:something "something"}}))))))
+
+
+(deftest test-cleanse-metadata
+
+  (testing "Returns only the metadata associated with ID resolution and next offsets."
+    (is (= {:users {"some-id" {:hello "world"}}
+            :authorisations {"some-id" {:hello "world"}
+                             "some-other-id" {:hello "world"}}
+            :metadata {:hello "world"
+                       :something "something"}
+            :session {:hello "world"
+                      :something "something"}}
+           (cleanse-metadata {:query {:some-query {}
+                                  :some-other-query {}}
+                          :metadata {:something "something"}
+                          :session {:something "something"}})))))

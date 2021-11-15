@@ -29,7 +29,7 @@
       (is (= 200 status))
       (is (= {:users {}
               :authorisations {}
-              :metadata {}
+              :metadata {:users {:next-offset (user/id "success+1@simulator.amazonses.com")}}
               :session {:current-user-id nil}}
              (h/decode :transit body)))))
 
@@ -41,7 +41,7 @@
       (is (= 200 status))
       (is (= {:users {}
               :authorisations {}
-              :metadata {}
+              :metadata {:users {:next-offset (user/id "success+1@simulator.amazonses.com")}}
               :session {:current-user-id nil}}
              (h/decode :transit body)))))
 
@@ -65,7 +65,7 @@
                           (user/fetch)
                           (select-keys (get-in h/accessible-keys [:user #{:customer}])))}
               :authorisations {}
-              :metadata {}
+              :metadata {:users {:next-offset (user/id "success+1@simulator.amazonses.com")}}
               :session {:current-user-id (user/id "success+1@simulator.amazonses.com")}}
              (h/decode :transit body)))))
 
@@ -89,14 +89,14 @@
                           (user/fetch)
                           (select-keys (get-in h/accessible-keys [:user #{:customer :admin}])))}
               :authorisations {}
-              :metadata {}
+              :metadata {:users {:next-offset (user/id "success+1@simulator.amazonses.com")}}
               :session {:current-user-id (user/id "success+2@simulator.amazonses.com")}}
              (h/decode :transit body)))))
 
 (testing "The handler negotiates the users query when a limit is provided."
     (let [request (h/request
                    {:session "success+1@simulator.amazonses.com"
-                    :metadata {:users {:options {:limit 2}}}
+                    :metadata {:users {:limit 2 :offset nil}}
                     :query {:users {}}})
           {:keys [status headers body] :as response} (handler request)]
       (is (= 200 status))
@@ -109,26 +109,41 @@
                           (user/fetch)
                           (select-keys (get-in h/accessible-keys [:user #{:customer}])))}
               :authorisations {}
-              :metadata {}
+              :metadata {:users {:limit 2
+                                 :offset nil
+                                 :next-offset (user/id "success+2@simulator.amazonses.com")}}
               :session {:current-user-id (user/id "success+1@simulator.amazonses.com")}}
              (h/decode :transit body)))))
 
 (testing "The handler negotiates the users query when an offset is provided."
     (let [request (h/request
                    {:session "success+1@simulator.amazonses.com"
-                    :metadata {:users {:options {:limit 2 :offset (user/id "success+3@simulator.amazonses.com")}}}
+                    :metadata {:users {:limit 2 :offset (user/id "success+2@simulator.amazonses.com")}}
                     :query {:users {}}})
           {:keys [status headers body] :as response} (handler request)]
       (is (= 200 status))
       (is (= {:users {(user/id "success+1@simulator.amazonses.com")
                       (-> (user/id "success+1@simulator.amazonses.com")
                           (user/fetch)
-                          (select-keys (get-in h/accessible-keys [:user #{:owner :customer}])))
-                      (user/id "success+2@simulator.amazonses.com")
-                      (-> (user/id "success+2@simulator.amazonses.com")
-                          (user/fetch)
-                          (select-keys (get-in h/accessible-keys [:user #{:customer}])))}
+                          (select-keys (get-in h/accessible-keys [:user #{:owner :customer}])))}
               :authorisations {}
-              :metadata {}
+              :metadata {:users {:limit 2
+                                 :offset (user/id "success+2@simulator.amazonses.com")
+                                 :next-offset (user/id "success+1@simulator.amazonses.com")}}
+              :session {:current-user-id (user/id "success+1@simulator.amazonses.com")}}
+             (h/decode :transit body)))))
+
+  (testing "The handler negotiates the users query when there's no items left."
+    (let [request (h/request
+                   {:session "success+1@simulator.amazonses.com"
+                    :metadata {:users {:limit 2 :offset (user/id "success+1@simulator.amazonses.com")}}
+                    :query {:users {}}})
+          {:keys [status headers body] :as response} (handler request)]
+      (is (= 200 status))
+      (is (= {:users {}
+              :authorisations {}
+              :metadata {:users {:limit 2
+                                 :offset (user/id "success+1@simulator.amazonses.com")
+                                 :next-offset nil}}
               :session {:current-user-id (user/id "success+1@simulator.amazonses.com")}}
              (h/decode :transit body))))))

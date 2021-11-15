@@ -86,14 +86,14 @@
 (defn handle-query
   "Fulfills each query method and merges the outcomes into a result.
    Outputs a map containing each entity, the metadata, and the session
-   provided merged with session present in the query result. The
-   metadata map is also stripped down to the minimum required."
+   provided merged with any metadata or session present in the query
+   result."
   [{:keys [query metadata session]}]
   (let [handle (fn [[method payload]] (query/handle method payload metadata session))
         result (apply medley/deep-merge (map handle query))]
     {:users (get result :users {})
      :authorisations (get result :authorisations {})
-     :metadata (select-keys metadata [:id-resolution])
+     :metadata (medley/deep-merge metadata (get result :metadata {}))
      :session (medley/deep-merge session (get result :session {}))}))
 
 
