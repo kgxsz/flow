@@ -49,26 +49,26 @@
 
   (testing "Returns an empty vector when no underlying entities exist."
     (with-redefs [faraday/scan (constantly [])]
-      (is (= [] (fetch-entities :authorisations {:limit 10})))))
+      (is (= [] (fetch-entities :authorisations 10 nil)))))
 
   (testing "Returns a vector of entities when any underlying entities exist."
     (with-redefs [faraday/scan (constantly [{:entity user} {:entity user}])]
-      (is (= [user user] (fetch-entities :user {:limit 10})))))
+      (is (= [user user] (fetch-entities :user 10 nil)))))
 
   (testing "Returns a vector with the number of entities less than or equal to the limit."
     (with-redefs [faraday/scan (constantly [{:entity user} {:entity user} {:entity user}])]
-      (is (= 3 (count (fetch-entities :user {:limit 4}))))
-      (is (= 3 (count (fetch-entities :user {:limit 3}))))
-      (is (= 2 (count (fetch-entities :user {:limit 2}))))
-      (is (= 1 (count (fetch-entities :user {:limit 1}))))))
+      (is (= 3 (count (fetch-entities :user 4 nil))))
+      (is (= 3 (count (fetch-entities :user 3 nil))))
+      (is (= 2 (count (fetch-entities :user 2 nil))))
+      (is (= 1 (count (fetch-entities :user 1 nil))))))
 
   (testing "Returns a vector where the entities are offset."
     (with-redefs [faraday/scan (constantly [{:entity (nth d/users 1)} {:entity user} {:entity (nth d/users 2)}])]
-      (is (= [(nth d/users 1) user (nth d/users 2)] (fetch-entities :user {:limit 3 :offset nil})))
-      (is (= [user (nth d/users 2)] (fetch-entities :user {:limit 3 :offset (:user/id (nth d/users 1))})))
-      (is (= [user] (fetch-entities :user {:limit 1 :offset (:user/id (nth d/users 1))})))
-      (is (= [(nth d/users 2)] (fetch-entities :user {:limit 3 :offset (:user/id user)})))
-      (is (= [] (fetch-entities :user {:limit 3 :offset (:user/id (nth d/users 2))}))))))
+      (is (= [(nth d/users 1) user (nth d/users 2)] (fetch-entities :user 3 nil)))
+      (is (= [user (nth d/users 2)] (fetch-entities :user 3 (:user/id (nth d/users 1)))))
+      (is (= [user] (fetch-entities :user 1 (:user/id (nth d/users 1)))))
+      (is (= [(nth d/users 2)] (fetch-entities :user 3 (:user/id user))))
+      (is (= [] (fetch-entities :user 3 (:user/id (nth d/users 2))))))))
 
 
 (deftest test-create-entity!

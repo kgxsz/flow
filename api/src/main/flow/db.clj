@@ -40,8 +40,8 @@
 (defn fetch-entities
   "Fetches all entities of the given entity type, sorted by the
    entity's id, with a maximum number of items given by the limit,
-   starting from after the item identified with the offset."
-  [entity-type {:keys [limit offset]}]
+   starting from after the item identified by the offset."
+  [entity-type limit offset]
   (let [entity-id-key (keyword (name entity-type) "id")
         result (slingshot/try+
                 (faraday/scan
@@ -56,7 +56,7 @@
          (partition-by #(= offset (get % entity-id-key)))
          (last)
          (remove #(= offset (get % entity-id-key)))
-         (take limit)
+         (take (or limit 10))
          (into []))))
 
 

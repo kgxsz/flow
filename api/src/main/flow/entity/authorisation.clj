@@ -22,8 +22,8 @@
 
 (defn fetch-all
   "Authorisation entity specific wrapper."
-  [options]
-  (db/fetch-entities :authorisation options))
+  [limit offset]
+  (db/fetch-entities :authorisation limit offset))
 
 
 (defn create!

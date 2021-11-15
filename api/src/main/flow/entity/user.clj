@@ -21,8 +21,8 @@
 
 (defn fetch-all
   "User entity specific wrapper."
-  [options]
-  (db/fetch-entities :user options))
+  [limit offset]
+  (db/fetch-entities :user limit offset))
 
 
 (defn create!
