@@ -57,8 +57,8 @@
 
   (user/fetch (user/id "k.suzukawa@gmail.com"))
 
-  (user/fetch-all {:limit 10})
+  (user/fetch-all 1 a)
 
-  (authorisation/fetch-all {:limit 10})
+  (authorisation/fetch-all 10 nil)
 
 )

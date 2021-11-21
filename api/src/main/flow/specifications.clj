@@ -85,6 +85,7 @@
 (s/def :metadata/id-resolution (s/map-of uuid? uuid?))
 (s/def :metadata/limit (s/and number? pos?))
 (s/def :metadata/offset (s/nilable uuid?))
+(s/def :metadata/next-offset (s/nilable uuid?))
 (s/def :metadata/users (s/keys :opt-un [:metadata/limit
                                         :metadata/offset
                                         :metadata/next-offset]))

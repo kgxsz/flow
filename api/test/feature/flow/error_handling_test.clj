@@ -58,7 +58,10 @@
              (h/decode :json body)))))
 
   (testing "The handler provides specific information when an internal error occurs."
-    (with-redefs [handle-query (fn [_] {:users {} :authorisations {} :session {}})]
+    (with-redefs [handle-query (fn [_] {:users {}
+                                        :authorisations {}
+                                        :metadata {}
+                                        :session {:current-user {:user/id 1}}})]
       (let [{:keys [status headers body] :as response} (handler (h/request))]
         (is (= 500 status))
         (is (= {"Content-Type" "application/json; charset=utf-8"}

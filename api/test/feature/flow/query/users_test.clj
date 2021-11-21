@@ -109,9 +109,7 @@
                           (user/fetch)
                           (select-keys (get-in h/accessible-keys [:user #{:customer}])))}
               :authorisations {}
-              :metadata {:users {:limit 2
-                                 :offset nil
-                                 :next-offset (user/id "success+2@simulator.amazonses.com")}}
+              :metadata {:users {:next-offset (user/id "success+2@simulator.amazonses.com")}}
               :session {:current-user-id (user/id "success+1@simulator.amazonses.com")}}
              (h/decode :transit body)))))
 
@@ -127,9 +125,7 @@
                           (user/fetch)
                           (select-keys (get-in h/accessible-keys [:user #{:owner :customer}])))}
               :authorisations {}
-              :metadata {:users {:limit 2
-                                 :offset (user/id "success+2@simulator.amazonses.com")
-                                 :next-offset (user/id "success+1@simulator.amazonses.com")}}
+              :metadata {:users {:next-offset (user/id "success+1@simulator.amazonses.com")}}
               :session {:current-user-id (user/id "success+1@simulator.amazonses.com")}}
              (h/decode :transit body)))))
 
@@ -142,8 +138,6 @@
       (is (= 200 status))
       (is (= {:users {}
               :authorisations {}
-              :metadata {:users {:limit 2
-                                 :offset (user/id "success+1@simulator.amazonses.com")
-                                 :next-offset nil}}
+              :metadata {:users {:next-offset nil}}
               :session {:current-user-id (user/id "success+1@simulator.amazonses.com")}}
              (h/decode :transit body))))))

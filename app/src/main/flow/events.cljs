@@ -98,7 +98,7 @@
  (fn [{:keys [db]} [_ {:keys [route-params query-params]}]]
    {:api {:query {:current-user {}
                   :users {}}
-          ;; TODO - set out paging metadata here
+          :metadata {:users {:limit 2 :offset nil}}
           :on-response [:pages.admin.users/end-initialisation]
           :on-error [:app/error]
           :delay 1000}

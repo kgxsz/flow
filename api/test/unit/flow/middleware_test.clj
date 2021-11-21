@@ -122,6 +122,49 @@
                (handler' request)))))))
 
 
+(deftest test-wrap-metadata
+
+  (testing "The wrapped handler returns a response with irrelevant keys stripped from metadata."
+    (let [handler' (wrap-metadata (constantly (assoc-in response [:body :metadata] {:hello "world"})))]
+      (is (= {:status 200
+              :headers {}
+              :body {:users {}
+                     :authorisations {}
+                     :metadata {}
+                     :session {}}}
+             (handler' request)))))
+
+  (testing "The wrapped handler returns a response with the ID resolution passed through with  metadata."
+    (let [handler' (wrap-metadata (constantly
+                                   (assoc-in
+                                    response
+                                    [:body :metadata]
+                                    {:id-resolution {"some-id" "some-other-id"}})))]
+      (is (= {:status 200
+              :headers {}
+              :body {:users {}
+                     :authorisations {}
+                     :metadata {:id-resolution {"some-id" "some-other-id"}}
+                     :session {}}}
+             (handler' request)))))
+
+  (testing "The wrapped handler returns a response with the next offsets passed through with metadata."
+    (let [handler' (wrap-metadata (constantly
+                                   (assoc-in
+                                    response
+                                    [:body :metadata]
+                                    {:users {:next-offset 1}
+                                     :authorisations {:limit 1}})))]
+      (is (= {:status 200
+              :headers {}
+              :body {:users {}
+                     :authorisations {}
+                     :metadata {:users {:next-offset 1}
+                                :authorisations {:next-offset nil}}
+                     :session {}}}
+             (handler' request))))))
+
+
 (deftest test-wrap-session
 
   (testing "The wrapped handler returns a response with a session when the body includes a non empty session."

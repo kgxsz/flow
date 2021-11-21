@@ -62,6 +62,22 @@
             (update-in [:body :session] dissoc :current-user))))))
 
 
+(defn wrap-metadata
+  "For the inbound requests does nothing, for outbound responses, filters the metadata
+   such that only the ID resolution and the next offsets are returned."
+  [handler]
+  (fn [request]
+    (let [response (handler request)
+          {:keys [id-resolution users authorisations]} (get-in response [:body :metadata])]
+      (assoc-in
+       response
+       [:body :metadata]
+       (cond-> {}
+         id-resolution (assoc :id-resolution id-resolution)
+         users (assoc-in [:users :next-offset] (:next-offset users))
+         authorisations (assoc-in [:authorisations :next-offset] (:next-offset authorisations)))))))
+
+
 (defn wrap-session
   "For the inbound requests, takes the persisted session and puts it into the body params
    for use directly in the query/command. For the outbound response, ensures that the
