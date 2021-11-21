@@ -68,19 +68,3 @@
                                     :some-other-query {}}
                             :metadata {:something "something"}
                             :session {:something "something"}}))))))
-
-
-(deftest test-cleanse-metadata
-
-  (testing "Returns only the metadata associated with ID resolution and next offsets."
-    (is (= {:users {"some-id" {:hello "world"}}
-            :authorisations {"some-id" {:hello "world"}
-                             "some-other-id" {:hello "world"}}
-            :metadata {:hello "world"
-                       :something "something"}
-            :session {:hello "world"
-                      :something "something"}}
-           (cleanse-metadata {:query {:some-query {}
-                                  :some-other-query {}}
-                          :metadata {:something "something"}
-                          :session {:something "something"}})))))
