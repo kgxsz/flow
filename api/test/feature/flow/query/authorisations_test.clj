@@ -30,8 +30,7 @@
       (is (= 200 status))
       (is (= {:users {}
               :authorisations {}
-              :metadata {:authorisations
-                         {:next-offset (authorisation/id (user/id "success+1@simulator.amazonses.com") "some-phrase")}}
+              :metadata {}
               :session {:current-user-id nil}}
              (h/decode :transit body)))))
 
@@ -43,8 +42,7 @@
       (is (= 200 status))
       (is (= {:users {}
               :authorisations {}
-              :metadata {:authorisations
-                         {:next-offset (authorisation/id (user/id "success+1@simulator.amazonses.com") "some-phrase")}}
+              :metadata {}
               :session {:current-user-id nil}}
              (h/decode :transit body)))))
 
@@ -57,8 +55,7 @@
       (is (= 200 status))
       (is (= {:users {}
               :authorisations {}
-              :metadata {:authorisations
-                         {:next-offset (authorisation/id (user/id "success+1@simulator.amazonses.com") "some-phrase")}}
+              :metadata {}
               :session {:current-user-id (user/id "success+1@simulator.amazonses.com")}}
              (h/decode :transit body)))))
 

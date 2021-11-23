@@ -18,3 +18,9 @@
   "Given a user, determines if it is an admin."
   [{:keys [user/roles]}]
   (contains? roles :admin))
+
+
+(defn customer?
+  "Given a user, determines if it is a customer."
+  [{:keys [user/roles]}]
+  (contains? roles :customer))
