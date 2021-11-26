@@ -25,27 +25,3 @@
           user' (assoc user :user/deleted-at before)]
       (with-redefs [t/now (constantly now)]
         (is (= user' (delete user')))))))
-
-
-(deftest test-admin?
-
-  (testing "Returns true when the current user has an admin role."
-    (is (true? (admin? {:user/roles #{:admin}}))))
-
-  (testing "Returns true when the current user does not have an admin role."
-    (is (false? (admin? {:user/roles #{:customer}}))))
-
-  (testing "Returns false when the current user does not exist."
-    (is (false? (admin? nil)))))
-
-
-(deftest test-customer?
-
-  (testing "Returns true when the current user has a customer role."
-    (is (true? (customer? {:user/roles #{:customer}}))))
-  
-  (testing "Returns true when the current user does not have a customer role."
-    (is (false? (customer? {:user/roles #{:admin}}))))
-
-  (testing "Returns false when the current user does not exist."
-    (is (false? (customer? nil)))))
