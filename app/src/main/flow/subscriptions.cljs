@@ -42,6 +42,15 @@
 
 
 (re-frame/reg-sub
+ :app/admin?
+ (fn [db [_]]
+   (let [key [:views :app]
+         context (get-in db key)
+         roles (get-in db [:entities :users (get-in context [:session :current-user-id]) :user/roles])]
+     (contains? roles :admin))))
+
+
+(re-frame/reg-sub
  :app/current-user
  (fn [db [_]]
    (let [key [:views :app]

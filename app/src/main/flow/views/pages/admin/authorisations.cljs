@@ -7,7 +7,7 @@
             [cljs-time.format :as t.format]))
 
 
-(defn view [{:keys [authorised?]}
+(defn view [{:keys [admin?]}
             {:keys [route-to-home-link
                     authorisations]}
             _]
@@ -16,7 +16,7 @@
    [:div
     {:class (u/bem [:page__body])}
 
-    (if authorised?
+    (if admin?
 
       [:div
        {:class (u/bem [:cell :column :padding-top-huge])}

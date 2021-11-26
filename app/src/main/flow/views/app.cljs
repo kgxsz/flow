@@ -35,6 +35,7 @@
 (defn app [properties views behaviours]
   (let [!routing? (re-frame/subscribe [:app/routing?])
         !error? (re-frame/subscribe [:app/error?])
+        !admin? (re-frame/subscribe [:app/admin?])
         !authorised? (re-frame/subscribe [:app/authorised?])
         !current-user (re-frame/subscribe [:app/current-user])
         !route (re-frame/subscribe [:app/route key])]
@@ -47,10 +48,12 @@
                        {:authorised? @!authorised?
                         :current-user @!current-user}]
                 :admin.users [pages.admin.users/page
-                              {:authorised? @!authorised?
+                              {:admin? @!admin?
+                               :authorised? @!authorised?
                                :current-user @!current-user}]
                 :admin.authorisations [pages.admin.authorisations/page
-                                       {:authorised? @!authorised?
+                                       {:admin? @!admin?
+                                        :authorised? @!authorised?
                                         :current-user @!current-user}]
                 :unknown [pages.unknown/page
                           {:authorised? @!authorised?
