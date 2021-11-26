@@ -51,29 +51,3 @@
   "Authorisation entity specific wrapper."
   [& authorisations]
   (u/index-entities :authorisation/id authorisations))
-
-
-(defn select-default-accessible-keys
-  "Authorisation entity specific wrapper."
-  [authorisation]
-  (let [keys []]
-    (u/select-default-accessible-keys keys authorisation)))
-
-
-(defn select-owner-accessible-keys
-  "Authorisation entity specific wrapper."
-  [current-user authorisation]
-  (let [keys []]
-    (u/select-owner-accessible-keys keys current-user authorisation)))
-
-
-(defn select-role-accessible-keys
-  "Authorisation entity specific wrapper."
-  [current-user authorisation]
-  (let [keys {:admin [:authorisation/id
-                      :user/id
-                      :authorisation/phrase
-                      :authorisation/created-at
-                      :authorisation/granted-at]
-              :customer []}]
-    (u/select-role-accessible-keys keys current-user authorisation)))

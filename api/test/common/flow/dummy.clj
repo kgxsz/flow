@@ -11,7 +11,7 @@
    {:user/id #uuid "00f3c785-cf5f-530b-841d-6161400e6793"
     :user/email-address "billybob@gmail.com"
     :user/name "Billybob"
-    :user/roles #{:customer}
+    :user/roles #{:customer :admin}
     :user/created-at #inst "2021-04-04T20:58:19.213-00:00"
     :user/deleted-at nil}
    {:user/id #uuid "34f3c785-cf5f-530b-841d-6161400e6793"

@@ -15,9 +15,9 @@
 
 
 (defn wrap-access-control
-  "For inbound requests, ensures that only the accessible queries and commands are passed through.
-   For outbound responses, works through each entity in the response's body and selects the keys
-   that correspond to the correct level of access:
+  "For inbound requests, ensures that only the queries and commands that correspond to the appropriate
+   level of access are passed through. For outbound responses, works through each entity in the response's
+   body and selects the keys that correspond to the correct level of access:
    - The default accessible keys, which are visible to anybody.
    - The owner accessible keys, which are visible when the current user owns the entity.
    - The role accessible keys, which are visible when the current user has the corresponding role.
@@ -39,16 +39,12 @@
           current-user (get-in response [:body :session :current-user])]
       (-> response
           (update-in [:body :users]
-           #(medley/deep-merge
-             (medley/map-vals user/select-default-accessible-keys %)
-             (medley/map-vals (partial user/select-owner-accessible-keys current-user) %)
-             (medley/map-vals (partial user/select-role-accessible-keys current-user) %)))
+                     (partial medley/map-vals
+                              #(access-control/select-accessible-user-keys % current-user)))
           (update-in [:body :users] (partial medley/remove-vals empty?))
           (update-in [:body :authorisations]
-           #(medley/deep-merge
-             (medley/map-vals authorisation/select-default-accessible-keys %)
-             (medley/map-vals (partial authorisation/select-owner-accessible-keys current-user) %)
-             (medley/map-vals (partial authorisation/select-role-accessible-keys current-user) %)))
+                     (partial medley/map-vals
+                              #(access-control/select-accessible-authorisation-keys % current-user)))
           (update-in [:body :authorisations] (partial medley/remove-vals empty?))))))
 
 
