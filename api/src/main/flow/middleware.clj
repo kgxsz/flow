@@ -3,6 +3,7 @@
             [flow.entity.authorisation :as authorisation]
             [flow.entity.utils :as entity.u]
             [flow.query :as query]
+            [flow.access-control :as access-control]
             [flow.utils :as u]
             [medley.core :as medley]
             [ring.middleware.cors :as cors.middleware]
@@ -14,18 +15,27 @@
 
 
 (defn wrap-access-control
-  "For inbound requests does nothing. For outbound responses, works through each entity
-   in the response's body and selects the keys that correspond to the correct level of access:
+  "For inbound requests, ensures that only the accessible queries and commands are passed through.
+   For outbound responses, works through each entity in the response's body and selects the keys
+   that correspond to the correct level of access:
    - The default accessible keys, which are visible to anybody.
    - The owner accessible keys, which are visible when the current user owns the entity.
    - The role accessible keys, which are visible when the current user has the corresponding role.
    If an entity has had all its keys removed then the entity itself will be removed from the response."
   [handler]
   (fn [request]
-    (let [response (handler request)
-          ;; NOTE - the current user may be stale during the outbound portion
-          ;; of this middleware. This is okay though since the fields used
-          ;; to determine access control aren't mutable by commands.
+    (let [current-user (get-in request [:body-params :session :current-user])
+          response (-> request
+                       (update-in [:body-params :query]
+                                  access-control/select-accessible-queries
+                                  current-user)
+                       (update-in [:body-params :command]
+                                  access-control/select-accessible-commands
+                                  current-user)
+                       (handler))
+          ;; NOTE - some of the current user's fields may be stale during the
+          ;; outbound portion of this middleware. This is okay though since the
+          ;;fields used to determine access control aren't mutable by commands.
           current-user (get-in response [:body :session :current-user])]
       (-> response
           (update-in [:body :users]
