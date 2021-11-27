@@ -56,7 +56,7 @@
          (partition-by #(= offset (get % entity-id-key)))
          (last)
          (remove #(= offset (get % entity-id-key)))
-         (take (or limit 10))
+         (take limit)
          (into []))))
 
 

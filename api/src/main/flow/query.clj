@@ -14,10 +14,12 @@
 
 (defmethod handle :users
   [_ _ metadata {:keys [current-user]}]
-  (let [{:keys [limit offset]} (:users metadata)
-        users (user/fetch-all limit offset)]
+  (let [offset (get-in metadata [:users :offset])
+        limit (get-in metadata [:users :limit] 10)
+        users (user/fetch-all limit offset)
+        exhausted? (< (count users) limit)]
     {:users (apply user/index users)
-     :metadata {:users {:next-offset (-> users last :user/id)}}}))
+     :metadata {:users {:next-offset (when-not exhausted? (-> users last :user/id))}}}))
 
 
 (defmethod handle :user
@@ -27,10 +29,12 @@
 
 (defmethod handle :authorisations
   [_ _ metadata {:keys [current-user]}]
-  (let [{:keys [limit offset]} (:authorisations metadata)
-        authorisations (authorisation/fetch-all limit offset)]
+  (let [offset (get-in metadata [:authorisations :offset])
+        limit (get-in metadata [:authorisations :limit] 10)
+        authorisations (authorisation/fetch-all limit offset)
+        exhausted? (< (count authorisations) limit)]
     {:authorisations (apply authorisation/index authorisations)
-     :metadata {:authorisations {:next-offset (-> authorisations last :authorisation/id)}}}))
+     :metadata {:authorisations {:next-offset (when-not exhausted? (-> authorisations last :authorisation/id))}}}))
 
 
 (defmethod handle :default
