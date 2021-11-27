@@ -69,19 +69,16 @@
 
 
 (defn wrap-metadata
-  "For the inbound requests does nothing, for outbound responses, filters the metadata
-   such that only the ID resolution and the next offsets are returned."
+  "For the inbound requests does nothing, for outbound responses, filters
+   the metadata such that only the appropriate fields are returned."
   [handler]
   (fn [request]
     (let [response (handler request)
-          {:keys [id-resolution users authorisations]} (get-in response [:body :metadata])]
-      (assoc-in
-       response
-       [:body :metadata]
-       (cond-> {}
-         id-resolution (assoc :id-resolution id-resolution)
-         users (assoc-in [:users :next-offset] (:next-offset users))
-         authorisations (assoc-in [:authorisations :next-offset] (:next-offset authorisations)))))))
+          {:keys [users authorisations] :as metadata} (get-in response [:body :metadata])]
+      (cond-> response
+         metadata (update-in [:body :metadata] select-keys [:id-resolution :users :authorisations])
+         users (update-in [:body :metadata :users] select-keys [:next-offset :exhausted?])
+         authorisations (update-in [:body :metadata :authorisations] select-keys [:next-offset :exhausted?])))))
 
 
 (defn wrap-session

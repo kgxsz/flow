@@ -65,7 +65,8 @@
                           (user/fetch)
                           (select-keys (get-in h/accessible-keys [:user #{:customer}])))}
               :authorisations {}
-              :metadata {:users {:next-offset (user/id "success+1@simulator.amazonses.com")}}
+              :metadata {:users {:next-offset (user/id "success+1@simulator.amazonses.com")
+                                 :exhausted? true}}
               :session {:current-user-id (user/id "success+1@simulator.amazonses.com")}}
              (h/decode :transit body)))))
 
@@ -89,7 +90,8 @@
                           (user/fetch)
                           (select-keys (get-in h/accessible-keys [:user #{:customer :admin}])))}
               :authorisations {}
-              :metadata {:users {:next-offset (user/id "success+1@simulator.amazonses.com")}}
+              :metadata {:users {:next-offset (user/id "success+1@simulator.amazonses.com")
+                                 :exhausted? true}}
               :session {:current-user-id (user/id "success+2@simulator.amazonses.com")}}
              (h/decode :transit body)))))
 
@@ -109,7 +111,8 @@
                           (user/fetch)
                           (select-keys (get-in h/accessible-keys [:user #{:customer}])))}
               :authorisations {}
-              :metadata {:users {:next-offset (user/id "success+2@simulator.amazonses.com")}}
+              :metadata {:users {:next-offset (user/id "success+2@simulator.amazonses.com")
+                                 :exhausted? false}}
               :session {:current-user-id (user/id "success+1@simulator.amazonses.com")}}
              (h/decode :transit body)))))
 
@@ -125,7 +128,8 @@
                           (user/fetch)
                           (select-keys (get-in h/accessible-keys [:user #{:owner :customer}])))}
               :authorisations {}
-              :metadata {:users {:next-offset (user/id "success+1@simulator.amazonses.com")}}
+              :metadata {:users {:next-offset (user/id "success+1@simulator.amazonses.com")
+                                 :exhausted? true}}
               :session {:current-user-id (user/id "success+1@simulator.amazonses.com")}}
              (h/decode :transit body)))))
 
@@ -138,6 +142,7 @@
       (is (= 200 status))
       (is (= {:users {}
               :authorisations {}
-              :metadata {:users {:next-offset nil}}
+              :metadata {:users {:next-offset nil
+                                 :exhausted? true}}
               :session {:current-user-id (user/id "success+1@simulator.amazonses.com")}}
              (h/decode :transit body))))))

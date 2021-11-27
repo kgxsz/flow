@@ -83,7 +83,8 @@
                                    (authorisation/fetch)
                                    (select-keys (get-in h/accessible-keys [:authorisation #{:owner :customer :admin}])))}
               :metadata {:authorisations
-                         {:next-offset (authorisation/id (user/id "success+1@simulator.amazonses.com") "some-phrase")}}
+                         {:next-offset (authorisation/id (user/id "success+1@simulator.amazonses.com") "some-phrase")
+                          :exhausted? true}}
               :session {:current-user-id (user/id "success+2@simulator.amazonses.com")}}
              (h/decode :transit body)))))
 
@@ -107,15 +108,16 @@
                                    (select-keys (get-in h/accessible-keys [:authorisation #{:owner :customer :admin}])))}
               :metadata
               {:authorisations
-               {:next-offset (authorisation/id (user/id "success+1@simulator.amazonses.com") "some-other-phrase")}}
+               {:next-offset (authorisation/id (user/id "success+1@simulator.amazonses.com") "some-other-phrase")
+                :exhausted? false}}
               :session {:current-user-id (user/id "success+2@simulator.amazonses.com")}}
              (h/decode :transit body)))))
 
-(testing "The handler negotiates the authorisations query when an offset is provided"
+  (testing "The handler negotiates the authorisations query when an offset is provided"
     (let [request (h/request
                    {:session "success+2@simulator.amazonses.com"
                     :metadata {:authorisations
-                               {:limit 2
+                               {:limit 1
                                 :offset
                                 (authorisation/id (user/id "success+1@simulator.amazonses.com") "some-other-phrase")}}
                     :query {:authorisations {}}})
@@ -130,11 +132,12 @@
               :metadata
               {:authorisations
                {:next-offset
-                (authorisation/id (user/id "success+1@simulator.amazonses.com") "some-phrase")}}
+                (authorisation/id (user/id "success+1@simulator.amazonses.com") "some-phrase")
+                :exhausted? false}}
               :session {:current-user-id (user/id "success+2@simulator.amazonses.com")}}
              (h/decode :transit body)))))
 
-(testing "The handler negotiates the authorisations query when there's no items left."
+  (testing "The handler negotiates the authorisations query when there's no items left."
     (let [request (h/request
                    {:session "success+2@simulator.amazonses.com"
                     :metadata {:authorisations
@@ -147,6 +150,7 @@
       (is (= {:users {}
               :authorisations {}
               :metadata
-              {:authorisations {:next-offset nil}}
+              {:authorisations {:next-offset nil
+                                :exhausted? true}}
               :session {:current-user-id (user/id "success+2@simulator.amazonses.com")}}
              (h/decode :transit body))))))

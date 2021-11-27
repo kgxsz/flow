@@ -46,16 +46,18 @@
                       (-> (user/id "success+3@simulator.amazonses.com")
                           (user/fetch)
                           (select-keys (get-in h/accessible-keys [:user #{:admin :customer}])))}
-              :authorisations {(authorisation/id (user/id "success+2@simulator.amazonses.com") "some-phrase")
-                               (-> (user/id "success+2@simulator.amazonses.com")
+              :authorisations {(authorisation/id (user/id "success+3@simulator.amazonses.com") "some-phrase")
+                               (-> (user/id "success+3@simulator.amazonses.com")
                                    (authorisation/id "some-phrase")
                                    (authorisation/fetch)
                                    (select-keys (get-in h/accessible-keys [:authorisation #{:customer :admin}])))}
               :metadata
               {:users
-               {:next-offset (user/id "success+2@simulator.amazonses.com")}
+               {:next-offset (user/id "success+2@simulator.amazonses.com")
+                :exhausted? false}
                :authorisations
-               {:next-offset (authorisation/id (user/id "success+2@simulator.amazonses.com") "some-phrase")}}
+               {:next-offset (authorisation/id (user/id "success+3@simulator.amazonses.com") "some-phrase")
+                :exhausted? false}}
               :session {:current-user-id (user/id "success+1@simulator.amazonses.com")}}
              (h/decode :transit body)))))
 

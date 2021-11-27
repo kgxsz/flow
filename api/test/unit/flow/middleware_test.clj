@@ -134,7 +134,7 @@
                      :session {}}}
              (handler' request)))))
 
-  (testing "The wrapped handler returns a response with the ID resolution passed through with  metadata."
+  (testing "The wrapped handler returns a response with the ID resolution passed through with metadata."
     (let [handler' (wrap-metadata (constantly
                                    (assoc-in
                                     response
@@ -148,19 +148,23 @@
                      :session {}}}
              (handler' request)))))
 
-  (testing "The wrapped handler returns a response with the next offsets passed through with metadata."
+  (testing "The wrapped handler returns a response with the relevant paging fields passed through with metadata."
     (let [handler' (wrap-metadata (constantly
                                    (assoc-in
                                     response
                                     [:body :metadata]
-                                    {:users {:next-offset 1}
-                                     :authorisations {:limit 1}})))]
+                                    {:users {:next-offset 1
+                                             :exhausted? true
+                                             :hi :there}
+                                     :authorisations {:limit 1
+                                                      :exhausted? false}})))]
       (is (= {:status 200
               :headers {}
               :body {:users {}
                      :authorisations {}
-                     :metadata {:users {:next-offset 1}
-                                :authorisations {:next-offset nil}}
+                     :metadata {:users {:next-offset 1
+                                        :exhausted? true}
+                                :authorisations {:exhausted? false}}
                      :session {}}}
              (handler' request))))))
 
