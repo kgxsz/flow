@@ -34,31 +34,35 @@
  :pages.home/start-initialisation
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ {:keys [route-params query-params]}]]
-   (let [key [:views :app]]
-     {:api {:query {:current-user {}}
-            :on-response [:pages.home/end-initialisation]
-            :on-error [:app/error]
-            :delay 1000}
-      :db (update-in db key assoc :status :routing)})))
+   {:api {:query {:current-user {}}
+          :on-response [:pages.home/end-initialisation]
+          :on-error [:app/error]
+          :delay 1000}
+    ;; TODO - It's a smell that this is independent of the key
+    :db (assoc-in db [:views :app :status] :routing)}))
 
 
 (re-frame/reg-event-fx
  :pages.home/end-initialisation
  [interceptors/validate-db]
- (fn [{:keys [db]} [_ {:keys [users session]}]]
-   {:db (-> db
-            ;; TODO - why should an event in this ns care about all this?
-            (assoc-in [:views :app :status] :idle)
-            (assoc-in [:views :app :routing :route] :home)
-            (assoc-in [:views :app :routing :route-params] nil)
-            (assoc-in [:views :app :routing :query-params] nil)
-            (assoc-in [:views :app :session] session)
-            ;; TODO - could this be handled elsewhere?
-            (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :status] :idle)
-            (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :email-address] "")
-            (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :phrase] "")
-            (assoc-in [:views :app :views :pages.home :views :deauthorisation :status] :idle)
-            (update-in [:entities :users] merge users))}))
+ (fn [{:keys [db]} [_ {:keys [users authorisations session]}]]
+   (let [key [:views :app :views :pages.home]]
+     {:db (-> db
+              ;; TODO - It's a smell that these are all independent of the key
+              (assoc-in [:views :app :status] :idle)
+              (assoc-in [:views :app :routing :route] :home)
+              (assoc-in [:views :app :routing :route-params] nil)
+              (assoc-in [:views :app :routing :query-params] nil)
+              (assoc-in [:views :app :session] session)
+              (assoc-in [:views :app :views] {})
+              (assoc-in [:entities :users] users)
+              (assoc-in [:entities :authorisations] authorisations)
+              (assoc-in key {:status :initialisation-successful})
+              ;; TODO - These are key dependent but relate to child views, can it be done elsewhere?
+              (update-in key assoc-in [:views :authorisation-attempt] {:status :idle
+                                                                       :email-address ""
+                                                                       :phrase ""})
+              (update-in key assoc-in [:views :deauthorisation] {:status :idle}))})))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -75,28 +79,34 @@
           :on-response [:pages.admin.users/end-initialisation]
           :on-error [:app/error]
           :delay 1000}
+    ;; TODO - It's a smell that these are all independent of the key
     :db (assoc-in db [:views :app :status] :routing)}))
 
 
 (re-frame/reg-event-fx
  :pages.admin.users/end-initialisation
  [interceptors/validate-db]
- (fn [{:keys [db]} [_ {:keys [users session metadata]}]]
+ (fn [{:keys [db]} [_ {:keys [users authorisations session metadata]}]]
    (let [key [:views :app :views :pages.admin.users]]
      {:db (-> db
-              (update-in key assoc :paging-offset (get-in metadata [:users :next-offset]))
-              (update-in key assoc :paging-exhausted? (get-in metadata [:users :exhausted?]))
+              ;; TODO - It's a smell that these are all independent of the key
               (assoc-in [:views :app :status] :idle)
               (assoc-in [:views :app :routing :route] :admin.users)
               (assoc-in [:views :app :routing :route-params] nil)
               (assoc-in [:views :app :routing :query-params] nil)
               (assoc-in [:views :app :session] session)
-              (update-in [:entities :users] merge users)
-              ;; TODO - could this be handled elsewhere?
-              (assoc-in [:views :app :views :pages.admin.users :views :user-addition :status] :idle)
-              (assoc-in [:views :app :views :pages.admin.users :views :user-addition :name] "")
-              (assoc-in [:views :app :views :pages.admin.users :views :user-addition :email-address] "")
-              (assoc-in [:views :app :views :pages.admin.users :views :user-addition :roles] #{:customer}))})))
+              (assoc-in [:views :app :views] {})
+              (assoc-in [:entities :users] users)
+              (assoc-in [:entities :authorisations] authorisations)
+              (assoc-in key {:status :initialisation-successful})
+              ;; TODO - these are a huge smell that they're highly pager specific,
+              ;; perhaps pager should own them, similar to how user owns deletion state.
+              (update-in key assoc :paging-offset (get-in metadata [:users :next-offset]))
+              (update-in key assoc :paging-exhausted? (get-in metadata [:users :exhausted?]))
+              ;; TODO - These are key dependent but relate to child views, can it be done elsewhere?
+              (update-in key assoc-in [:views :user-addition] {:status :idle
+                                                               :email-address ""
+                                                               :roles #{:customer}}))})))
 
 
 (re-frame/reg-event-fx
@@ -110,6 +120,8 @@
             :on-response [:pages.admin.users/end-paging]
             :on-error [:app/error]
             :delay 1000}
+      ;; TODO - these are a huge smell that this is highly pager specific,
+      ;; perhaps pager should own them, similar to how user owns deletion state.
       :db (update-in db key assoc :status :paging-pending)})) )
 
 
@@ -119,11 +131,13 @@
  (fn [{:keys [db]} [_ {:keys [users metadata]}]]
    (let [key [:views :app :views :pages.admin.users]]
      {:db (-> db
-              (update-in key assoc :paging-offset (get-in metadata [:users :next-offset]))
-              (update-in key assoc :paging-exhausted? (get-in metadata [:users :exhausted?]))
-              ;; TODO - this status is a complete conflation of the page's status
+              ;; TODO - It's a smell that this is independent of the key
+              (update-in [:entities :users] merge users)
               (update-in key assoc :status :paging-successful)
-              (update-in [:entities :users] merge users))})))
+              ;; TODO - these are a huge smell that they're highly pager specific,
+              ;; perhaps pager should own them, similar to how user owns deletion state.
+              (update-in key assoc :paging-offset (get-in metadata [:users :next-offset]))
+              (update-in key assoc :paging-exhausted? (get-in metadata [:users :exhausted?])))})))
 
 
 
@@ -141,6 +155,7 @@
           :on-response [:pages.admin.authorisations/end-initialisation]
           :on-error [:app/error]
           :delay 1000}
+    ;; TODO - It's a smell that this is independent of the key
     :db (assoc-in db [:views :app :status] :routing)}))
 
 
@@ -150,15 +165,20 @@
  (fn [{:keys [db]} [_ {:keys [users authorisations metadata session]}]]
    (let [key [:views :app :views :pages.admin.authorisations]]
      {:db (-> db
-              (update-in key assoc :paging-offset (get-in metadata [:authorisations :next-offset]))
-              (update-in key assoc :paging-exhausted? (get-in metadata [:authorisations :exhausted?]))
+              ;; TODO - It's a smell that these are all independent of the key
               (assoc-in [:views :app :status] :idle)
               (assoc-in [:views :app :routing :route] :admin.authorisations)
               (assoc-in [:views :app :routing :route-params] nil)
               (assoc-in [:views :app :routing :query-params] nil)
               (assoc-in [:views :app :session] session)
-              (update-in [:entities :users] merge users)
-              (update-in [:entities :authorisations] merge authorisations))})))
+              (assoc-in [:views :app :views] {})
+              (assoc-in [:entities :users] users)
+              (assoc-in [:entities :authorisations] authorisations)
+              (assoc-in key {:status :initialisation-successful})
+              ;; TODO - these are a huge smell that they're highly pager specific,
+              ;; perhaps pager should own them, similar to how user owns deletion state.
+              (update-in key assoc :paging-offset (get-in metadata [:authorisations :next-offset]))
+              (update-in key assoc :paging-exhausted? (get-in metadata [:authorisations :exhausted?])))})))
 
 
 (re-frame/reg-event-fx
@@ -172,6 +192,8 @@
             :on-response [:pages.admin.authorisations/end-paging]
             :on-error [:app/error]
             :delay 1000}
+      ;; TODO - these are a huge smell that this is highly pager specific,
+      ;; perhaps pager should own them, similar to how user owns deletion state.
       :db (update-in db key assoc :status :paging-pending)})) )
 
 
@@ -181,10 +203,13 @@
  (fn [{:keys [db]} [_ {:keys [authorisations metadata]}]]
    (let [key [:views :app :views :pages.admin.authorisations]]
      {:db (-> db
-              (update-in key assoc :paging-offset (get-in metadata [:authorisations :next-offset]))
-              (update-in key assoc :paging-exhausted? (get-in metadata [:authorisations :exhausted?]))
+              ;; TODO - It's a smell that this is independent of the key
+              (update-in [:entities :authorisations] merge authorisations)
               (update-in key assoc :status :paging-successful)
-              (update-in [:entities :authorisations] merge authorisations))})))
+              ;; TODO - these are a huge smell that they're highly pager specific,
+              ;; perhaps pager should own them, similar to how user owns deletion state.
+              (update-in key assoc :paging-offset (get-in metadata [:authorisations :next-offset]))
+              (update-in key assoc :paging-exhausted? (get-in metadata [:authorisations :exhausted?])))})))
 
 
 
@@ -200,20 +225,24 @@
           :on-response [:pages.unknown/end-initialisation]
           :on-error [:app/error]
           :delay 1000}
+    ;; TODO - It's a smell that this is independent of the key
     :db (assoc-in db [:views :app :status] :routing)}))
 
 
 (re-frame/reg-event-fx
  :pages.unknown/end-initialisation
  [interceptors/validate-db]
- (fn [{:keys [db]} [_ {:keys [users session]}]]
+ (fn [{:keys [db]} [_ {:keys [users authorisations session]}]]
    {:db (-> db
+            ;; TODO - It's a smell that these are all independent of the key
             (assoc-in [:views :app :status] :idle)
             (assoc-in [:views :app :routing :route] :unknown)
             (assoc-in [:views :app :routing :route-params] nil)
             (assoc-in [:views :app :routing :query-params] nil)
             (assoc-in [:views :app :session] session)
-            (update-in [:entities :users] merge users))}))
+            (assoc-in [:views :app :views] {})
+            (assoc-in [:entities :users] users)
+            (assoc-in [:entities :authorisations] authorisations))}))
 
 
 
@@ -238,6 +267,7 @@
      {:api {:command {:initialise-authorisation-attempt
                       {:user/email-address (:email-address context)}}
             :on-response [:authorisation-attempt/end-initialisation]
+            ;; TODO - where should this knowledge come from?
             :on-error [:app/error]
             :delay 1000}
       :db (update-in db key assoc :status :initialisation-pending)})))
@@ -284,13 +314,12 @@
      (if (empty? users)
        {:db (update-in db key assoc :status :finalisation-unsuccessful)}
        {:db (-> db
-                (update-in key assoc :status :finalisation-successful)
-                (update-in key assoc :email-address "")
-                (update-in key assoc :phrase "")
-                ;; TODO - where should this knowledge come from?
-                (assoc-in [:views :app :views :pages.home :views :deauthorisation] {:status :idle})
+                ;; TODO - It's a smell that these are all independent of the key
                 (assoc-in [:views :app :session] session)
-                (update-in [:entities :users] merge users))}))))
+                (update-in [:entities :users] merge users)
+                (update-in key assoc :status :finalisation-successful)
+                ;; TODO - Why should this event know about another view's initialisation?
+                (assoc-in [:views :app :views :pages.home :views :deauthorisation] {:status :idle}))}))))
 
 
 
@@ -320,13 +349,14 @@
    (let [key [:views :app :views :pages.home :views :deauthorisation]]
      (if (empty? users)
        {:db (-> db
-                (update-in key assoc :status :successful)
+                ;; TODO - It's a smell that these are all independent of the key
                 (assoc-in [:views :app :session] session)
-                ;; TODO - where should this knowledge come from?
-                (assoc-in [:views :app :views :pages.home :views :authorisation-attempt] {:status :idle})
-                (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :email-address] "")
-                (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :phrase] "")
-                (assoc-in [:entities] {}))}
+                (assoc-in [:entities] {})
+                (update-in key assoc :status :successful)
+                ;; TODO - Why should this event know about another view's initialisation?
+                (assoc-in [:views :app :views :pages.home :views :authorisation-attempt] {:status :idle
+                                                                                          :email-address ""
+                                                                                          :phrase ""}))}
        {:db (update-in db key assoc :status :error)}))))
 
 
@@ -373,6 +403,7 @@
                                  :user/roles (:roles context)}}
             :query {:user {:user/id id}}
             :on-response [:user-addition/end]
+            ;; TODO - where should this knowledge come from?
             :on-error [:app/error]
             :delay 1000}
       :db (update-in db key assoc :status :pending)})))
@@ -387,11 +418,12 @@
      (if (empty? users)
        {:db (update-in db key assoc :status :unsuccessful)}
        {:db (-> db
+                ;; TODO - It's a smell that this is independent of the key
+                (update-in [:entities :users] merge users)
                 (update-in key assoc :status :successful)
                 (update-in key assoc :name "")
                 (update-in key assoc :email-address "")
-                (update-in key assoc :roles #{:customer})
-                (update-in [:entities :users] merge users))}))))
+                (update-in key assoc :roles #{:customer}))}))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -406,6 +438,7 @@
      {:api {:command {:delete-user {:user/id id}}
             :query {:user {:user/id id}}
             :on-response [:user/end-deletion id]
+            ;; TODO - where should this knowledge come from?
             :on-error [:app/error]
             :delay 1000}
       :db (update-in db key assoc :status :deletion-pending)})))
@@ -417,5 +450,6 @@
  (fn [{:keys [db]} [_ id {:keys [users]}]]
    (let [key [:views :app :views :pages.admin.users :views :user id]]
      {:db (-> db
-              (update-in key dissoc :status)
-              (update-in [:entities :users] merge users))})))
+              ;; TODO - It's a smell that this is independent of the key
+              (update-in [:entities :users] merge users)
+              (update-in key assoc :status :deletion-successful))})))

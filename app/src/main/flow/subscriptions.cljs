@@ -170,17 +170,11 @@
 (re-frame/reg-sub
  :pages.admin.users/ids
  (fn [db [_]]
-   (let [key [:views :app :views :pages.admin.users]
-         {:keys [paging-offset]} (get-in db key)
-         users (get-in db [:entities :users])]
-     ;; TODO - extract this to common place
+   (let [users (get-in db [:entities :users])]
      (->> users
           (vals)
           (sort-by (comp str :user/id))
-          (map :user/id)
-          (partition-by #(not= paging-offset %))
-          (take 2)
-          (apply concat)))))
+          (map :user/id)))))
 
 
 (re-frame/reg-sub
@@ -195,6 +189,37 @@
  :pages.admin.users/paging-pending?
  (fn [db [_]]
    (let [key [:views :app :views :pages.admin.users]
+         context (get-in db key)]
+     (contains? #{:paging-pending} (:status context)))))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;; Admin authorisations page flow ;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-sub
+ :pages.admin.authorisations/ids
+ (fn [db [_]]
+   (let [authorisations (get-in db [:entities :authorisations])]
+     (->> authorisations
+          (vals)
+          (sort-by (comp str :authorisation/id))
+          (map :authorisation/id)))))
+
+
+(re-frame/reg-sub
+ :pages.admin.authorisations/paging-exhausted?
+ (fn [db [_]]
+   (let [key [:views :app :views :pages.admin.authorisations]
+         context (get-in db key)]
+     (:paging-exhausted? context))))
+
+
+(re-frame/reg-sub
+ :pages.admin.authorisations/paging-pending?
+ (fn [db [_]]
+   (let [key [:views :app :views :pages.admin.authorisations]
          context (get-in db key)]
      (contains? #{:paging-pending} (:status context)))))
 
@@ -253,43 +278,6 @@
    (let [key [:views :app :views :pages.admin.users :views :user-addition]
          context (get-in db key)]
      (contains? #{:pending} (:status context)))))
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;; Admin authorisations page flow ;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(re-frame/reg-sub
- :pages.admin.authorisations/ids
- (fn [db [_]]
-   (let [key [:views :app :views :pages.admin.authorisations]
-         {:keys [paging-offset]} (get-in db key)
-         authorisations (get-in db [:entities :authorisations])]
-     ;; TODO - extract this to common place
-     (->> authorisations
-          (vals)
-          (sort-by (comp str :authorisation/id))
-          (map :authorisation/id)
-          (partition-by #(not= paging-offset %))
-          (take 2)
-          (apply concat)))))
-
-
-(re-frame/reg-sub
- :pages.admin.authorisations/paging-exhausted?
- (fn [db [_]]
-   (let [key [:views :app :views :pages.admin.authorisations]
-         context (get-in db key)]
-     (:paging-exhausted? context))))
-
-
-(re-frame/reg-sub
- :pages.admin.authorisations/paging-pending?
- (fn [db [_]]
-   (let [key [:views :app :views :pages.admin.authorisations]
-         context (get-in db key)]
-     (contains? #{:paging-pending} (:status context)))))
 
 
 
