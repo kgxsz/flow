@@ -1,6 +1,7 @@
 (ns flow.views.pages.admin.authorisations
   (:require [re-frame.core :as re-frame]
             [flow.views.link :as link]
+            [flow.views.pager :as pager]
             [flow.views.authorisation :as authorisation]
             [flow.utils :as u]
             [cljs-time.coerce :as t.coerce]
@@ -9,7 +10,8 @@
 
 (defn view [{:keys [admin?]}
             {:keys [route-to-home-link
-                    authorisations]}
+                    authorisations
+                    pager]}
             _]
   [:div
    {:class (u/bem [:page])}
@@ -32,7 +34,10 @@
         {:class (u/bem [:cell :margin-top-large :width-cover :height-xxx-tiny :colour-grey-four])}]
        [:div
         {:class (u/bem [:cell :column :align-start :padding-top-medium])}
-        authorisations]]
+        authorisations]
+       [:div
+        {:class (u/bem [:cell :padding-top-medium])}
+        pager]]
 
       [:div
        {:class (u/bem [:cell :column :padding-top-huge])}
@@ -54,7 +59,9 @@
 
 
 (defn page [properties views behaviours]
-  (let [!ids (re-frame/subscribe [:pages.admin.authorisations/ids])]
+  (let [!ids (re-frame/subscribe [:pages.admin.authorisations/ids])
+        !paging-exhausted? (re-frame/subscribe [:pages.admin.authorisations/paging-exhausted?])
+        !paging-pending? (re-frame/subscribe [:pages.admin.authorisations/paging-pending?])]
     (fn [properties views behaviours]
       [view
        properties
@@ -67,5 +74,10 @@
                           [authorisation/authorisation
                            {:authorisation/id id}
                            {}
-                           {}])}
+                           {}])
+        :pager [pager/pager
+                {:exhausted? @!paging-exhausted?
+                 :pending? @!paging-pending?}
+                {}
+                {:on-click #(re-frame/dispatch [:pages.admin.authorisations/start-paging])}]}
        {}])))

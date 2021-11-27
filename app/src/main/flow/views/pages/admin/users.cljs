@@ -1,6 +1,7 @@
 (ns flow.views.pages.admin.users
   (:require [re-frame.core :as re-frame]
             [flow.views.link :as link]
+            [flow.views.pager :as pager]
             [flow.views.user :as user]
             [flow.views.user-addition :as user-addition]
             [flow.utils :as u]
@@ -11,7 +12,8 @@
 (defn view [{:keys [admin?]}
             {:keys [route-to-home-link
                     user-addition
-                    users]}
+                    users
+                    pager]}
             _]
   [:div
    {:class (u/bem [:page])}
@@ -39,7 +41,10 @@
         {:class (u/bem [:cell :margin-top-xx-large :width-cover :height-xxx-tiny :colour-grey-four])}]
        [:div
         {:class (u/bem [:cell :column :align-start :padding-top-medium])}
-        users]]
+        users]
+       [:div
+        {:class (u/bem [:cell :padding-top-medium])}
+        pager]]
 
       [:div
        {:class (u/bem [:cell :column :padding-top-huge])}
@@ -61,7 +66,9 @@
 
 
 (defn page [properties views behaviours]
-  (let [!ids (re-frame/subscribe [:pages.admin.users/ids])]
+  (let [!ids (re-frame/subscribe [:pages.admin.users/ids])
+        !paging-exhausted? (re-frame/subscribe [:pages.admin.users/paging-exhausted?])
+        !paging-pending? (re-frame/subscribe [:pages.admin.users/paging-pending?])]
     (fn [properties views behaviours]
       [view
        properties
@@ -78,6 +85,10 @@
                  [user/user
                   {:user/id id}
                   {}
-                  {}])}
-       {}
+                  {}])
+        :pager [pager/pager
+                {:exhausted? @!paging-exhausted?
+                 :pending? @!paging-pending?}
+                {}
+                {:on-click #(re-frame/dispatch [:pages.admin.users/start-paging])}]}
        {}])))

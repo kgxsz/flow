@@ -81,19 +81,49 @@
 (re-frame/reg-event-fx
  :pages.admin.users/end-initialisation
  [interceptors/validate-db]
- (fn [{:keys [db]} [_ {:keys [users session]}]]
-   {:db (-> db
-            (assoc-in [:views :app :status] :idle)
-            (assoc-in [:views :app :routing :route] :admin.users)
-            (assoc-in [:views :app :routing :route-params] nil)
-            (assoc-in [:views :app :routing :query-params] nil)
-            ;; TODO - could this be handled elsewhere?
-            (assoc-in [:views :app :views :pages.admin.users :views :user-addition :status] :idle)
-            (assoc-in [:views :app :views :pages.admin.users :views :user-addition :name] "")
-            (assoc-in [:views :app :views :pages.admin.users :views :user-addition :email-address] "")
-            (assoc-in [:views :app :views :pages.admin.users :views :user-addition :roles] #{:customer})
-            (assoc-in [:views :app :session] session)
-            (update-in [:entities :users] merge users))}))
+ (fn [{:keys [db]} [_ {:keys [users session metadata]}]]
+   (let [key [:views :app :views :pages.admin.users]]
+     {:db (-> db
+              (update-in key assoc :paging-offset (get-in metadata [:users :next-offset]))
+              (update-in key assoc :paging-exhausted? (get-in metadata [:users :exhausted?]))
+              (assoc-in [:views :app :status] :idle)
+              (assoc-in [:views :app :routing :route] :admin.users)
+              (assoc-in [:views :app :routing :route-params] nil)
+              (assoc-in [:views :app :routing :query-params] nil)
+              (assoc-in [:views :app :session] session)
+              (update-in [:entities :users] merge users)
+              ;; TODO - could this be handled elsewhere?
+              (assoc-in [:views :app :views :pages.admin.users :views :user-addition :status] :idle)
+              (assoc-in [:views :app :views :pages.admin.users :views :user-addition :name] "")
+              (assoc-in [:views :app :views :pages.admin.users :views :user-addition :email-address] "")
+              (assoc-in [:views :app :views :pages.admin.users :views :user-addition :roles] #{:customer}))})))
+
+
+(re-frame/reg-event-fx
+ :pages.admin.users/start-paging
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_]]
+   (let [key [:views :app :views :pages.admin.users]
+         context (get-in db key)]
+     {:api {:query {:users {}}
+            :metadata {:users {:limit 2 :offset (:paging-offset context)}}
+            :on-response [:pages.admin.users/end-paging]
+            :on-error [:app/error]
+            :delay 1000}
+      :db (update-in db key assoc :status :paging-pending)})) )
+
+
+(re-frame/reg-event-fx
+ :pages.admin.users/end-paging
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_ {:keys [users metadata]}]]
+   (let [key [:views :app :views :pages.admin.users]]
+     {:db (-> db
+              (update-in key assoc :paging-offset (get-in metadata [:users :next-offset]))
+              (update-in key assoc :paging-exhausted? (get-in metadata [:users :exhausted?]))
+              ;; TODO - this status is a complete conflation of the page's status
+              (update-in key assoc :status :paging-successful)
+              (update-in [:entities :users] merge users))})))
 
 
 
@@ -117,15 +147,44 @@
 (re-frame/reg-event-fx
  :pages.admin.authorisations/end-initialisation
  [interceptors/validate-db]
- (fn [{:keys [db]} [_ {:keys [users authorisations session]}]]
-   {:db (-> db
-            (assoc-in [:views :app :status] :idle)
-            (assoc-in [:views :app :routing :route] :admin.authorisations)
-            (assoc-in [:views :app :routing :route-params] nil)
-            (assoc-in [:views :app :routing :query-params] nil)
-            (assoc-in [:views :app :session] session)
-            (update-in [:entities :users] merge users)
-            (update-in [:entities :authorisations] merge authorisations))}))
+ (fn [{:keys [db]} [_ {:keys [users authorisations metadata session]}]]
+   (let [key [:views :app :views :pages.admin.authorisations]]
+     {:db (-> db
+              (update-in key assoc :paging-offset (get-in metadata [:authorisations :next-offset]))
+              (update-in key assoc :paging-exhausted? (get-in metadata [:authorisations :exhausted?]))
+              (assoc-in [:views :app :status] :idle)
+              (assoc-in [:views :app :routing :route] :admin.authorisations)
+              (assoc-in [:views :app :routing :route-params] nil)
+              (assoc-in [:views :app :routing :query-params] nil)
+              (assoc-in [:views :app :session] session)
+              (update-in [:entities :users] merge users)
+              (update-in [:entities :authorisations] merge authorisations))})))
+
+
+(re-frame/reg-event-fx
+ :pages.admin.authorisations/start-paging
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_]]
+   (let [key [:views :app :views :pages.admin.authorisations]
+         context (get-in db key)]
+     {:api {:query {:authorisations {}}
+            :metadata {:authorisations {:limit 2 :offset (:paging-offset context)}}
+            :on-response [:pages.admin.authorisations/end-paging]
+            :on-error [:app/error]
+            :delay 1000}
+      :db (update-in db key assoc :status :paging-pending)})) )
+
+
+(re-frame/reg-event-fx
+ :pages.admin.authorisations/end-paging
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_ {:keys [authorisations metadata]}]]
+   (let [key [:views :app :views :pages.admin.authorisations]]
+     {:db (-> db
+              (update-in key assoc :paging-offset (get-in metadata [:authorisations :next-offset]))
+              (update-in key assoc :paging-exhausted? (get-in metadata [:authorisations :exhausted?]))
+              (update-in key assoc :status :paging-successful)
+              (update-in [:entities :authorisations] merge authorisations))})))
 
 
 
