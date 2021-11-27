@@ -52,7 +52,7 @@
                   (u/generate :external-error "Unable to scan DynamoDB.")))]
     (->> result
          (map :entity)
-         (sort-by entity-id-key)
+         (sort-by (comp str entity-id-key))
          (partition-by #(= offset (get % entity-id-key)))
          (last)
          (remove #(= offset (get % entity-id-key)))
