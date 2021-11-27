@@ -1,6 +1,8 @@
 (ns flow.views.pages.home
   (:require [re-frame.core :as re-frame]
             [flow.views.authorisation-attempt :as authorisation-attempt]
+            [flow.views.deauthorisation :as deauthorisation]
+            [flow.views.button :as button]
             [flow.views.link :as link]
             [flow.utils :as u]))
 
@@ -11,7 +13,7 @@
             {:keys [authorisation-attempt
                     route-to-users-link
                     route-to-authorisations-link
-                    start-deauthorisation-link]}
+                    deauthorisation]}
             _]
   [:div
    {:class (u/bem [:page])}
@@ -35,7 +37,7 @@
           {:class (u/bem [:cell :column :padding-top-large])}
           route-to-users-link
           route-to-authorisations-link
-          start-deauthorisation-link]]
+          deauthorisation]]
 
         authorisation-attempt)]]]
 
@@ -58,8 +60,8 @@
                                    {:label "See authorisations"}
                                    {}
                                    {:on-click #(re-frame/dispatch [:app/route :admin.authorisations])}]
-    :start-deauthorisation-link [link/link
-                                 {:label "Sign out"}
-                                 {}
-                                 {:on-click #(re-frame/dispatch [:pages.home/start-deauthorisation])}]}
+    :deauthorisation [deauthorisation/deauthorisation
+                      {}
+                      {}
+                      {}]}
    {}])

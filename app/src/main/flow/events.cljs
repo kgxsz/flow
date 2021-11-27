@@ -57,35 +57,8 @@
             (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :status] :idle)
             (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :email-address] "")
             (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :phrase] "")
+            (assoc-in [:views :app :views :pages.home :views :deauthorisation :status] :idle)
             (update-in [:entities :users] merge users))}))
-
-
-(re-frame/reg-event-fx
- :pages.home/start-deauthorisation
- [interceptors/validate-db]
- (fn [{:keys [db]} [_]]
-   {:api {:command {:deauthorise {}}
-          :query {:current-user {}}
-          :on-response [:pages.home/end-deauthorisation]
-          :on-error [:app/error]
-          :delay 1000}
-    :db (-> db
-            (update-in [:views :app] dissoc :session)
-            (assoc-in [:views :app :views :pages.home :views :authorisation-attempt] {:status :idle})
-            (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :email-address] "")
-            (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :phrase] "")
-            (assoc-in [:entities] {}))}))
-
-
-(re-frame/reg-event-fx
- :pages.home/end-deauthorisation
- [interceptors/validate-db]
- (fn [{:keys [db]} [_ {:keys [users session]}]]
-   (if (empty? users)
-     ;; TODO - should this be a dispatch to the event?
-     {:db (update-in db key assoc :status :error)}
-     {:db (assoc-in db [:views :app :session] session)})))
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -134,6 +107,7 @@
  (fn [{:keys [db]} [_ {:keys [route-params query-params]}]]
    {:api {:query {:current-user {}
                   :authorisations {}}
+          :metadata {:authorisations {:limit 2 :offset nil}}
           :on-response [:pages.admin.authorisations/end-initialisation]
           :on-error [:app/error]
           :delay 1000}
@@ -255,8 +229,46 @@
                 (update-in key assoc :email-address "")
                 (update-in key assoc :phrase "")
                 ;; TODO - where should this knowledge come from?
+                (assoc-in [:views :app :views :pages.home :views :deauthorisation] {:status :idle})
                 (assoc-in [:views :app :session] session)
                 (update-in [:entities :users] merge users))}))))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;; Deauthorisation flow ;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-event-fx
+ :deauthorisation/start
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_]]
+   (let [key [:views :app :views :pages.home :views :deauthorisation]
+         context (get-in db key)]
+     {:api {:command {:deauthorise {}}
+            :query {:current-user {}}
+            :on-response [:deauthorisation/end]
+            ;; TODO - where should this knowledge come from?
+            :on-error [:app/error]
+            :delay 1000}
+      :db (update-in db key assoc :status :pending)})))
+
+
+(re-frame/reg-event-fx
+ :deauthorisation/end
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_ {:keys [users session]}]]
+   (let [key [:views :app :views :pages.home :views :deauthorisation]]
+     (if (empty? users)
+       {:db (-> db
+                (update-in key assoc :status :successful)
+                (assoc-in [:views :app :session] session)
+                ;; TODO - where should this knowledge come from?
+                (assoc-in [:views :app :views :pages.home :views :authorisation-attempt] {:status :idle})
+                (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :email-address] "")
+                (assoc-in [:views :app :views :pages.home :views :authorisation-attempt :phrase] "")
+                (assoc-in [:entities] {}))}
+       {:db (update-in db key assoc :status :error)}))))
 
 
 
