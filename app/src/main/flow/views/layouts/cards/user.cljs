@@ -50,7 +50,7 @@
               :user @!user)
        {:user-deletion [user-deletion/user-deletion
                         {:key (concat key [:views :user-deletion])
-                         :user/id id}
+                         :id id}
                         {}
                         {}]}
        {}])))

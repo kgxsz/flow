@@ -15,8 +15,8 @@
     start-button]])
 
 
-(defn deauthorisation [properties views behaviours]
-  (let [!pending? (re-frame/subscribe [:deauthorisation/pending?])]
+(defn deauthorisation [{:keys [key] :as properties} views behaviours]
+  (let [!pending? (re-frame/subscribe [:deauthorisation/pending? key])]
     (fn [properties views behaviours]
       [view
        {}
@@ -27,5 +27,5 @@
                         :disabled? false
                         :pending? @!pending?}
                        {}
-                       {:on-click #(re-frame/dispatch [:deauthorisation/start])}]}
+                       {:on-click #(re-frame/dispatch [:deauthorisation/start key])}]}
        {}])))

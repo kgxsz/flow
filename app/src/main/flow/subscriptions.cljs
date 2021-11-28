@@ -6,7 +6,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;; App flow ;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;; App ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-sub
@@ -77,7 +77,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;; Cards user flow ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; Cards user ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-sub
@@ -88,7 +88,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;; Cards authorisation flow ;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;; Cards authorisation ;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-sub
@@ -99,7 +99,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;; Pagination flow ;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;; Pagination ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-sub
@@ -118,38 +118,34 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;; Authorisation attempt flow ;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;; Authorisation ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-sub
  :authorisation/status
- (fn [db [_]]
-   (let [key [:views :app :views :pages.home :views :authorisation]
-         context (get-in db key)]
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
      (:status context))))
 
 
 (re-frame/reg-sub
  :authorisation/email-address-update-disabled?
- (fn [db [_]]
-   (let [key [:views :app :views :pages.home :views :authorisation]
-         context (get-in db key)]
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
      (not (contains? #{:idle} (:status context))))))
 
 
 (re-frame/reg-sub
  :authorisation/email-address
- (fn [db [_]]
-   (let [key [:views :app :views :pages.home :views :authorisation]
-         context (get-in db key)]
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
      (:email-address context))))
 
 
 (re-frame/reg-sub
  :authorisation/initialisation-disabled?
- (fn [db [_]]
-   (let [key [:views :app :views :pages.home :views :authorisation]
-         context (get-in db key)]
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
      (not
       (and
        (contains? #{:idle :initialisation-pending} (:status context))
@@ -158,17 +154,15 @@
 
 (re-frame/reg-sub
  :authorisation/initialisation-pending?
- (fn [db [_]]
-   (let [key [:views :app :views :pages.home :views :authorisation]
-         context (get-in db key)]
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
      (contains? #{:initialisation-pending} (:status context)))))
 
 
 (re-frame/reg-sub
  :authorisation/phrase-update-disabled?
- (fn [db [_]]
-   (let [key [:views :app :views :pages.home :views :authorisation]
-         context (get-in db key)]
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
      (not
       (contains?
        #{:initialisation-successful
@@ -178,17 +172,15 @@
 
 (re-frame/reg-sub
  :authorisation/phrase
- (fn [db [_]]
-   (let [key [:views :app :views :pages.home :views :authorisation]
-         context (get-in db key)]
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
      (:phrase context))))
 
 
 (re-frame/reg-sub
  :authorisation/finalisation-disabled?
- (fn [db [_]]
-   (let [key [:views :app :views :pages.home :views :authorisation]
-         context (get-in db key)]
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
      (not
       (and
        (contains?
@@ -201,67 +193,60 @@
 
 (re-frame/reg-sub
  :authorisation/finalisation-pending?
- (fn [db [_]]
-   (let [key [:views :app :views :pages.home :views :authorisation]
-         context (get-in db key)]
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
      (contains? #{:finalisation-pending} (:status context)))))
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;; Deauthorisation flow ;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;; Deauthorisation ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-sub
  :deauthorisation/pending?
- (fn [db [_]]
-   (let [key [:views :app :views :pages.home :views :deauthorisation]
-         context (get-in db key)]
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
      (contains? #{:pending} (:status context)))))
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;; User addition flow ;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; User addition ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-sub
  :user-addition/status
- (fn [db [_]]
-   (let [key [:views :app :views :pages.admin.users :views :user-addition]
-         context (get-in db key)]
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
      (:status context))))
 
 
 (re-frame/reg-sub
  :user-addition/email-address
- (fn [db [_]]
-   (let [key [:views :app :views :pages.admin.users :views :user-addition]
-         context (get-in db key)]
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
      (:email-address context))))
 
 
 (re-frame/reg-sub
  :user-addition/name
- (fn [db [_]]
-   (let [key [:views :app :views :pages.admin.users :views :user-addition]
-         context (get-in db key)]
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
      (:name context))))
 
 
 (re-frame/reg-sub
  :user-addition/admin-role?
- (fn [db [_]]
-   (let [key [:views :app :views :pages.admin.users :views :user-addition]
-         context (get-in db key)]
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
      (contains? (:roles context) :admin))))
 
 
 (re-frame/reg-sub
  :user-addition/disabled?
- (fn [db [_]]
-   (let [key [:views :app :views :pages.admin.users :views :user-addition]
-         context (get-in db key)]
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
      (or
       (not (s/valid? :user/name (:name context)))
       (not (s/valid? :user/email-address (:email-address context)))
@@ -270,15 +255,14 @@
 
 (re-frame/reg-sub
  :user-addition/pending?
- (fn [db [_]]
-   (let [key [:views :app :views :pages.admin.users :views :user-addition]
-         context (get-in db key)]
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
      (contains? #{:pending} (:status context)))))
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;; User deletion flow ;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;; User deletion ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-sub

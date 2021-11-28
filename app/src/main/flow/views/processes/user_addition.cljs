@@ -44,13 +44,13 @@
        "The user was added successfully"]])])
 
 
-(defn user-addition [properties views behaviours]
-  (let [!status (re-frame/subscribe [:user-addition/status])
-        !name (re-frame/subscribe [:user-addition/name])
-        !email-address (re-frame/subscribe [:user-addition/email-address])
-        !admin-role? (re-frame/subscribe [:user-addition/admin-role?])
-        !disabled? (re-frame/subscribe [:user-addition/disabled?])
-        !pending? (re-frame/subscribe [:user-addition/pending?])]
+(defn user-addition [{:keys [key] :as views} behaviours]
+  (let [!status (re-frame/subscribe [:user-addition/status key])
+        !name (re-frame/subscribe [:user-addition/name key])
+        !email-address (re-frame/subscribe [:user-addition/email-address key])
+        !admin-role? (re-frame/subscribe [:user-addition/admin-role? key])
+        !disabled? (re-frame/subscribe [:user-addition/disabled? key])
+        !pending? (re-frame/subscribe [:user-addition/pending? key])]
     (fn [properties views behaviours]
       [view
        {:status @!status}
@@ -60,20 +60,20 @@
                       :value @!name
                       :disabled? @!pending?}
                      {}
-                     {:on-change #(re-frame/dispatch [:user-addition/update-name %])}]
+                     {:on-change #(re-frame/dispatch [:user-addition/update-name key %])}]
         :email-address-input [input/input
                               {:placeholder "jane@smith.com"
                                :icon :envelope
                                :value @!email-address
                                :disabled? @!pending?}
                               {}
-                              {:on-change #(re-frame/dispatch [:user-addition/update-email-address %])}]
+                              {:on-change #(re-frame/dispatch [:user-addition/update-email-address key %])}]
         :admin-role-toggle [toggle/toggle
                             {:label "Admin"
                              :value @!admin-role?
                              :disabled? @!pending?}
                             {}
-                            {:on-toggle #(re-frame/dispatch [:user-addition/toggle-admin-role])}]
+                            {:on-toggle #(re-frame/dispatch [:user-addition/toggle-admin-role key])}]
         :start-button [button/button
                        {:type :primary
                         :label "Add user"
@@ -81,5 +81,5 @@
                         :disabled? @!disabled?
                         :pending? @!pending?}
                        {}
-                       {:on-click #(re-frame/dispatch [:user-addition/start])}]}
+                       {:on-click #(re-frame/dispatch [:user-addition/start key])}]}
        {}])))

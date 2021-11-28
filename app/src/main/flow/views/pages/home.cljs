@@ -56,9 +56,9 @@
   [view
    properties
    {:authorisation [authorisation/authorisation
-                            {}
-                            {}
-                            {}]
+                    {:key [:views :app :views :pages.home :views :authorisation]}
+                    {}
+                    {}]
     :route-to-users-link [link/link
                           {:label "Users"}
                           {}
@@ -68,7 +68,7 @@
                                    {}
                                    {:on-click #(re-frame/dispatch [:app/route :admin.authorisations])}]
     :deauthorisation [deauthorisation/deauthorisation
-                      {}
+                      {:key [:views :app :views :pages.home :views :deauthorisation]}
                       {}
                       {}]}
    {}])

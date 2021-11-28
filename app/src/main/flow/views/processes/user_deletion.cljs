@@ -12,7 +12,7 @@
    start-button])
 
 
-(defn user-deletion [{:keys [key user/id] :as properties} views behaviours]
+(defn user-deletion [{:keys [key id] :as properties} views behaviours]
   (let [!disabled? (re-frame/subscribe [:user-deletion/disabled? id])
         !pending? (re-frame/subscribe [:user-deletion/pending? key])]
     (fn [properties views behaviours]

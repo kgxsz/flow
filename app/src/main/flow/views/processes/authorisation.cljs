@@ -50,16 +50,16 @@
          "That magic phrase doesn't look right"]])]))
 
 
-(defn authorisation [properties views behaviours]
-  (let [!status (re-frame/subscribe [:authorisation/status])
-        !email-address-update-disabled? (re-frame/subscribe [:authorisation/email-address-update-disabled?])
-        !email-address (re-frame/subscribe [:authorisation/email-address])
-        !initialisation-disabled? (re-frame/subscribe [:authorisation/initialisation-disabled?])
-        !initialisation-pending? (re-frame/subscribe [:authorisation/initialisation-pending?])
-        !phrase-update-disabled? (re-frame/subscribe [:authorisation/phrase-update-disabled?])
-        !phrase (re-frame/subscribe [:authorisation/phrase])
-        !finalisation-disabled? (re-frame/subscribe [:authorisation/finalisation-disabled?])
-        !finalisation-pending? (re-frame/subscribe [:authorisation/finalisation-pending?])]
+(defn authorisation [{:keys [key] :as properties} views behaviours]
+  (let [!status (re-frame/subscribe [:authorisation/status key])
+        !email-address-update-disabled? (re-frame/subscribe [:authorisation/email-address-update-disabled? key])
+        !email-address (re-frame/subscribe [:authorisation/email-address key])
+        !initialisation-disabled? (re-frame/subscribe [:authorisation/initialisation-disabled? key])
+        !initialisation-pending? (re-frame/subscribe [:authorisation/initialisation-pending? key])
+        !phrase-update-disabled? (re-frame/subscribe [:authorisation/phrase-update-disabled? key])
+        !phrase (re-frame/subscribe [:authorisation/phrase key])
+        !finalisation-disabled? (re-frame/subscribe [:authorisation/finalisation-disabled? key])
+        !finalisation-pending? (re-frame/subscribe [:authorisation/finalisation-pending? key])]
     (fn [properties views behaviours]
       [view
        {:status @!status}
@@ -69,7 +69,7 @@
                                :value @!email-address
                                :disabled? @!email-address-update-disabled?}
                               {}
-                              {:on-change #(re-frame/dispatch [:authorisation/update-email-address %])}]
+                              {:on-change #(re-frame/dispatch [:authorisation/update-email-address key %])}]
         :start-initialisation-button [button/button
                                       {:type :primary
                                        :label "Continue"
@@ -77,14 +77,14 @@
                                        :disabled? @!initialisation-disabled?
                                        :pending? @!initialisation-pending?}
                                       {}
-                                      {:on-click #(re-frame/dispatch [:authorisation/start-initialisation])}]
+                                      {:on-click #(re-frame/dispatch [:authorisation/start-initialisation key])}]
         :phrase-input [input/input
                        {:placeholder "donkey-purple-kettle"
                         :icon :magic-wand
                         :value @!phrase
                         :disabled? @!phrase-update-disabled?}
                        {}
-                       {:on-change #(re-frame/dispatch [:authorisation/update-phrase %])}]
+                       {:on-change #(re-frame/dispatch [:authorisation/update-phrase key %])}]
         :start-finalisation-button [button/button
                                     {:type :primary
                                      :label "Sign in"
@@ -92,5 +92,5 @@
                                      :disabled? @!finalisation-disabled?
                                      :pending? @!finalisation-pending?}
                                     {}
-                                    {:on-click #(re-frame/dispatch [:authorisation/start-finalisation])}]}
+                                    {:on-click #(re-frame/dispatch [:authorisation/start-finalisation key])}]}
        {}])))

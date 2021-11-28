@@ -6,7 +6,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;; App flow ;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;; App ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
@@ -27,7 +27,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;; Home page flow ;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;; Home page ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
@@ -36,10 +36,8 @@
  (fn [{:keys [db]} [_ {:keys [route-params query-params]}]]
    {:api {:query {:current-user {}}
           :on-response [:pages.home/end-initialisation]
-          ;; TODO - where should this knowledge come from?
           :on-error [:app/error]
           :delay 1000}
-    ;; TODO - It's a smell that this is independent of the key
     :db (assoc-in db [:views :app :status] :routing)}))
 
 
@@ -49,7 +47,6 @@
  (fn [{:keys [db]} [_ {:keys [users authorisations session]}]]
    (let [key [:views :app :views :pages.home]]
      {:db (-> db
-              ;; TODO - It's a smell that these are all independent of the key
               (assoc-in [:views :app :status] :idle)
               (assoc-in [:views :app :routing :route] :home)
               (assoc-in [:views :app :routing :route-params] nil)
@@ -68,7 +65,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;; Admin users page flow ;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;; Admin users page ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
@@ -79,10 +76,8 @@
                   :users {}}
           :metadata {:users {:limit 2 :offset nil}}
           :on-response [:pages.admin.users/end-initialisation]
-          ;; TODO - where should this knowledge come from?
           :on-error [:app/error]
           :delay 1000}
-    ;; TODO - It's a smell that these are all independent of the key
     :db (assoc-in db [:views :app :status] :routing)}))
 
 
@@ -92,7 +87,6 @@
  (fn [{:keys [db]} [_ {:keys [users authorisations metadata session]}]]
    (let [key [:views :app :views :pages.admin.users]]
      {:db (-> db
-              ;; TODO - It's a smell that these are all independent of the key
               (assoc-in [:views :app :status] :idle)
               (assoc-in [:views :app :routing :route] :admin.users)
               (assoc-in [:views :app :routing :route-params] nil)
@@ -114,7 +108,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;; Admin authorisations page flow ;;;;;;;;;;;;;;;;;
+;;;;;;;;; Admin authorisations page ;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
@@ -125,10 +119,8 @@
                   :authorisations {}}
           :metadata {:authorisations {:limit 2 :offset nil}}
           :on-response [:pages.admin.authorisations/end-initialisation]
-          ;; TODO - where should this knowledge come from?
           :on-error [:app/error]
           :delay 1000}
-    ;; TODO - It's a smell that this is independent of the key
     :db (assoc-in db [:views :app :status] :routing)}))
 
 
@@ -138,7 +130,6 @@
  (fn [{:keys [db]} [_ {:keys [users authorisations metadata session]}]]
    (let [key [:views :app :views :pages.admin.authorisations]]
      {:db (-> db
-              ;; TODO - It's a smell that these are all independent of the key
               (assoc-in [:views :app :status] :idle)
               (assoc-in [:views :app :routing :route] :admin.authorisations)
               (assoc-in [:views :app :routing :route-params] nil)
@@ -156,7 +147,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;; Unknown page flow ;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; Unknown page ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
@@ -165,10 +156,8 @@
  (fn [{:keys [db]} [_ {:keys [route-params query-params]}]]
    {:api {:query {:current-user {}}
           :on-response [:pages.unknown/end-initialisation]
-          ;; TODO - where should this knowledge come from?
           :on-error [:app/error]
           :delay 1000}
-    ;; TODO - It's a smell that this is independent of the key
     :db (assoc-in db [:views :app :status] :routing)}))
 
 
@@ -177,7 +166,6 @@
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ {:keys [users authorisations session]}]]
    {:db (-> db
-            ;; TODO - It's a smell that these are all independent of the key
             (assoc-in [:views :app :status] :idle)
             (assoc-in [:views :app :routing :route] :unknown)
             (assoc-in [:views :app :routing :route-params] nil)
@@ -190,7 +178,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;; Pagination flow ;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;; Pagination ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
@@ -201,7 +189,6 @@
      {:api {:query {entity-type {}}
             :metadata {entity-type {:limit 2 :offset (:offset context)}}
             :on-response [:pagination/end key entity-type]
-            ;; TODO - where should this knowledge come from?
             :on-error [:app/error]
             :delay 1000}
       :db (update-in db key assoc :status :pending)})) )
@@ -212,7 +199,6 @@
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ key entity-type response]]
    {:db (-> db
-            ;; TODO - It's a smell that this is independent of the key
             (update-in [:entities entity-type] merge (get response entity-type))
             (update-in key assoc :status :idle)
             (update-in key assoc :offset (get-in response [:metadata entity-type :next-offset]))
@@ -221,27 +207,24 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;; Authorisation flow ;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; Authorisation ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
  :authorisation/update-email-address
  [interceptors/validate-db]
- (fn [{:keys [db]} [_ value]]
-   (let [key [:views :app :views :pages.home :views :authorisation]]
-     {:db (update-in db key assoc :email-address (->> value (u/constrain-string 250) u/sanitise-string))})))
+ (fn [{:keys [db]} [_ key value]]
+   {:db (update-in db key assoc :email-address (->> value (u/constrain-string 250) u/sanitise-string))}))
 
 
 (re-frame/reg-event-fx
  :authorisation/start-initialisation
  [interceptors/validate-db]
- (fn [{:keys [db]} [_]]
-   (let [key [:views :app :views :pages.home :views :authorisation]
-         context (get-in db key)]
+ (fn [{:keys [db]} [_ key]]
+   (let [context (get-in db key)]
      {:api {:command {:initialise-authorisation-attempt
                       {:user/email-address (:email-address context)}}
-            :on-response [:authorisation/end-initialisation]
-            ;; TODO - where should this knowledge come from?
+            :on-response [:authorisation/end-initialisation key]
             :on-error [:app/error]
             :delay 1000}
       :db (update-in db key assoc :status :initialisation-pending)})))
@@ -250,31 +233,27 @@
 (re-frame/reg-event-fx
  :authorisation/end-initialisation
  [interceptors/validate-db]
- (fn [{:keys [db]} [_ response]]
-   (let [key [:views :app :views :pages.home :views :authorisation]]
-     {:db (update-in db key assoc :status :initialisation-successful)})))
+ (fn [{:keys [db]} [_ key _]]
+   {:db (update-in db key assoc :status :initialisation-successful)}))
 
 
 (re-frame/reg-event-fx
  :authorisation/update-phrase
  [interceptors/validate-db]
- (fn [{:keys [db]} [_ value]]
-   (let [key [:views :app :views :pages.home :views :authorisation]]
-     {:db (update-in db key assoc :phrase (->> value (u/constrain-string 250) u/sanitise-string))})))
+ (fn [{:keys [db]} [_ key value]]
+   {:db (update-in db key assoc :phrase (->> value (u/constrain-string 250) u/sanitise-string))}))
 
 
 (re-frame/reg-event-fx
  :authorisation/start-finalisation
  [interceptors/validate-db]
- (fn [{:keys [db]} [_]]
-   (let [key [:views :app :views :pages.home :views :authorisation]
-         context (get-in db key)]
+ (fn [{:keys [db]} [_ key]]
+   (let [context (get-in db key)]
      {:api {:command {:finalise-authorisation-attempt
                       {:user/email-address (:email-address context)
                        :authorisation/phrase (:phrase context)}}
             :query {:current-user {}}
-            :on-response [:authorisation/end-finalisation]
-            ;; TODO - where should this knowledge come from?
+            :on-response [:authorisation/end-finalisation key]
             :on-error [:app/error]
             :delay 1000}
       :db (update-in db key assoc :status :finalisation-pending)})))
@@ -283,101 +262,83 @@
 (re-frame/reg-event-fx
  :authorisation/end-finalisation
  [interceptors/validate-db]
- (fn [{:keys [db]} [_ {:keys [users session]}]]
-   (let [key [:views :app :views :pages.home :views :authorisation]]
-     (if (empty? users)
-       {:db (update-in db key assoc :status :finalisation-unsuccessful)}
-       {:db (-> db
-                ;; TODO - It's a smell that these are all independent of the key
-                (assoc-in [:views :app :session] session)
-                (update-in [:entities :users] merge users)
-                (update-in key assoc :status :finalisation-successful)
-                ;; TODO - Why should this event know about another view's initialisation?
-                (assoc-in [:views :app :views :pages.home :views :deauthorisation] {:status :idle}))}))))
+ (fn [{:keys [db]} [_ key {:keys [users session]}]]
+   (if (empty? users)
+     {:db (update-in db key assoc :status :finalisation-unsuccessful)}
+     {:db (-> db
+              (assoc-in [:views :app :session] session)
+              (update-in [:entities :users] merge users)
+              (assoc-in key {:status :idle :email-address "" :phrase ""}))})))
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;; Deauthorisation flow ;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;; Deauthorisation ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
  :deauthorisation/start
  [interceptors/validate-db]
- (fn [{:keys [db]} [_]]
-   (let [key [:views :app :views :pages.home :views :deauthorisation]
-         context (get-in db key)]
-     {:api {:command {:deauthorise {}}
-            :query {:current-user {}}
-            :on-response [:deauthorisation/end]
-            ;; TODO - where should this knowledge come from?
-            :on-error [:app/error]
-            :delay 1000}
-      :db (update-in db key assoc :status :pending)})))
+ (fn [{:keys [db]} [_ key]]
+   {:api {:command {:deauthorise {}}
+          :query {:current-user {}}
+          :on-response [:deauthorisation/end key]
+          :on-error [:app/error]
+          :delay 1000}
+    :db (update-in db key assoc :status :pending)}))
 
 
 (re-frame/reg-event-fx
  :deauthorisation/end
  [interceptors/validate-db]
- (fn [{:keys [db]} [_ {:keys [users session]}]]
-   (let [key [:views :app :views :pages.home :views :deauthorisation]]
-     (if (empty? users)
-       {:db (-> db
-                ;; TODO - It's a smell that these are all independent of the key
-                (assoc-in [:views :app :session] session)
-                (assoc-in [:entities] {})
-                (update-in key assoc :status :idle)
-                ;; TODO - Why should this event know about another view's initialisation?
-                (assoc-in [:views :app :views :pages.home :views :authorisation] {:status :idle
-                                                                                          :email-address ""
-                                                                                          :phrase ""}))}
-       {:db (update-in db key assoc :status :error)}))))
+ (fn [{:keys [db]} [_ key {:keys [users session]}]]
+   (if (empty? users)
+     {:db (-> db
+              (assoc-in [:views :app :session] session)
+              (assoc-in [:entities] {})
+              (assoc-in key {:status :idle}))}
+     {:db (update-in db key assoc :status :error)})))
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;; User addition flow ;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;; User addition ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
  :user-addition/update-email-address
  [interceptors/validate-db]
- (fn [{:keys [db]} [_ value]]
-   (let [key [:views :app :views :pages.admin.users :views :user-addition]]
-     {:db (update-in db key assoc :email-address (->> value (u/constrain-string 250) u/sanitise-string))})))
+ (fn [{:keys [db]} [_ key value]]
+   {:db (update-in db key assoc :email-address (->> value (u/constrain-string 250) u/sanitise-string))}))
 
 
 (re-frame/reg-event-fx
  :user-addition/update-name
  [interceptors/validate-db]
- (fn [{:keys [db]} [_ value]]
-   (let [key [:views :app :views :pages.admin.users :views :user-addition]]
-     {:db (update-in db key assoc :name (->> value (u/constrain-string 250) u/sanitise-string))})))
+ (fn [{:keys [db]} [_ key value]]
+   {:db (update-in db key assoc :name (->> value (u/constrain-string 250) u/sanitise-string))}))
 
 
 (re-frame/reg-event-fx
  :user-addition/toggle-admin-role
  [interceptors/validate-db]
- (fn [{:keys [db]} [_]]
-   (let [key [:views :app :views :pages.admin.users :views :user-addition]
-         admin-role? (contains? (:roles (get-in db key)) :admin)]
+ (fn [{:keys [db]} [_ key]]
+   (let [admin-role? (contains? (:roles (get-in db key)) :admin)]
      {:db (update-in db key assoc :roles (if admin-role? #{:customer} #{:customer :admin}))})))
 
 
 (re-frame/reg-event-fx
  :user-addition/start
  [interceptors/validate-db]
- (fn [{:keys [db]} [_]]
+ (fn [{:keys [db]} [_ key]]
    (let [id (random-uuid)
-         key [:views :app :views :pages.admin.users :views :user-addition]
          context (get-in db key)]
      {:api {:command {:add-user {:user/id id
                                  :user/email-address (:email-address context)
                                  :user/name (:name context)
                                  :user/roles (:roles context)}}
             :query {:user {:user/id id}}
-            :on-response [:user-addition/end]
-            ;; TODO - where should this knowledge come from?
+            :on-response [:user-addition/end key]
             :on-error [:app/error]
             :delay 1000}
       :db (update-in db key assoc :status :pending)})))
@@ -386,22 +347,20 @@
 (re-frame/reg-event-fx
  :user-addition/end
  [interceptors/validate-db]
- (fn [{:keys [db]} [_ {:keys [users]}]]
-   (let [key [:views :app :views :pages.admin.users :views :user-addition]
-         context (get-in db key)]
+ (fn [{:keys [db]} [_ key {:keys [users]}]]
+   (let [context (get-in db key)]
      (if (empty? users)
        {:db (update-in db key assoc :status :unsuccessful)}
        {:db (-> db
-                ;; TODO - It's a smell that this is independent of the key
                 (update-in [:entities :users] merge users)
-                (update-in key assoc :status :successful)
-                (update-in key assoc :name "")
-                (update-in key assoc :email-address "")
-                (update-in key assoc :roles #{:customer}))}))))
+                (assoc-in key {:status :successful
+                               :name ""
+                               :email-address ""
+                               :roles #{:customer}}))}))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;; User deletion flow ;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;; User deletion ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
@@ -411,10 +370,9 @@
    {:api {:command {:delete-user {:user/id id}}
           :query {:user {:user/id id}}
           :on-response [:user-deletion/end key]
-          ;; TODO - where should this knowledge come from?
           :on-error [:app/error]
           :delay 1000}
-    :db (update-in db key assoc :status :pending)}))
+    :db (assoc-in db key {:status :pending})}))
 
 
 (re-frame/reg-event-fx
@@ -422,6 +380,5 @@
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ key {:keys [users]}]]
    {:db (-> db
-            ;; TODO - It's a smell that this is independent of the key
             (update-in [:entities :users] merge users)
-            (update-in key assoc :status :idle))}))
+            (assoc-in key {:status :idle}))}))

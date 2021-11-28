@@ -68,7 +68,7 @@
                          {}
                          {:on-click #(re-frame/dispatch [:app/route :home])}]
     :user-addition [user-addition/user-addition
-                    {}
+                    {:key [:views :app :views :pages.admin.users :views :user-addition]}
                     {}
                     {}]
     :listings [listings/listings
