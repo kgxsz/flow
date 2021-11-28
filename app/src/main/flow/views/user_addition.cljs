@@ -32,7 +32,7 @@
       [:div
        {:class (u/bem [:icon :warning :font-size-large])}]
       [:div
-       {:class (u/bem [:text :font-size-small :padding-left-xx-small])}
+       {:class (u/bem [:text :padding-left-xx-small])}
        "The user could not be added"]])
    (when (= status :successful)
      [:div
@@ -40,7 +40,7 @@
       [:div
        {:class (u/bem [:icon :checkmark-circle :font-size-large])}]
       [:div
-       {:class (u/bem [:text :font-size-small :padding-left-xx-small])}
+       {:class (u/bem [:text :padding-left-xx-small])}
        "The user was added successfully"]])])
 
 

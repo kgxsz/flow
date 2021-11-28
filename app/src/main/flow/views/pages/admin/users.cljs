@@ -1,9 +1,8 @@
 (ns flow.views.pages.admin.users
   (:require [re-frame.core :as re-frame]
             [flow.views.link :as link]
-            [flow.views.pagination :as pagination]
-            [flow.views.entities.user :as user]
             [flow.views.user-addition :as user-addition]
+            [flow.views.listings :as listings]
             [flow.utils :as u]
             [cljs-time.coerce :as t.coerce]
             [cljs-time.format :as t.format]))
@@ -12,8 +11,7 @@
 (defn view [{:keys [admin?]}
             {:keys [route-to-home-link
                     user-addition
-                    users
-                    pagination]}
+                    listings]}
             _]
   [:div
    {:class (u/bem [:page])}
@@ -41,10 +39,7 @@
         {:class (u/bem [:cell :width-xxx-huge :height-xx-tiny :margin-top-large :colour-grey-four])}]
        [:div
         {:class (u/bem [:cell :column :align-start :padding-top-medium])}
-        users]
-       [:div
-        {:class (u/bem [:cell :padding-top-x-large])}
-        pagination]]
+        listings]]
 
       [:div
        {:class (u/bem [:cell :column :padding-top-huge])}
@@ -66,27 +61,19 @@
 
 
 (defn page [properties views behaviours]
-  (let [!ids (re-frame/subscribe [:pages.admin.users/ids])]
-    (fn [properties views behaviours]
-      [view
-       properties
-       {:route-to-home-link [link/link
-                             {:label "Home"}
-                             {}
-                             {:on-click #(re-frame/dispatch [:app/route :home])}]
-        :user-addition [user-addition/user-addition
-                        {}
-                        {}
-                        {}]
-        :users (for [id @!ids]
-                 ^{:key id}
-                 [user/user
-                  {:user/id id}
-                  {}
-                  {}])
-        :pagination [pagination/pagination
-                     {:key [:views :app :views :pages.admin.users :views :pagination]
-                      :entity :users}
-                     {}
-                     {}]}
-       {}])))
+  [view
+   properties
+   {:route-to-home-link [link/link
+                         {:label "Home"}
+                         {}
+                         {:on-click #(re-frame/dispatch [:app/route :home])}]
+    :user-addition [user-addition/user-addition
+                    {}
+                    {}
+                    {}]
+    :listings [listings/listings
+               {:key [:views :app :views :pages.admin.users :views :listings]
+                :entity-type :users}
+               {}
+               {}]}
+   {}])

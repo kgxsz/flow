@@ -11,16 +11,16 @@
    {:class (u/bem [:pagination])}
    (if exhausted?
      [:div
-      {:class (u/bem [:cell :row])}
+      {:class (u/bem [:cell :row :height-large])}
       [:div
        {:class (u/bem [:icon :checkmark-circle :font-size-large])}]
       [:div
-       {:class (u/bem [:text :font-size-small :padding-left-xx-small])}
+       {:class (u/bem [:text :padding-left-xx-small])}
        "All items loaded"]]
      button)])
 
 
-(defn pagination [{:keys [key entity] :as properties} views behaviours]
+(defn pagination [{:keys [key entity-type] :as properties} views behaviours]
   (let [!exhausted? (re-frame/subscribe [:pagination/exhausted? key])
         !pending? (re-frame/subscribe [:pagination/pending? key])]
     (fn [properties views behaviours]
@@ -34,5 +34,5 @@
                   :disabled? @!exhausted?
                   :pending? @!pending?}
                  {}
-                 {:on-click #(re-frame/dispatch [:pagination/start key entity])}]}
+                 {:on-click #(re-frame/dispatch [:pagination/start key entity-type])}]}
        behaviours])))

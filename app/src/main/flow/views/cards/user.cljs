@@ -1,7 +1,6 @@
-(ns flow.views.entities.user
+(ns flow.views.cards.user
   (:require [re-frame.core :as re-frame]
             [flow.views.user-deletion :as user-deletion]
-            [flow.views.button :as button]
             [flow.utils :as u]
             [cljs-time.coerce :as t.coerce]
             [cljs-time.format :as t.format]))
@@ -43,14 +42,14 @@
    user-deletion])
 
 
-(defn user [{:keys [user/id] :as properties} views behaviours]
-  (let [!user (re-frame/subscribe [:user/user id])]
+(defn card [{:keys [key id] :as properties} views behaviours]
+  (let [!user (re-frame/subscribe [:cards.user/user id])]
     (fn [properties views behaviours]
       [view
        (assoc properties
               :user @!user)
        {:user-deletion [user-deletion/user-deletion
-                        {:key [:views :app :views :pages.admin.users :views :user id :views :user-deletion]
+                        {:key (concat key [:views :user-deletion])
                          :user/id id}
                         {}
                         {}]}

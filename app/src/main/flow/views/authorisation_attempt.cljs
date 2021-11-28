@@ -46,7 +46,7 @@
         [:div
          {:class (u/bem [:icon :warning :font-size-large])}]
         [:div
-         {:class (u/bem [:text :font-size-small :padding-left-xx-small])}
+         {:class (u/bem [:text :padding-left-xx-small])}
          "That magic phrase doesn't look right"]])]))
 
 

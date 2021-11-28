@@ -1,4 +1,4 @@
-(ns flow.views.entities.authorisation
+(ns flow.views.cards.authorisation
   (:require [re-frame.core :as re-frame]
             [flow.utils :as u]
             [cljs-time.coerce :as t.coerce]
@@ -34,8 +34,8 @@
      "n/a")]])
 
 
-(defn authorisation [{:keys [authorisation/id] :as properties} views behaviours]
-  (let [!authorisation (re-frame/subscribe [:authorisation/authorisation id])]
+(defn card [{:keys [key id] :as properties} views behaviours]
+  (let [!authorisation (re-frame/subscribe [:cards.authorisation/authorisation id])]
     (fn [properties views behaviours]
       [view
        (assoc properties

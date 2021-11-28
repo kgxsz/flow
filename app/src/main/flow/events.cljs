@@ -59,10 +59,12 @@
               (assoc-in [:entities :users] users)
               (assoc-in [:entities :authorisations] authorisations)
               ;; TODO - These are key dependent but relate to child views, can it be done elsewhere?
-              (update-in key assoc-in [:views :authorisation-attempt] {:status :idle
-                                                                       :email-address ""
-                                                                       :phrase ""})
-              (update-in key assoc-in [:views :deauthorisation] {:status :idle}))})))
+              (update-in key assoc-in [:views :authorisation-attempt]
+                         {:status :idle
+                          :email-address ""
+                          :phrase ""})
+              (update-in key assoc-in [:views :deauthorisation]
+                         {:status :idle}))})))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -100,12 +102,14 @@
               (assoc-in [:entities :users] users)
               (assoc-in [:entities :authorisations] authorisations)
               ;; TODO - These are key dependent but relate to child views, can it be done elsewhere?
-              (update-in key assoc-in [:views :user-addition] {:status :idle
-                                                               :email-address ""
-                                                               :roles #{:customer}})
-              (update-in key assoc-in [:views :pagination] {:status :idle
-                                                       :offset (get-in metadata [:users :next-offset])
-                                                       :exhausted? (get-in metadata [:users :exhausted?])}))})))
+              (update-in key assoc-in [:views :user-addition]
+                         {:status :idle
+                          :email-address ""
+                          :roles #{:customer}})
+              (update-in key assoc-in [:views :listings :views :pagination]
+                         {:status :idle
+                          :offset (get-in metadata [:users :next-offset])
+                          :exhausted? (get-in metadata [:users :exhausted?])}))})))
 
 
 
@@ -144,9 +148,10 @@
               (assoc-in [:entities :users] users)
               (assoc-in [:entities :authorisations] authorisations)
               ;; TODO - These are key dependent but relate to child views, can it be done elsewhere?
-              (update-in key assoc-in [:views :pagination] {:status :idle
-                                                       :offset (get-in metadata [:authorisations :next-offset])
-                                                       :exhausted? (get-in metadata [:authorisations :exhausted?])}))})))
+              (update-in key assoc-in [:views :listings :views :pagination]
+                         {:status :idle
+                          :offset (get-in metadata [:authorisations :next-offset])
+                          :exhausted? (get-in metadata [:authorisations :exhausted?])}))})))
 
 
 
@@ -191,11 +196,11 @@
 (re-frame/reg-event-fx
  :pagination/start
  [interceptors/validate-db]
- (fn [{:keys [db]} [_ key entity]]
+ (fn [{:keys [db]} [_ key entity-type]]
    (let [context (get-in db key)]
-     {:api {:query {entity {}}
-            :metadata {entity {:limit 2 :offset (:offset context)}}
-            :on-response [:pagination/end key entity]
+     {:api {:query {entity-type {}}
+            :metadata {entity-type {:limit 2 :offset (:offset context)}}
+            :on-response [:pagination/end key entity-type]
             ;; TODO - where should this knowledge come from?
             :on-error [:app/error]
             :delay 1000}
@@ -205,13 +210,13 @@
 (re-frame/reg-event-fx
  :pagination/end
  [interceptors/validate-db]
- (fn [{:keys [db]} [_ key entity response]]
+ (fn [{:keys [db]} [_ key entity-type response]]
    {:db (-> db
             ;; TODO - It's a smell that this is independent of the key
-            (update-in [:entities entity] merge (get response entity))
+            (update-in [:entities entity-type] merge (get response entity-type))
             (update-in key assoc :status :idle)
-            (update-in key assoc :offset (get-in response [:metadata entity :next-offset]))
-            (update-in key assoc :exhausted? (get-in response [:metadata entity :exhausted?])))}))
+            (update-in key assoc :offset (get-in response [:metadata entity-type :next-offset]))
+            (update-in key assoc :exhausted? (get-in response [:metadata entity-type :exhausted?])))}))
 
 
 

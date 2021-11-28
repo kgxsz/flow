@@ -60,32 +60,41 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;; Admin user page flow ;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;; Listings ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-sub
- :pages.admin.users/ids
- (fn [db [_]]
-   (let [users (get-in db [:entities :users])]
-     (->> users
+ :listings/ids
+ (fn [db [_ entity-type]]
+   (let [entity-key (case entity-type
+                      :users :user/id
+                      :authorisations :authorisation/id)]
+     (->> (get-in db [:entities entity-type])
           (vals)
-          (sort-by (comp str :user/id))
-          (map :user/id)))))
+          (sort-by (comp str entity-key))
+          (map entity-key)))))
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;; Admin authorisations page flow ;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; Cards user flow ;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-sub
- :pages.admin.authorisations/ids
- (fn [db [_]]
-   (let [authorisations (get-in db [:entities :authorisations])]
-     (->> authorisations
-          (vals)
-          (sort-by (comp str :authorisation/id))
-          (map :authorisation/id)))))
+ :cards.user/user
+ (fn [db [_ id]]
+   (get-in db [:entities :users id])))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;; Cards authorisation flow ;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-sub
+ :cards.authorisation/authorisation
+ (fn [db [_ id]]
+   (get-in db [:entities :authorisations id])))
 
 
 
@@ -265,28 +274,6 @@
    (let [key [:views :app :views :pages.admin.users :views :user-addition]
          context (get-in db key)]
      (contains? #{:pending} (:status context)))))
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;; User flow ;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(re-frame/reg-sub
- :user/user
- (fn [db [_ id]]
-   (get-in db [:entities :users id])))
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;; Authorisation flow ;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(re-frame/reg-sub
- :authorisation/authorisation
- (fn [db [_ id]]
-   (get-in db [:entities :authorisations id])))
 
 
 
