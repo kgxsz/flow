@@ -1,8 +1,8 @@
-(ns flow.views.listings
+(ns flow.views.layouts.listings
   (:require [re-frame.core :as re-frame]
-            [flow.views.cards.user :as cards.user]
-            [flow.views.cards.authorisation :as cards.authorisation]
-            [flow.views.pagination :as pagination]
+            [flow.views.layouts.cards.user :as cards.user]
+            [flow.views.layouts.cards.authorisation :as cards.authorisation]
+            [flow.views.processes.pagination :as pagination]
             [flow.utils :as u]))
 
 

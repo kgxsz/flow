@@ -1,4 +1,4 @@
-(ns flow.views.user-addition
+(ns flow.views.processes.user-addition
   (:require [re-frame.core :as re-frame]
             [flow.views.widgets.input :as input]
             [flow.views.widgets.button :as button]

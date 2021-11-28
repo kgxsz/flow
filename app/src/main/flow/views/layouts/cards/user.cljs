@@ -1,6 +1,6 @@
-(ns flow.views.cards.user
+(ns flow.views.layouts.cards.user
   (:require [re-frame.core :as re-frame]
-            [flow.views.user-deletion :as user-deletion]
+            [flow.views.processes.user-deletion :as user-deletion]
             [flow.utils :as u]
             [cljs-time.coerce :as t.coerce]
             [cljs-time.format :as t.format]))

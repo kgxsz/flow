@@ -1,8 +1,8 @@
 (ns flow.views.pages.admin.users
   (:require [re-frame.core :as re-frame]
             [flow.views.widgets.link :as link]
-            [flow.views.user-addition :as user-addition]
-            [flow.views.listings :as listings]
+            [flow.views.processes.user-addition :as user-addition]
+            [flow.views.layouts.listings :as listings]
             [flow.utils :as u]
             [cljs-time.coerce :as t.coerce]
             [cljs-time.format :as t.format]))

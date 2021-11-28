@@ -1,4 +1,4 @@
-(ns flow.views.cards.authorisation
+(ns flow.views.layouts.cards.authorisation
   (:require [re-frame.core :as re-frame]
             [flow.utils :as u]
             [cljs-time.coerce :as t.coerce]

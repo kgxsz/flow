@@ -1,4 +1,4 @@
-(ns flow.views.pagination
+(ns flow.views.processes.pagination
   (:require [re-frame.core :as re-frame]
             [flow.views.widgets.button :as button]
             [flow.utils :as u]))

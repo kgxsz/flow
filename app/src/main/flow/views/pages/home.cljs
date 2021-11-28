@@ -1,7 +1,7 @@
 (ns flow.views.pages.home
   (:require [re-frame.core :as re-frame]
-            [flow.views.authorisation :as authorisation]
-            [flow.views.deauthorisation :as deauthorisation]
+            [flow.views.processes.authorisation :as authorisation]
+            [flow.views.processes.deauthorisation :as deauthorisation]
             [flow.views.widgets.button :as button]
             [flow.views.widgets.link :as link]
             [flow.utils :as u]))

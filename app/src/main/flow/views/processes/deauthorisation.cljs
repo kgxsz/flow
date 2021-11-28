@@ -1,4 +1,4 @@
-(ns flow.views.deauthorisation
+(ns flow.views.processes.deauthorisation
   (:require [re-frame.core :as re-frame]
             [flow.views.widgets.button :as button]
             [flow.utils :as u]))

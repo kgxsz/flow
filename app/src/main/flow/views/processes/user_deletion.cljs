@@ -1,4 +1,4 @@
-(ns flow.views.user-deletion
+ (ns flow.views.processes.user-deletion
   (:require [re-frame.core :as re-frame]
             [flow.views.widgets.button :as button]
             [flow.utils :as u]))
