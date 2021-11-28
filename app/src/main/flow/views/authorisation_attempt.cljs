@@ -1,7 +1,7 @@
-(ns flow.views.authorisation-attempt
+(ns flow.views.authorisation
   (:require [re-frame.core :as re-frame]
-            [flow.views.input :as input]
-            [flow.views.button :as button]
+            [flow.views.widgets.input :as input]
+            [flow.views.widgets.button :as button]
             [flow.utils :as u]))
 
 
@@ -17,7 +17,7 @@
     (:idle :initialisation-pending)
     [:div
      {:key status
-      :class (u/bem [:authorisation-attempt])}
+      :class (u/bem [:authorisation])}
      [:div
       {:class (u/bem [:text :align-center :padding-top-medium])}
       "Sign in with your email address"]
@@ -32,7 +32,7 @@
      :finalisation-unsuccessful)
     [:div
      {:key status
-      :class (u/bem [:authorisation-attempt])}
+      :class (u/bem [:authorisation])}
      [:div
       {:class (u/bem [:text :align-center :padding-top-medium])}
       "We've emailed you a magic phrase"]
@@ -50,16 +50,16 @@
          "That magic phrase doesn't look right"]])]))
 
 
-(defn authorisation-attempt [properties views behaviours]
-  (let [!status (re-frame/subscribe [:authorisation-attempt/status])
-        !email-address-update-disabled? (re-frame/subscribe [:authorisation-attempt/email-address-update-disabled?])
-        !email-address (re-frame/subscribe [:authorisation-attempt/email-address])
-        !initialisation-disabled? (re-frame/subscribe [:authorisation-attempt/initialisation-disabled?])
-        !initialisation-pending? (re-frame/subscribe [:authorisation-attempt/initialisation-pending?])
-        !phrase-update-disabled? (re-frame/subscribe [:authorisation-attempt/phrase-update-disabled?])
-        !phrase (re-frame/subscribe [:authorisation-attempt/phrase])
-        !finalisation-disabled? (re-frame/subscribe [:authorisation-attempt/finalisation-disabled?])
-        !finalisation-pending? (re-frame/subscribe [:authorisation-attempt/finalisation-pending?])]
+(defn authorisation [properties views behaviours]
+  (let [!status (re-frame/subscribe [:authorisation/status])
+        !email-address-update-disabled? (re-frame/subscribe [:authorisation/email-address-update-disabled?])
+        !email-address (re-frame/subscribe [:authorisation/email-address])
+        !initialisation-disabled? (re-frame/subscribe [:authorisation/initialisation-disabled?])
+        !initialisation-pending? (re-frame/subscribe [:authorisation/initialisation-pending?])
+        !phrase-update-disabled? (re-frame/subscribe [:authorisation/phrase-update-disabled?])
+        !phrase (re-frame/subscribe [:authorisation/phrase])
+        !finalisation-disabled? (re-frame/subscribe [:authorisation/finalisation-disabled?])
+        !finalisation-pending? (re-frame/subscribe [:authorisation/finalisation-pending?])]
     (fn [properties views behaviours]
       [view
        {:status @!status}
@@ -69,7 +69,7 @@
                                :value @!email-address
                                :disabled? @!email-address-update-disabled?}
                               {}
-                              {:on-change #(re-frame/dispatch [:authorisation-attempt/update-email-address %])}]
+                              {:on-change #(re-frame/dispatch [:authorisation/update-email-address %])}]
         :start-initialisation-button [button/button
                                       {:type :primary
                                        :label "Continue"
@@ -77,14 +77,14 @@
                                        :disabled? @!initialisation-disabled?
                                        :pending? @!initialisation-pending?}
                                       {}
-                                      {:on-click #(re-frame/dispatch [:authorisation-attempt/start-initialisation])}]
+                                      {:on-click #(re-frame/dispatch [:authorisation/start-initialisation])}]
         :phrase-input [input/input
                        {:placeholder "donkey-purple-kettle"
                         :icon :magic-wand
                         :value @!phrase
                         :disabled? @!phrase-update-disabled?}
                        {}
-                       {:on-change #(re-frame/dispatch [:authorisation-attempt/update-phrase %])}]
+                       {:on-change #(re-frame/dispatch [:authorisation/update-phrase %])}]
         :start-finalisation-button [button/button
                                     {:type :primary
                                      :label "Sign in"
@@ -92,5 +92,5 @@
                                      :disabled? @!finalisation-disabled?
                                      :pending? @!finalisation-pending?}
                                     {}
-                                    {:on-click #(re-frame/dispatch [:authorisation-attempt/start-finalisation])}]}
+                                    {:on-click #(re-frame/dispatch [:authorisation/start-finalisation])}]}
        {}])))

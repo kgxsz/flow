@@ -1,6 +1,6 @@
 (ns flow.views.pages.unknown
   (:require [re-frame.core :as re-frame]
-            [flow.views.link :as link]
+            [flow.views.widgets.link :as link]
             [flow.utils :as u]))
 
 

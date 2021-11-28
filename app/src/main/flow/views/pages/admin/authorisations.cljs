@@ -1,6 +1,6 @@
 (ns flow.views.pages.admin.authorisations
   (:require [re-frame.core :as re-frame]
-            [flow.views.link :as link]
+            [flow.views.widgets.link :as link]
             [flow.views.listings :as listings]
             [flow.utils :as u]
             [cljs-time.coerce :as t.coerce]

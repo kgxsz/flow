@@ -1,6 +1,6 @@
 (ns flow.views.user-deletion
   (:require [re-frame.core :as re-frame]
-            [flow.views.button :as button]
+            [flow.views.widgets.button :as button]
             [flow.utils :as u]))
 
 

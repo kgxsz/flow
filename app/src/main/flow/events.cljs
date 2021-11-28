@@ -59,7 +59,7 @@
               (assoc-in [:entities :users] users)
               (assoc-in [:entities :authorisations] authorisations)
               ;; TODO - These are key dependent but relate to child views, can it be done elsewhere?
-              (update-in key assoc-in [:views :authorisation-attempt]
+              (update-in key assoc-in [:views :authorisation]
                          {:status :idle
                           :email-address ""
                           :phrase ""})
@@ -221,26 +221,26 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;; Authorisation attempt flow ;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; Authorisation flow ;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
- :authorisation-attempt/update-email-address
+ :authorisation/update-email-address
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ value]]
-   (let [key [:views :app :views :pages.home :views :authorisation-attempt]]
+   (let [key [:views :app :views :pages.home :views :authorisation]]
      {:db (update-in db key assoc :email-address (->> value (u/constrain-string 250) u/sanitise-string))})))
 
 
 (re-frame/reg-event-fx
- :authorisation-attempt/start-initialisation
+ :authorisation/start-initialisation
  [interceptors/validate-db]
  (fn [{:keys [db]} [_]]
-   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+   (let [key [:views :app :views :pages.home :views :authorisation]
          context (get-in db key)]
      {:api {:command {:initialise-authorisation-attempt
                       {:user/email-address (:email-address context)}}
-            :on-response [:authorisation-attempt/end-initialisation]
+            :on-response [:authorisation/end-initialisation]
             ;; TODO - where should this knowledge come from?
             :on-error [:app/error]
             :delay 1000}
@@ -248,32 +248,32 @@
 
 
 (re-frame/reg-event-fx
- :authorisation-attempt/end-initialisation
+ :authorisation/end-initialisation
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ response]]
-   (let [key [:views :app :views :pages.home :views :authorisation-attempt]]
+   (let [key [:views :app :views :pages.home :views :authorisation]]
      {:db (update-in db key assoc :status :initialisation-successful)})))
 
 
 (re-frame/reg-event-fx
- :authorisation-attempt/update-phrase
+ :authorisation/update-phrase
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ value]]
-   (let [key [:views :app :views :pages.home :views :authorisation-attempt]]
+   (let [key [:views :app :views :pages.home :views :authorisation]]
      {:db (update-in db key assoc :phrase (->> value (u/constrain-string 250) u/sanitise-string))})))
 
 
 (re-frame/reg-event-fx
- :authorisation-attempt/start-finalisation
+ :authorisation/start-finalisation
  [interceptors/validate-db]
  (fn [{:keys [db]} [_]]
-   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+   (let [key [:views :app :views :pages.home :views :authorisation]
          context (get-in db key)]
      {:api {:command {:finalise-authorisation-attempt
                       {:user/email-address (:email-address context)
                        :authorisation/phrase (:phrase context)}}
             :query {:current-user {}}
-            :on-response [:authorisation-attempt/end-finalisation]
+            :on-response [:authorisation/end-finalisation]
             ;; TODO - where should this knowledge come from?
             :on-error [:app/error]
             :delay 1000}
@@ -281,10 +281,10 @@
 
 
 (re-frame/reg-event-fx
- :authorisation-attempt/end-finalisation
+ :authorisation/end-finalisation
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ {:keys [users session]}]]
-   (let [key [:views :app :views :pages.home :views :authorisation-attempt]]
+   (let [key [:views :app :views :pages.home :views :authorisation]]
      (if (empty? users)
        {:db (update-in db key assoc :status :finalisation-unsuccessful)}
        {:db (-> db
@@ -328,7 +328,7 @@
                 (assoc-in [:entities] {})
                 (update-in key assoc :status :idle)
                 ;; TODO - Why should this event know about another view's initialisation?
-                (assoc-in [:views :app :views :pages.home :views :authorisation-attempt] {:status :idle
+                (assoc-in [:views :app :views :pages.home :views :authorisation] {:status :idle
                                                                                           :email-address ""
                                                                                           :phrase ""}))}
        {:db (update-in db key assoc :status :error)}))))

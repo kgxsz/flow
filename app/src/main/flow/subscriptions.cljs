@@ -122,33 +122,33 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-sub
- :authorisation-attempt/status
+ :authorisation/status
  (fn [db [_]]
-   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+   (let [key [:views :app :views :pages.home :views :authorisation]
          context (get-in db key)]
      (:status context))))
 
 
 (re-frame/reg-sub
- :authorisation-attempt/email-address-update-disabled?
+ :authorisation/email-address-update-disabled?
  (fn [db [_]]
-   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+   (let [key [:views :app :views :pages.home :views :authorisation]
          context (get-in db key)]
      (not (contains? #{:idle} (:status context))))))
 
 
 (re-frame/reg-sub
- :authorisation-attempt/email-address
+ :authorisation/email-address
  (fn [db [_]]
-   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+   (let [key [:views :app :views :pages.home :views :authorisation]
          context (get-in db key)]
      (:email-address context))))
 
 
 (re-frame/reg-sub
- :authorisation-attempt/initialisation-disabled?
+ :authorisation/initialisation-disabled?
  (fn [db [_]]
-   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+   (let [key [:views :app :views :pages.home :views :authorisation]
          context (get-in db key)]
      (not
       (and
@@ -157,17 +157,17 @@
 
 
 (re-frame/reg-sub
- :authorisation-attempt/initialisation-pending?
+ :authorisation/initialisation-pending?
  (fn [db [_]]
-   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+   (let [key [:views :app :views :pages.home :views :authorisation]
          context (get-in db key)]
      (contains? #{:initialisation-pending} (:status context)))))
 
 
 (re-frame/reg-sub
- :authorisation-attempt/phrase-update-disabled?
+ :authorisation/phrase-update-disabled?
  (fn [db [_]]
-   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+   (let [key [:views :app :views :pages.home :views :authorisation]
          context (get-in db key)]
      (not
       (contains?
@@ -177,17 +177,17 @@
 
 
 (re-frame/reg-sub
- :authorisation-attempt/phrase
+ :authorisation/phrase
  (fn [db [_]]
-   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+   (let [key [:views :app :views :pages.home :views :authorisation]
          context (get-in db key)]
      (:phrase context))))
 
 
 (re-frame/reg-sub
- :authorisation-attempt/finalisation-disabled?
+ :authorisation/finalisation-disabled?
  (fn [db [_]]
-   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+   (let [key [:views :app :views :pages.home :views :authorisation]
          context (get-in db key)]
      (not
       (and
@@ -200,9 +200,9 @@
 
 
 (re-frame/reg-sub
- :authorisation-attempt/finalisation-pending?
+ :authorisation/finalisation-pending?
  (fn [db [_]]
-   (let [key [:views :app :views :pages.home :views :authorisation-attempt]
+   (let [key [:views :app :views :pages.home :views :authorisation]
          context (get-in db key)]
      (contains? #{:finalisation-pending} (:status context)))))
 

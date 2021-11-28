@@ -1,8 +1,8 @@
 (ns flow.views.user-addition
   (:require [re-frame.core :as re-frame]
-            [flow.views.input :as input]
-            [flow.views.button :as button]
-            [flow.views.toggle :as toggle]
+            [flow.views.widgets.input :as input]
+            [flow.views.widgets.button :as button]
+            [flow.views.widgets.toggle :as toggle]
             [flow.utils :as u]))
 
 

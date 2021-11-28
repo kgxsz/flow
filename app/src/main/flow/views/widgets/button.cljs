@@ -1,4 +1,4 @@
-(ns flow.views.button
+(ns flow.views.widgets.button
   (:require [re-frame.core :as re-frame]
             [flow.utils :as u]))
 
@@ -42,5 +42,4 @@
    properties
    views
    behaviours])
-
 

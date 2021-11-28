@@ -1,4 +1,4 @@
-(ns flow.views.link
+(ns flow.views.widgets.link
   (:require [re-frame.core :as re-frame]
             [flow.utils :as u]))
 

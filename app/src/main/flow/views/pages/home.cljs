@@ -1,15 +1,15 @@
 (ns flow.views.pages.home
   (:require [re-frame.core :as re-frame]
-            [flow.views.authorisation-attempt :as authorisation-attempt]
+            [flow.views.authorisation :as authorisation]
             [flow.views.deauthorisation :as deauthorisation]
-            [flow.views.button :as button]
-            [flow.views.link :as link]
+            [flow.views.widgets.button :as button]
+            [flow.views.widgets.link :as link]
             [flow.utils :as u]))
 
 
 (defn view [{:keys [authorised?
                     current-user]}
-            {:keys [authorisation-attempt
+            {:keys [authorisation
                     route-to-users-link
                     route-to-authorisations-link
                     deauthorisation]}
@@ -46,7 +46,7 @@
         {:class (u/bem [:cell :padding-top-x-large])}
         deauthorisation]]
 
-      authorisation-attempt)]
+      authorisation)]
 
    [:div
     {:class (u/bem [:page__footer])}]])
@@ -55,7 +55,7 @@
 (defn page [properties views behaviours]
   [view
    properties
-   {:authorisation-attempt [authorisation-attempt/authorisation-attempt
+   {:authorisation [authorisation/authorisation
                             {}
                             {}
                             {}]
