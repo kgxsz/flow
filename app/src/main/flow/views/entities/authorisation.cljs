@@ -1,4 +1,4 @@
-(ns flow.views.authorisation
+(ns flow.views.entities.authorisation
   (:require [re-frame.core :as re-frame]
             [flow.utils :as u]
             [cljs-time.coerce :as t.coerce]

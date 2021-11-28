@@ -2,7 +2,7 @@
   (:require [re-frame.core :as re-frame]
             [flow.views.link :as link]
             [flow.views.pager :as pager]
-            [flow.views.user :as user]
+            [flow.views.entities.user :as user]
             [flow.views.user-addition :as user-addition]
             [flow.utils :as u]
             [cljs-time.coerce :as t.coerce]

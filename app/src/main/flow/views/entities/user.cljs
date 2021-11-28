@@ -1,4 +1,4 @@
-(ns flow.views.user
+(ns flow.views.entities.user
   (:require [re-frame.core :as re-frame]
             [flow.views.button :as button]
             [flow.utils :as u]
