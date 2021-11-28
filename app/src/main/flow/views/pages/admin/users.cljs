@@ -33,12 +33,12 @@
          {:class (u/bem [:cell :column :padding-top-large])}
          route-to-home-link]]
        [:div
-        {:class (u/bem [:cell :margin-top-large :width-cover :height-xx-tiny :colour-grey-four])}]
+        {:class (u/bem [:cell :width-xxx-huge :height-xx-tiny :margin-top-large :colour-grey-four])}]
        [:div
         {:class (u/bem [:cell :column :align-start])}
         user-addition]
        [:div
-        {:class (u/bem [:cell :margin-top-xx-large :width-cover :height-xx-tiny :colour-grey-four])}]
+        {:class (u/bem [:cell :width-xxx-huge :height-xx-tiny :margin-top-large :colour-grey-four])}]
        [:div
         {:class (u/bem [:cell :column :align-start :padding-top-medium])}
         users]
@@ -66,9 +66,7 @@
 
 
 (defn page [properties views behaviours]
-  (let [!ids (re-frame/subscribe [:pages.admin.users/ids])
-        !paging-exhausted? (re-frame/subscribe [:pages.admin.users/paging-exhausted?])
-        !paging-pending? (re-frame/subscribe [:pages.admin.users/paging-pending?])]
+  (let [!ids (re-frame/subscribe [:pages.admin.users/ids])]
     (fn [properties views behaviours]
       [view
        properties
@@ -87,8 +85,8 @@
                   {}
                   {}])
         :pager [pager/pager
-                {:exhausted? @!paging-exhausted?
-                 :pending? @!paging-pending?}
+                {:key [:views :app :views :pages.admin.users :views :pager]
+                 :entity :users}
                 {}
-                {:on-click #(re-frame/dispatch [:pages.admin.users/start-paging])}]}
+                {}]}
        {}])))

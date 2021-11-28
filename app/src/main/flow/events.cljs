@@ -87,7 +87,7 @@
 (re-frame/reg-event-fx
  :pages.admin.users/end-initialisation
  [interceptors/validate-db]
- (fn [{:keys [db]} [_ {:keys [users authorisations session metadata]}]]
+ (fn [{:keys [db]} [_ {:keys [users authorisations metadata session]}]]
    (let [key [:views :app :views :pages.admin.users]]
      {:db (-> db
               ;; TODO - It's a smell that these are all independent of the key
@@ -99,46 +99,13 @@
               (assoc-in [:views :app :views] {})
               (assoc-in [:entities :users] users)
               (assoc-in [:entities :authorisations] authorisations)
-              ;; TODO - these are a huge smell that they're highly pager specific,
-              ;; perhaps pager should own them, similar to how user owns deletion state.
-              (update-in key assoc :paging-offset (get-in metadata [:users :next-offset]))
-              (update-in key assoc :paging-exhausted? (get-in metadata [:users :exhausted?]))
               ;; TODO - These are key dependent but relate to child views, can it be done elsewhere?
               (update-in key assoc-in [:views :user-addition] {:status :idle
                                                                :email-address ""
-                                                               :roles #{:customer}}))})))
-
-
-(re-frame/reg-event-fx
- :pages.admin.users/start-paging
- [interceptors/validate-db]
- (fn [{:keys [db]} [_]]
-   (let [key [:views :app :views :pages.admin.users]
-         context (get-in db key)]
-     {:api {:query {:users {}}
-            :metadata {:users {:limit 2 :offset (:paging-offset context)}}
-            :on-response [:pages.admin.users/end-paging]
-            ;; TODO - where should this knowledge come from?
-            :on-error [:app/error]
-            :delay 1000}
-      ;; TODO - these are a huge smell that this is highly pager specific,
-      ;; perhaps pager should own them, similar to how user owns deletion state.
-      :db (update-in db key assoc :status :paging-pending)})) )
-
-
-(re-frame/reg-event-fx
- :pages.admin.users/end-paging
- [interceptors/validate-db]
- (fn [{:keys [db]} [_ {:keys [users metadata]}]]
-   (let [key [:views :app :views :pages.admin.users]]
-     {:db (-> db
-              ;; TODO - It's a smell that this is independent of the key
-              (update-in [:entities :users] merge users)
-              (update-in key assoc :status :paging-successful)
-              ;; TODO - these are a huge smell that they're highly pager specific,
-              ;; perhaps pager should own them, similar to how user owns deletion state.
-              (update-in key assoc :paging-offset (get-in metadata [:users :next-offset]))
-              (update-in key assoc :paging-exhausted? (get-in metadata [:users :exhausted?])))})))
+                                                               :roles #{:customer}})
+              (update-in key assoc-in [:views :pager] {:status :idle
+                                                       :offset (get-in metadata [:users :next-offset])
+                                                       :exhausted? (get-in metadata [:users :exhausted?])}))})))
 
 
 
@@ -176,42 +143,41 @@
               (assoc-in [:views :app :views] {})
               (assoc-in [:entities :users] users)
               (assoc-in [:entities :authorisations] authorisations)
-              (assoc-in key {:status :initialisation-successful})
-              ;; TODO - these are a huge smell that they're highly pager specific,
-              ;; perhaps pager should own them, similar to how user owns deletion state.
-              (update-in key assoc :paging-offset (get-in metadata [:authorisations :next-offset]))
-              (update-in key assoc :paging-exhausted? (get-in metadata [:authorisations :exhausted?])))})))
+              ;; TODO - These are key dependent but relate to child views, can it be done elsewhere?
+              (update-in key assoc-in [:views :pager] {:status :idle
+                                                       :offset (get-in metadata [:authorisations :next-offset])
+                                                       :exhausted? (get-in metadata [:authorisations :exhausted?])}))})))
 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;; Pager flow ;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
- :pages.admin.authorisations/start-paging
+ :pager/start
  [interceptors/validate-db]
- (fn [{:keys [db]} [_]]
-   (let [key [:views :app :views :pages.admin.authorisations]
-         context (get-in db key)]
-     {:api {:query {:authorisations {}}
-            :metadata {:authorisations {:limit 2 :offset (:paging-offset context)}}
-            :on-response [:pages.admin.authorisations/end-paging]
+ (fn [{:keys [db]} [_ key entity]]
+   (let [context (get-in db key)]
+     {:api {:query {entity {}}
+            :metadata {entity {:limit 2 :offset (:offset context)}}
+            :on-response [:pager/end key entity]
+            ;; TODO - where should this knowledge come from?
             :on-error [:app/error]
             :delay 1000}
-      ;; TODO - these are a huge smell that this is highly pager specific,
-      ;; perhaps pager should own them, similar to how user owns deletion state.
-      :db (update-in db key assoc :status :paging-pending)})) )
+      :db (update-in db key assoc :status :pending)})) )
 
 
 (re-frame/reg-event-fx
- :pages.admin.authorisations/end-paging
+ :pager/end
  [interceptors/validate-db]
- (fn [{:keys [db]} [_ {:keys [authorisations metadata]}]]
-   (let [key [:views :app :views :pages.admin.authorisations]]
-     {:db (-> db
-              ;; TODO - It's a smell that this is independent of the key
-              (update-in [:entities :authorisations] merge authorisations)
-              (update-in key assoc :status :paging-successful)
-              ;; TODO - these are a huge smell that they're highly pager specific,
-              ;; perhaps pager should own them, similar to how user owns deletion state.
-              (update-in key assoc :paging-offset (get-in metadata [:authorisations :next-offset]))
-              (update-in key assoc :paging-exhausted? (get-in metadata [:authorisations :exhausted?])))})))
+ (fn [{:keys [db]} [_ key entity response]]
+   {:db (-> db
+            ;; TODO - It's a smell that this is independent of the key
+            (update-in [:entities entity] merge (get response entity))
+            (update-in key assoc :status :idle)
+            (update-in key assoc :offset (get-in response [:metadata entity :next-offset]))
+            (update-in key assoc :exhausted? (get-in response [:metadata entity :exhausted?])))}))
 
 
 

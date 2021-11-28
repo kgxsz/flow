@@ -20,15 +20,19 @@
      button)])
 
 
-(defn pager [properties views behaviours]
-  [view
-   properties
-   {:button [button/button
-             {:type :tertiary
-              :label "Load more items"
-              :icon :arrow-down
-              :disabled? false
-              :pending? (:pending? properties)}
-             {}
-             {:on-click (:on-click behaviours)}]}
-   behaviours])
+(defn pager [{:keys [key entity] :as properties} views behaviours]
+  (let [!exhausted? (re-frame/subscribe [:pager/exhausted? key])
+        !pending? (re-frame/subscribe [:pager/pending? key])]
+    (fn [properties views behaviours]
+      [view
+       (assoc properties
+              :exhausted? @!exhausted?)
+       {:button [button/button
+                 {:type :tertiary
+                  :label "Load more items"
+                  :icon :arrow-down
+                  :disabled? @!exhausted?
+                  :pending? @!pending?}
+                 {}
+                 {:on-click #(re-frame/dispatch [:pager/start key entity])}]}
+       behaviours])))

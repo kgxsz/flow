@@ -24,27 +24,29 @@
      [:div
       {:class (u/bem [:icon :leaf :font-size-xxx-huge])}]
      [:div
-      {:class (u/bem [:cell :padding-top-xx-large])}
+      {:class (u/bem [:cell :padding-top-xx-large])}]]
 
-      (if authorised?
+    (if authorised?
+      [:div
+       {:class (u/bem [:cell :column])}
+       [:div
+        {:class (u/bem [:text :font-size-xx-huge])}
+        (str "Hi " (:user/name current-user))]
+       [:div
+        {:class (u/bem [:cell :width-xxx-huge :height-xx-tiny :margin-top-large :colour-grey-four])}]
+       [:div
+        {:class (u/bem [:cell :column :padding-top-large])}
         [:div
-         {:class (u/bem [:cell :column])}
-         [:div
-          {:class (u/bem [:text :font-size-xx-huge])}
-          (str "Hi " (:user/name current-user))]
-         [:div
-          {:class (u/bem [:cell :column :padding-top-large])}
-          [:div
-           {:class (u/bem [:cell :padding-top-x-small])}
-           route-to-users-link]
-          [:div
-           {:class (u/bem [:cell :padding-top-x-small])}
-           route-to-authorisations-link]
-          [:div
-           {:class (u/bem [:cell :padding-top-large])}
-           deauthorisation]]]
+         {:class (u/bem [:cell :padding-top-x-small])}
+         route-to-users-link]
+        [:div
+         {:class (u/bem [:cell :padding-top-x-small])}
+         route-to-authorisations-link]]
+       [:div
+        {:class (u/bem [:cell :padding-top-x-large])}
+        deauthorisation]]
 
-        authorisation-attempt)]]]
+      authorisation-attempt)]
 
    [:div
     {:class (u/bem [:page__footer])}]])

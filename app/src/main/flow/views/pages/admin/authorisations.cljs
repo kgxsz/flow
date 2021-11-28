@@ -31,7 +31,7 @@
          {:class (u/bem [:cell :column :padding-top-large])}
          route-to-home-link]]
        [:div
-        {:class (u/bem [:cell :margin-top-large :width-cover :height-xx-tiny :colour-grey-four])}]
+        {:class (u/bem [:cell :width-xxx-huge :height-xx-tiny :margin-top-large :colour-grey-four])}]
        [:div
         {:class (u/bem [:cell :column :align-start :padding-top-medium])}
         authorisations]
@@ -59,9 +59,7 @@
 
 
 (defn page [properties views behaviours]
-  (let [!ids (re-frame/subscribe [:pages.admin.authorisations/ids])
-        !paging-exhausted? (re-frame/subscribe [:pages.admin.authorisations/paging-exhausted?])
-        !paging-pending? (re-frame/subscribe [:pages.admin.authorisations/paging-pending?])]
+  (let [!ids (re-frame/subscribe [:pages.admin.authorisations/ids])]
     (fn [properties views behaviours]
       [view
        properties
@@ -76,8 +74,8 @@
                            {}
                            {}])
         :pager [pager/pager
-                {:exhausted? @!paging-exhausted?
-                 :pending? @!paging-pending?}
+                {:key [:views :app :views :pages.admin.authorisations :views :pager]
+                 :entity :authorisations}
                 {}
-                {:on-click #(re-frame/dispatch [:pages.admin.authorisations/start-paging])}]}
+                {}]}
        {}])))
