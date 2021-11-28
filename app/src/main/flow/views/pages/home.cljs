@@ -7,8 +7,7 @@
             [flow.utils :as u]))
 
 
-(defn view [{:keys [status
-                    authorised?
+(defn view [{:keys [authorised?
                     current-user]}
             {:keys [authorisation-attempt
                     route-to-users-link

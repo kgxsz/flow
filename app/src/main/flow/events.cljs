@@ -36,6 +36,7 @@
  (fn [{:keys [db]} [_ {:keys [route-params query-params]}]]
    {:api {:query {:current-user {}}
           :on-response [:pages.home/end-initialisation]
+          ;; TODO - where should this knowledge come from?
           :on-error [:app/error]
           :delay 1000}
     ;; TODO - It's a smell that this is independent of the key
@@ -57,7 +58,6 @@
               (assoc-in [:views :app :views] {})
               (assoc-in [:entities :users] users)
               (assoc-in [:entities :authorisations] authorisations)
-              (assoc-in key {:status :initialisation-successful})
               ;; TODO - These are key dependent but relate to child views, can it be done elsewhere?
               (update-in key assoc-in [:views :authorisation-attempt] {:status :idle
                                                                        :email-address ""
@@ -77,6 +77,7 @@
                   :users {}}
           :metadata {:users {:limit 2 :offset nil}}
           :on-response [:pages.admin.users/end-initialisation]
+          ;; TODO - where should this knowledge come from?
           :on-error [:app/error]
           :delay 1000}
     ;; TODO - It's a smell that these are all independent of the key
@@ -98,7 +99,6 @@
               (assoc-in [:views :app :views] {})
               (assoc-in [:entities :users] users)
               (assoc-in [:entities :authorisations] authorisations)
-              (assoc-in key {:status :initialisation-successful})
               ;; TODO - these are a huge smell that they're highly pager specific,
               ;; perhaps pager should own them, similar to how user owns deletion state.
               (update-in key assoc :paging-offset (get-in metadata [:users :next-offset]))
@@ -118,6 +118,7 @@
      {:api {:query {:users {}}
             :metadata {:users {:limit 2 :offset (:paging-offset context)}}
             :on-response [:pages.admin.users/end-paging]
+            ;; TODO - where should this knowledge come from?
             :on-error [:app/error]
             :delay 1000}
       ;; TODO - these are a huge smell that this is highly pager specific,
@@ -153,6 +154,7 @@
                   :authorisations {}}
           :metadata {:authorisations {:limit 2 :offset nil}}
           :on-response [:pages.admin.authorisations/end-initialisation]
+          ;; TODO - where should this knowledge come from?
           :on-error [:app/error]
           :delay 1000}
     ;; TODO - It's a smell that this is independent of the key
@@ -223,6 +225,7 @@
  (fn [{:keys [db]} [_ {:keys [route-params query-params]}]]
    {:api {:query {:current-user {}}
           :on-response [:pages.unknown/end-initialisation]
+          ;; TODO - where should this knowledge come from?
           :on-error [:app/error]
           :delay 1000}
     ;; TODO - It's a smell that this is independent of the key
@@ -352,7 +355,7 @@
                 ;; TODO - It's a smell that these are all independent of the key
                 (assoc-in [:views :app :session] session)
                 (assoc-in [:entities] {})
-                (update-in key assoc :status :successful)
+                (update-in key assoc :status :idle)
                 ;; TODO - Why should this event know about another view's initialisation?
                 (assoc-in [:views :app :views :pages.home :views :authorisation-attempt] {:status :idle
                                                                                           :email-address ""
@@ -452,4 +455,4 @@
      {:db (-> db
               ;; TODO - It's a smell that this is independent of the key
               (update-in [:entities :users] merge users)
-              (update-in key assoc :status :deletion-successful))})))
+              (update-in key assoc :status :idle))})))
