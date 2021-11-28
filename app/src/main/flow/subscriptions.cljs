@@ -278,8 +278,24 @@
    (get-in db [:entities :users id])))
 
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;; Authorisation flow ;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (re-frame/reg-sub
- :user/deletion-disabled?
+ :authorisation/authorisation
+ (fn [db [_ id]]
+   (get-in db [:entities :authorisations id])))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;; User deletion flow ;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-sub
+ :user-deletion/disabled?
  (fn [db [_ id]]
    (let [current-user-id (get-in db [:views :app :session :current-user-id])
          user (get-in db [:entities :users id])]
@@ -289,19 +305,7 @@
 
 
 (re-frame/reg-sub
- :user/deletion-pending?
- (fn [db [_ id]]
-   (let [key [:views :app :views :pages.admin.users :views :user id]
-         context (get-in db key)]
-     (contains? #{:deletion-pending} (:status context)))))
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;; Authoirsation flow ;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(re-frame/reg-sub
- :authorisation/authorisation
- (fn [db [_ id]]
-   (get-in db [:entities :authorisations id])))
+ :user-deletion/pending?
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
+     (contains? #{:pending} (:status context)))))

@@ -151,37 +151,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;; Pagination flow ;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(re-frame/reg-event-fx
- :pagination/start
- [interceptors/validate-db]
- (fn [{:keys [db]} [_ key entity]]
-   (let [context (get-in db key)]
-     {:api {:query {entity {}}
-            :metadata {entity {:limit 2 :offset (:offset context)}}
-            :on-response [:pagination/end key entity]
-            ;; TODO - where should this knowledge come from?
-            :on-error [:app/error]
-            :delay 1000}
-      :db (update-in db key assoc :status :pending)})) )
-
-
-(re-frame/reg-event-fx
- :pagination/end
- [interceptors/validate-db]
- (fn [{:keys [db]} [_ key entity response]]
-   {:db (-> db
-            ;; TODO - It's a smell that this is independent of the key
-            (update-in [:entities entity] merge (get response entity))
-            (update-in key assoc :status :idle)
-            (update-in key assoc :offset (get-in response [:metadata entity :next-offset]))
-            (update-in key assoc :exhausted? (get-in response [:metadata entity :exhausted?])))}))
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;; Unknown page flow ;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -212,6 +181,37 @@
             (assoc-in [:views :app :views] {})
             (assoc-in [:entities :users] users)
             (assoc-in [:entities :authorisations] authorisations))}))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;; Pagination flow ;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-event-fx
+ :pagination/start
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_ key entity]]
+   (let [context (get-in db key)]
+     {:api {:query {entity {}}
+            :metadata {entity {:limit 2 :offset (:offset context)}}
+            :on-response [:pagination/end key entity]
+            ;; TODO - where should this knowledge come from?
+            :on-error [:app/error]
+            :delay 1000}
+      :db (update-in db key assoc :status :pending)})) )
+
+
+(re-frame/reg-event-fx
+ :pagination/end
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_ key entity response]]
+   {:db (-> db
+            ;; TODO - It's a smell that this is independent of the key
+            (update-in [:entities entity] merge (get response entity))
+            (update-in key assoc :status :idle)
+            (update-in key assoc :offset (get-in response [:metadata entity :next-offset]))
+            (update-in key assoc :exhausted? (get-in response [:metadata entity :exhausted?])))}))
 
 
 
@@ -396,29 +396,27 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;; User flow ;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;; User deletion flow ;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
- :user/start-deletion
- [interceptors/validate-db]
- (fn [{:keys [db]} [_ id]]
-   (let [key [:views :app :views :pages.admin.users :views :user id]]
-     {:api {:command {:delete-user {:user/id id}}
-            :query {:user {:user/id id}}
-            :on-response [:user/end-deletion id]
-            ;; TODO - where should this knowledge come from?
-            :on-error [:app/error]
-            :delay 1000}
-      :db (update-in db key assoc :status :deletion-pending)})))
+ :user-deletion/start
+ []
+ (fn [{:keys [db]} [_ key id]]
+   {:api {:command {:delete-user {:user/id id}}
+          :query {:user {:user/id id}}
+          :on-response [:user-deletion/end key]
+          ;; TODO - where should this knowledge come from?
+          :on-error [:app/error]
+          :delay 1000}
+    :db (update-in db key assoc :status :pending)}))
 
 
 (re-frame/reg-event-fx
- :user/end-deletion
+ :user-deletion/end
  [interceptors/validate-db]
- (fn [{:keys [db]} [_ id {:keys [users]}]]
-   (let [key [:views :app :views :pages.admin.users :views :user id]]
-     {:db (-> db
-              ;; TODO - It's a smell that this is independent of the key
-              (update-in [:entities :users] merge users)
-              (update-in key assoc :status :idle))})))
+ (fn [{:keys [db]} [_ key {:keys [users]}]]
+   {:db (-> db
+            ;; TODO - It's a smell that this is independent of the key
+            (update-in [:entities :users] merge users)
+            (update-in key assoc :status :idle))}))

@@ -1,5 +1,6 @@
 (ns flow.views.entities.user
   (:require [re-frame.core :as re-frame]
+            [flow.views.user-deletion :as user-deletion]
             [flow.views.button :as button]
             [flow.utils :as u]
             [cljs-time.coerce :as t.coerce]
@@ -7,7 +8,7 @@
 
 
 (defn view [{:keys [user]}
-            {:keys [start-deletion-button]}
+            {:keys [user-deletion]}
             _]
   [:div
    {:class (u/bem [:user]
@@ -39,23 +40,18 @@
          (map name)
          (interpose ", ")
          (apply str))]
-   start-deletion-button])
+   user-deletion])
 
 
 (defn user [{:keys [user/id] :as properties} views behaviours]
-  (let [!user (re-frame/subscribe [:user/user id])
-        !deletion-disabled? (re-frame/subscribe [:user/deletion-disabled? id])
-        !deletion-pending? (re-frame/subscribe [:user/deletion-pending? id])]
+  (let [!user (re-frame/subscribe [:user/user id])]
     (fn [properties views behaviours]
       [view
        (assoc properties
               :user @!user)
-       {:start-deletion-button [button/button
-                                {:type :tertiary
-                                 :label "Delete"
-                                 :icon :trash
-                                 :disabled? @!deletion-disabled?
-                                 :pending? @!deletion-pending?}
-                                {}
-                                {:on-click #(re-frame/dispatch [:user/start-deletion id])}]}
+       {:user-deletion [user-deletion/user-deletion
+                        {:key [:views :app :views :pages.admin.users :views :user id :views :user-deletion]
+                         :user/id id}
+                        {}
+                        {}]}
        {}])))
