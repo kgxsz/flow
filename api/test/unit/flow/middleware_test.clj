@@ -148,7 +148,7 @@
                      :session {}}}
              (handler' request)))))
 
-  (testing "The wrapped handler returns a response with the relevant paging fields passed through with metadata."
+  (testing "The wrapped handler returns a response with the relevant pagination fields passed through with metadata."
     (let [handler' (wrap-metadata (constantly
                                    (assoc-in
                                     response

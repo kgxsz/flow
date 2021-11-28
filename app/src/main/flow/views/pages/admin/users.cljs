@@ -1,7 +1,7 @@
 (ns flow.views.pages.admin.users
   (:require [re-frame.core :as re-frame]
             [flow.views.link :as link]
-            [flow.views.pager :as pager]
+            [flow.views.pagination :as pagination]
             [flow.views.entities.user :as user]
             [flow.views.user-addition :as user-addition]
             [flow.utils :as u]
@@ -13,7 +13,7 @@
             {:keys [route-to-home-link
                     user-addition
                     users
-                    pager]}
+                    pagination]}
             _]
   [:div
    {:class (u/bem [:page])}
@@ -44,7 +44,7 @@
         users]
        [:div
         {:class (u/bem [:cell :padding-top-x-large])}
-        pager]]
+        pagination]]
 
       [:div
        {:class (u/bem [:cell :column :padding-top-huge])}
@@ -84,9 +84,9 @@
                   {:user/id id}
                   {}
                   {}])
-        :pager [pager/pager
-                {:key [:views :app :views :pages.admin.users :views :pager]
-                 :entity :users}
-                {}
-                {}]}
+        :pagination [pagination/pagination
+                     {:key [:views :app :views :pages.admin.users :views :pagination]
+                      :entity :users}
+                     {}
+                     {}]}
        {}])))

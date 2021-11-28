@@ -1,4 +1,4 @@
-(ns flow.views.pager
+(ns flow.views.pagination
   (:require [re-frame.core :as re-frame]
             [flow.views.button :as button]
             [flow.utils :as u]))
@@ -8,7 +8,7 @@
             {:keys [button]}
             _]
   [:div
-   {:class (u/bem [:pager])}
+   {:class (u/bem [:pagination])}
    (if exhausted?
      [:div
       {:class (u/bem [:cell :row])}
@@ -20,9 +20,9 @@
      button)])
 
 
-(defn pager [{:keys [key entity] :as properties} views behaviours]
-  (let [!exhausted? (re-frame/subscribe [:pager/exhausted? key])
-        !pending? (re-frame/subscribe [:pager/pending? key])]
+(defn pagination [{:keys [key entity] :as properties} views behaviours]
+  (let [!exhausted? (re-frame/subscribe [:pagination/exhausted? key])
+        !pending? (re-frame/subscribe [:pagination/pending? key])]
     (fn [properties views behaviours]
       [view
        (assoc properties
@@ -34,5 +34,5 @@
                   :disabled? @!exhausted?
                   :pending? @!pending?}
                  {}
-                 {:on-click #(re-frame/dispatch [:pager/start key entity])}]}
+                 {:on-click #(re-frame/dispatch [:pagination/start key entity])}]}
        behaviours])))

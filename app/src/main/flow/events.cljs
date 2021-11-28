@@ -103,7 +103,7 @@
               (update-in key assoc-in [:views :user-addition] {:status :idle
                                                                :email-address ""
                                                                :roles #{:customer}})
-              (update-in key assoc-in [:views :pager] {:status :idle
+              (update-in key assoc-in [:views :pagination] {:status :idle
                                                        :offset (get-in metadata [:users :next-offset])
                                                        :exhausted? (get-in metadata [:users :exhausted?])}))})))
 
@@ -144,24 +144,24 @@
               (assoc-in [:entities :users] users)
               (assoc-in [:entities :authorisations] authorisations)
               ;; TODO - These are key dependent but relate to child views, can it be done elsewhere?
-              (update-in key assoc-in [:views :pager] {:status :idle
+              (update-in key assoc-in [:views :pagination] {:status :idle
                                                        :offset (get-in metadata [:authorisations :next-offset])
                                                        :exhausted? (get-in metadata [:authorisations :exhausted?])}))})))
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;; Pager flow ;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;; Pagination flow ;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
- :pager/start
+ :pagination/start
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ key entity]]
    (let [context (get-in db key)]
      {:api {:query {entity {}}
             :metadata {entity {:limit 2 :offset (:offset context)}}
-            :on-response [:pager/end key entity]
+            :on-response [:pagination/end key entity]
             ;; TODO - where should this knowledge come from?
             :on-error [:app/error]
             :delay 1000}
@@ -169,7 +169,7 @@
 
 
 (re-frame/reg-event-fx
- :pager/end
+ :pagination/end
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ key entity response]]
    {:db (-> db

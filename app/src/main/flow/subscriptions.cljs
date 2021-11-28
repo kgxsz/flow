@@ -90,18 +90,18 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;; Pager flow ;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;; Pagination flow ;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-sub
- :pager/exhausted?
+ :pagination/exhausted?
  (fn [db [_ key]]
    (let [context (get-in db key)]
      (:exhausted? context))))
 
 
 (re-frame/reg-sub
- :pager/pending?
+ :pagination/pending?
  (fn [db [_ key]]
    (let [context (get-in db key)]
      (contains? #{:pending} (:status context)))))

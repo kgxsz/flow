@@ -1,7 +1,7 @@
 (ns flow.views.pages.admin.authorisations
   (:require [re-frame.core :as re-frame]
             [flow.views.link :as link]
-            [flow.views.pager :as pager]
+            [flow.views.pagination :as pagination]
             [flow.views.entities.authorisation :as authorisation]
             [flow.utils :as u]
             [cljs-time.coerce :as t.coerce]
@@ -11,7 +11,7 @@
 (defn view [{:keys [admin?]}
             {:keys [route-to-home-link
                     authorisations
-                    pager]}
+                    pagination]}
             _]
   [:div
    {:class (u/bem [:page])}
@@ -37,7 +37,7 @@
         authorisations]
        [:div
         {:class (u/bem [:cell :padding-top-x-large])}
-        pager]]
+        pagination]]
 
       [:div
        {:class (u/bem [:cell :column :padding-top-huge])}
@@ -73,9 +73,9 @@
                            {:authorisation/id id}
                            {}
                            {}])
-        :pager [pager/pager
-                {:key [:views :app :views :pages.admin.authorisations :views :pager]
-                 :entity :authorisations}
-                {}
-                {}]}
+        :pagination [pagination/pagination
+                     {:key [:views :app :views :pages.admin.authorisations :views :pagination]
+                      :entity :authorisations}
+                     {}
+                     {}]}
        {}])))
