@@ -11,11 +11,11 @@
    {:class (u/bem [:pager])}
    (if exhausted?
      [:div
-      {:class (u/bem [:cell :row :padding-top-small])}
+      {:class (u/bem [:cell :row])}
       [:div
-       {:class (u/bem [:icon :font-size-medium :checkmark-circle])}]
+       {:class (u/bem [:icon :checkmark-circle :font-size-large])}]
       [:div
-       {:class (u/bem [:text :font-size-small :padding-left-tiny])}
+       {:class (u/bem [:text :font-size-small :padding-left-xx-small])}
        "All items loaded"]]
      button)])
 
@@ -24,9 +24,9 @@
   [view
    properties
    {:button [button/button
-             {:type :primary
+             {:type :tertiary
               :label "Load more items"
-              :icon :arrow-right
+              :icon :arrow-down
               :disabled? false
               :pending? (:pending? properties)}
              {}

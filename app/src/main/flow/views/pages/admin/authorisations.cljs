@@ -31,12 +31,12 @@
          {:class (u/bem [:cell :column :padding-top-large])}
          route-to-home-link]]
        [:div
-        {:class (u/bem [:cell :margin-top-large :width-cover :height-xxx-tiny :colour-grey-four])}]
+        {:class (u/bem [:cell :margin-top-large :width-cover :height-xx-tiny :colour-grey-four])}]
        [:div
         {:class (u/bem [:cell :column :align-start :padding-top-medium])}
         authorisations]
        [:div
-        {:class (u/bem [:cell :padding-top-medium])}
+        {:class (u/bem [:cell :padding-top-x-large])}
         pager]]
 
       [:div
@@ -66,7 +66,7 @@
       [view
        properties
        {:route-to-home-link [link/link
-                             {:label "Go home"}
+                             {:label "Home"}
                              {}
                              {:on-click #(re-frame/dispatch [:app/route :home])}]
         :authorisations (for [id @!ids]

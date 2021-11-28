@@ -26,11 +26,10 @@
 
 
 (defn page [properties views behaviours]
-  (let [{:keys [key]} properties]
-    [view
-     {}
-     {:route-to-home-link [link/link
-                           {:label "Go home"}
-                           {}
-                           {:on-click #(re-frame/dispatch [:app/route key :home])}]}
-     {}]))
+  [view
+   {}
+   {:route-to-home-link [link/link
+                         {:label "Home"}
+                         {}
+                         {:on-click #(re-frame/dispatch [:app/route :home])}]}
+   {}])

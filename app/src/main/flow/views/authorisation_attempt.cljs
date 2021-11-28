@@ -44,9 +44,9 @@
        [:div
         {:class (u/bem [:cell :row :padding-top-small])}
         [:div
-         {:class (u/bem [:icon :font-size-medium :warning])}]
+         {:class (u/bem [:icon :warning :font-size-large])}]
         [:div
-         {:class (u/bem [:text :font-size-small :padding-left-tiny])}
+         {:class (u/bem [:text :font-size-small :padding-left-xx-small])}
          "That magic phrase doesn't look right"]])]))
 
 

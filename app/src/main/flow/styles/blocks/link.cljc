@@ -8,4 +8,4 @@
 (defstyles link
   [:.link
    {:cursor :pointer
-    :padding-right "6px"}])
+    :border-bottom [[:solid (px (:xx-tiny c/filling)) (:grey-four c/colour)]]}])

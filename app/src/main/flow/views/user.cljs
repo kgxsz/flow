@@ -51,7 +51,7 @@
        (assoc properties
               :user @!user)
        {:start-deletion-button [button/button
-                                {:type :primary
+                                {:type :tertiary
                                  :label "Delete"
                                  :icon :trash
                                  :disabled? @!deletion-disabled?

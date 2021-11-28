@@ -7,13 +7,8 @@
             _
             {:keys [on-click]}]
   [:div
-   {:class (u/bem [:link]
-                  [:cell :row])
+   {:class (u/bem [:link])
     :on-click on-click}
-   [:div
-    {:class (u/bem [:cell :row :width-medium :height-medium])}
-    [:div
-     {:class (u/bem [:icon :arrow-right-circle :font-size-small])}]]
    [:div
     {:class (u/bem [:text])}
     label]])

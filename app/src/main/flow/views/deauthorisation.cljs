@@ -21,7 +21,7 @@
       [view
        {}
        {:start-button [button/button
-                       {:type :primary
+                       {:type :tertiary
                         :label "Sign out"
                         :icon :exit
                         :disabled? false

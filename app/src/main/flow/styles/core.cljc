@@ -61,13 +61,13 @@
   animations/widen
 
   ;; components
+  cell
   icon
+  text
   input
   toggle
   link
   button
-  text
-  cell
   app
   page
   authorisation-attempt

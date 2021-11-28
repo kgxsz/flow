@@ -35,9 +35,15 @@
           (str "Hi " (:user/name current-user))]
          [:div
           {:class (u/bem [:cell :column :padding-top-large])}
-          route-to-users-link
-          route-to-authorisations-link
-          deauthorisation]]
+          [:div
+           {:class (u/bem [:cell :padding-top-x-small])}
+           route-to-users-link]
+          [:div
+           {:class (u/bem [:cell :padding-top-x-small])}
+           route-to-authorisations-link]
+          [:div
+           {:class (u/bem [:cell :padding-top-large])}
+           deauthorisation]]]
 
         authorisation-attempt)]]]
 
@@ -53,11 +59,11 @@
                             {}
                             {}]
     :route-to-users-link [link/link
-                          {:label "See users"}
+                          {:label "Users"}
                           {}
                           {:on-click #(re-frame/dispatch [:app/route :admin.users])}]
     :route-to-authorisations-link [link/link
-                                   {:label "See authorisations"}
+                                   {:label "Authorisations"}
                                    {}
                                    {:on-click #(re-frame/dispatch [:app/route :admin.authorisations])}]
     :deauthorisation [deauthorisation/deauthorisation

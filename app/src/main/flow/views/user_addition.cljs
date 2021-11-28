@@ -30,17 +30,17 @@
      [:div
       {:class (u/bem [:cell :row :padding-top-small])}
       [:div
-       {:class (u/bem [:icon :font-size-medium :warning])}]
+       {:class (u/bem [:icon :warning :font-size-large])}]
       [:div
-       {:class (u/bem [:text :font-size-small :padding-left-tiny])}
+       {:class (u/bem [:text :font-size-small :padding-left-xx-small])}
        "The user could not be added"]])
    (when (= status :successful)
      [:div
       {:class (u/bem [:cell :row :padding-top-small])}
       [:div
-       {:class (u/bem [:icon :font-size-medium :checkmark-circle])}]
+       {:class (u/bem [:icon :checkmark-circle :font-size-large])}]
       [:div
-       {:class (u/bem [:text :font-size-small :padding-left-tiny])}
+       {:class (u/bem [:text :font-size-small :padding-left-xx-small])}
        "The user was added successfully"]])])
 
 
@@ -50,8 +50,7 @@
         !email-address (re-frame/subscribe [:user-addition/email-address])
         !admin-role? (re-frame/subscribe [:user-addition/admin-role?])
         !disabled? (re-frame/subscribe [:user-addition/disabled?])
-        !pending? (re-frame/subscribe [:user-addition/pending?])
-        ]
+        !pending? (re-frame/subscribe [:user-addition/pending?])]
     (fn [properties views behaviours]
       [view
        {:status @!status}
