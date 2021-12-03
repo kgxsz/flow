@@ -1,7 +1,7 @@
 (ns flow.views.pages.admin.authorisations
   (:require [re-frame.core :as re-frame]
             [flow.views.widgets.link :as link]
-            [flow.views.layouts.listings :as listings]
+            [flow.views.processes.pagination :as pagination]
             [flow.utils :as u]
             [cljs-time.coerce :as t.coerce]
             [cljs-time.format :as t.format]))
@@ -9,7 +9,7 @@
 
 (defn view [{:keys [admin?]}
             {:keys [route-to-home-link
-                    listings]}
+                    pagination]}
             _]
   [:div
    {:class (u/bem [:page])}
@@ -32,7 +32,7 @@
         {:class (u/bem [:cell :width-xxx-huge :height-xx-tiny :margin-top-large :colour-grey-four])}]
        [:div
         {:class (u/bem [:cell :column :align-start :padding-top-medium])}
-        listings]]
+        pagination]]
 
       [:div
        {:class (u/bem [:cell :column :padding-top-huge])}
@@ -60,9 +60,9 @@
                          {:label "Home"}
                          {}
                          {:on-click #(re-frame/dispatch [:app/route :home])}]
-    :listings [listings/listings
-              {:key [:views :app :views :pages.admin.authorisations :views :listings]
-               :entity-type :authorisations}
-              {}
-              {}]}
+    :pagination [pagination/pagination
+                 {:key [:views :app :views :pages.admin.authorisations :views :pagination]
+                  :entity-type :authorisations}
+                 {}
+                 {}]}
    {}])

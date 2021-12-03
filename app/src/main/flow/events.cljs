@@ -100,7 +100,7 @@
                          {:status :idle
                           :email-address ""
                           :roles #{:customer}})
-              (update-in key assoc-in [:views :listings :views :pagination]
+              (update-in key assoc-in [:views :pagination]
                          {:status :idle
                           :offset (get-in metadata [:users :next-offset])
                           :exhausted? (get-in metadata [:users :exhausted?])}))})))
@@ -139,7 +139,7 @@
               (assoc-in [:entities :users] users)
               (assoc-in [:entities :authorisations] authorisations)
               ;; TODO - These are key dependent but relate to child views, can it be done elsewhere?
-              (update-in key assoc-in [:views :listings :views :pagination]
+              (update-in key assoc-in [:views :pagination]
                          {:status :idle
                           :offset (get-in metadata [:authorisations :next-offset])
                           :exhausted? (get-in metadata [:authorisations :exhausted?])}))})))
