@@ -36,9 +36,7 @@
 - Ensure that the destination and source keystore passwords are equal to the keystore password above.
 
 ### Local database setup
-- Install a local DynamoDB instance with: `brew install --cask dynamodb-local`.
-- Ensure that the correct AWS credentials are in place in `~/.aws/credentials`.
-- Start the local DynamoDB instance with: `dynamodb-local -inMemory true`.
+- Get a local DynamoDB instance running with: `docker run -p 8000:8000 amazon/dynamodb-local`.
 
 ### Local api development setup
 - In `api/` setup the environment variables:
