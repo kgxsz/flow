@@ -51,7 +51,7 @@
                       :route :home
                       :route-params nil
                       :query-params nil})
-              (assoc-in [:views :app :session] session)
+              (assoc :session session)
               (assoc-in [:views :app :views] {})
               (assoc-in [:entities :users] users)
               (assoc-in [:entities :authorisations] authorisations)
@@ -92,7 +92,7 @@
                       :route :admin.users
                       :route-params nil
                       :query-params nil})
-              (assoc-in [:views :app :session] session)
+              (assoc :session session)
               (assoc-in [:views :app :views] {})
               (assoc-in [:entities :users] users)
               (assoc-in [:entities :authorisations] authorisations)
@@ -136,7 +136,7 @@
                       :route :admin.authoirsations
                       :route-params nil
                       :query-params nil})
-              (assoc-in [:views :app :session] session)
+              (assoc :session session)
               (assoc-in [:views :app :views] {})
               (assoc-in [:entities :users] users)
               (assoc-in [:entities :authorisations] authorisations)
@@ -173,7 +173,7 @@
                     :route :unknown
                     :route-params nil
                     :query-params nil})
-            (assoc-in [:views :app :session] session)
+            (assoc :session session)
             (assoc-in [:views :app :views] {})
             (assoc-in [:entities :users] users)
             (assoc-in [:entities :authorisations] authorisations))}))
@@ -269,7 +269,7 @@
    (if (empty? users)
      {:db (update-in db key assoc :status :finalisation-unsuccessful)}
      {:db (-> db
-              (assoc-in [:views :app :session] session)
+              (assoc :session session)
               (update-in [:entities :users] merge users)
               (assoc-in key {:status :idle :email-address "" :phrase ""}))})))
 
@@ -297,7 +297,7 @@
  (fn [{:keys [db]} [_ key {:keys [users session]}]]
    (if (empty? users)
      {:db (-> db
-              (assoc-in [:views :app :session] session)
+              (assoc :session session)
               (assoc-in [:entities] {})
               (assoc-in key {:status :idle}))}
      {:db (update-in db key assoc :status :error)})))

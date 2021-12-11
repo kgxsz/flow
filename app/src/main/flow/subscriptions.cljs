@@ -32,26 +32,22 @@
 (re-frame/reg-sub
  :app/authorised?
  (fn [db [_]]
-   (let [key [:views :app]
-         context (get-in db key)]
-     (some? (get-in context [:session :current-user-id])))))
+   (some? (get-in db [:session :current-user-id]))))
 
 
 (re-frame/reg-sub
  :app/admin?
  (fn [db [_]]
-   (let [key [:views :app]
-         context (get-in db key)
-         roles (get-in db [:entities :users (get-in context [:session :current-user-id]) :user/roles])]
+   (let [current-user-id (get-in db [:session :current-user-id])
+         roles (get-in db [:entities :users current-user-id :user/roles])]
      (contains? roles :admin))))
 
 
 (re-frame/reg-sub
  :app/current-user
  (fn [db [_]]
-   (let [key [:views :app]
-         context (get-in db key)]
-     (get-in db [:entities :users (get-in context [:session :current-user-id])]))))
+   (let [current-user-id (get-in db [:session :current-user-id])]
+     (get-in db [:entities :users :current-user-id]))))
 
 
 
