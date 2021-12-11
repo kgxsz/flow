@@ -24,9 +24,7 @@
 (re-frame/reg-sub
  :app/error?
  (fn [db [_]]
-   (let [key [:views :app]
-         context (get-in db key)]
-     (contains? #{:error} (:status context)))))
+   (true? (get-in db [:notifier :error?]))))
 
 
 (re-frame/reg-sub
