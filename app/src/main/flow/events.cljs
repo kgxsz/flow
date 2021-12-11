@@ -20,7 +20,7 @@
  :app/error
  [interceptors/validate-db]
  (fn [{:keys [db]} [_]]
-   {:db (update-in db [:notifier :error?] true)}))
+   {:db (assoc-in db [:notifier :error?] true)}))
 
 
 
@@ -299,8 +299,7 @@
               (assoc :session session)
               (assoc-in [:entities] {})
               (assoc-in key {:status :idle}))}
-     ;; TODO - nothing happens here, should this perhaps dispatch to top level error?
-     {:db (update-in db key assoc :status :error)})))
+     {:db (update-in db key assoc :status :unsuccessful)})))
 
 
 

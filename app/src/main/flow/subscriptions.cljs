@@ -45,7 +45,7 @@
  :app/current-user
  (fn [db [_]]
    (let [current-user-id (get-in db [:session :current-user-id])]
-     (get-in db [:entities :users :current-user-id]))))
+     (get-in db [:entities :users current-user-id]))))
 
 
 
