@@ -13,8 +13,7 @@
  :app/route
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ route]]
-   (let [key [:views :app]]
-     {:router {:route route}})))
+   {:router {:route route}}))
 
 
 (re-frame/reg-event-fx
@@ -38,7 +37,7 @@
           :on-response [:pages.home/end-initialisation]
           :on-error [:app/error]
           :delay 1000}
-    :db (assoc-in db [:views :app :status] :routing)}))
+    :db (assoc-in db [:router :routing?] true)}))
 
 
 (re-frame/reg-event-fx
@@ -47,10 +46,11 @@
  (fn [{:keys [db]} [_ {:keys [users authorisations session]}]]
    (let [key [:views :app :views :pages.home]]
      {:db (-> db
-              (assoc-in [:views :app :status] :idle)
-              (assoc-in [:views :app :routing :route] :home)
-              (assoc-in [:views :app :routing :route-params] nil)
-              (assoc-in [:views :app :routing :query-params] nil)
+              (assoc :router
+                     {:routing? false
+                      :route :home
+                      :route-params nil
+                      :query-params nil})
               (assoc-in [:views :app :session] session)
               (assoc-in [:views :app :views] {})
               (assoc-in [:entities :users] users)
@@ -78,7 +78,7 @@
           :on-response [:pages.admin.users/end-initialisation]
           :on-error [:app/error]
           :delay 1000}
-    :db (assoc-in db [:views :app :status] :routing)}))
+    :db (assoc-in db [:router :routing?] true)}))
 
 
 (re-frame/reg-event-fx
@@ -87,10 +87,11 @@
  (fn [{:keys [db]} [_ {:keys [users authorisations metadata session]}]]
    (let [key [:views :app :views :pages.admin.users]]
      {:db (-> db
-              (assoc-in [:views :app :status] :idle)
-              (assoc-in [:views :app :routing :route] :admin.users)
-              (assoc-in [:views :app :routing :route-params] nil)
-              (assoc-in [:views :app :routing :query-params] nil)
+              (assoc :router
+                     {:routing? false
+                      :route :admin.users
+                      :route-params nil
+                      :query-params nil})
               (assoc-in [:views :app :session] session)
               (assoc-in [:views :app :views] {})
               (assoc-in [:entities :users] users)
@@ -121,7 +122,7 @@
           :on-response [:pages.admin.authorisations/end-initialisation]
           :on-error [:app/error]
           :delay 1000}
-    :db (assoc-in db [:views :app :status] :routing)}))
+    :db (assoc-in db [:router :routing] true)}))
 
 
 (re-frame/reg-event-fx
@@ -130,10 +131,11 @@
  (fn [{:keys [db]} [_ {:keys [users authorisations metadata session]}]]
    (let [key [:views :app :views :pages.admin.authorisations]]
      {:db (-> db
-              (assoc-in [:views :app :status] :idle)
-              (assoc-in [:views :app :routing :route] :admin.authorisations)
-              (assoc-in [:views :app :routing :route-params] nil)
-              (assoc-in [:views :app :routing :query-params] nil)
+              (assoc :router
+                     {:routing? false
+                      :route :admin.authoirsations
+                      :route-params nil
+                      :query-params nil})
               (assoc-in [:views :app :session] session)
               (assoc-in [:views :app :views] {})
               (assoc-in [:entities :users] users)
@@ -158,7 +160,7 @@
           :on-response [:pages.unknown/end-initialisation]
           :on-error [:app/error]
           :delay 1000}
-    :db (assoc-in db [:views :app :status] :routing)}))
+    :db (assoc-in db [:router :routing?] true)}))
 
 
 (re-frame/reg-event-fx
@@ -166,10 +168,11 @@
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ {:keys [users authorisations session]}]]
    {:db (-> db
-            (assoc-in [:views :app :status] :idle)
-            (assoc-in [:views :app :routing :route] :unknown)
-            (assoc-in [:views :app :routing :route-params] nil)
-            (assoc-in [:views :app :routing :query-params] nil)
+            (assoc :router
+                   {:routing? false
+                    :route :unknown
+                    :route-params nil
+                    :query-params nil})
             (assoc-in [:views :app :session] session)
             (assoc-in [:views :app :views] {})
             (assoc-in [:entities :users] users)

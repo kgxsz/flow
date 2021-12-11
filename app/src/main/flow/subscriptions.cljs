@@ -12,17 +12,13 @@
 (re-frame/reg-sub
  :app/route
  (fn [db [_]]
-   (let [key [:views :app]
-         context (get-in db key)]
-     (get-in context [:routing :route]))))
+   (get-in db [:router :route])))
 
 
 (re-frame/reg-sub
  :app/routing?
  (fn [db [_]]
-   (let [key [:views :app]
-         context (get-in db key)]
-     (contains? #{:routing} (:status context)))))
+   (true? (get-in db [:router :routing?]))))
 
 
 (re-frame/reg-sub
