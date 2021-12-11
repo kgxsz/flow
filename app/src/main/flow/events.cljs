@@ -43,24 +43,23 @@
  :pages.home/end-initialisation
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ {:keys [users authorisations session]}]]
-   (let [key [:views :app :views :pages.home]]
-     {:db (-> db
-              (assoc :router
-                     {:routing? false
-                      :route :home
-                      :route-params nil
-                      :query-params nil})
-              (assoc :session session)
-              (assoc-in [:views :app :views] {})
-              (assoc-in [:entities :users] users)
-              (assoc-in [:entities :authorisations] authorisations)
-              ;; TODO - These are key dependent but relate to child views, can it be done elsewhere?
-              (update-in key assoc-in [:views :authorisation]
-                         {:status :idle
-                          :email-address ""
-                          :phrase ""})
-              (update-in key assoc-in [:views :deauthorisation]
-                         {:status :idle}))})))
+   {:db (-> db
+            (assoc :router
+                   {:routing? false
+                    :route :home
+                    :route-params nil
+                    :query-params nil})
+            (assoc :session session)
+            (assoc :page {})
+            (assoc-in [:entities :users] users)
+            (assoc-in [:entities :authorisations] authorisations)
+            ;; TODO - These are key dependent but relate to child views, can it be done elsewhere?
+            (assoc-in [:page :views :authorisation]
+                      {:status :idle
+                       :email-address ""
+                       :phrase ""})
+            (assoc-in [:page :views :deauthorisation]
+                      {:status :idle}))}))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -84,26 +83,25 @@
  :pages.admin.users/end-initialisation
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ {:keys [users authorisations metadata session]}]]
-   (let [key [:views :app :views :pages.admin.users]]
-     {:db (-> db
-              (assoc :router
-                     {:routing? false
-                      :route :admin.users
-                      :route-params nil
-                      :query-params nil})
-              (assoc :session session)
-              (assoc-in [:views :app :views] {})
-              (assoc-in [:entities :users] users)
-              (assoc-in [:entities :authorisations] authorisations)
-              ;; TODO - These are key dependent but relate to child views, can it be done elsewhere?
-              (update-in key assoc-in [:views :user-addition]
-                         {:status :idle
-                          :email-address ""
-                          :roles #{:customer}})
-              (update-in key assoc-in [:views :pagination]
-                         {:status :idle
-                          :offset (get-in metadata [:users :next-offset])
-                          :exhausted? (get-in metadata [:users :exhausted?])}))})))
+   {:db (-> db
+            (assoc :router
+                   {:routing? false
+                    :route :admin.users
+                    :route-params nil
+                    :query-params nil})
+            (assoc :session session)
+            (assoc :page {})
+            (assoc-in [:entities :users] users)
+            (assoc-in [:entities :authorisations] authorisations)
+            ;; TODO - These are key dependent but relate to child views, can it be done elsewhere?
+            (assoc-in [:page :views :user-addition]
+                      {:status :idle
+                       :email-address ""
+                       :roles #{:customer}})
+            (assoc-in [:page :views :pagination]
+                      {:status :idle
+                       :offset (get-in metadata [:users :next-offset])
+                       :exhausted? (get-in metadata [:users :exhausted?])}))}))
 
 
 
@@ -128,22 +126,21 @@
  :pages.admin.authorisations/end-initialisation
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ {:keys [users authorisations metadata session]}]]
-   (let [key [:views :app :views :pages.admin.authorisations]]
-     {:db (-> db
-              (assoc :router
-                     {:routing? false
-                      :route :admin.authoirsations
-                      :route-params nil
-                      :query-params nil})
-              (assoc :session session)
-              (assoc-in [:views :app :views] {})
-              (assoc-in [:entities :users] users)
-              (assoc-in [:entities :authorisations] authorisations)
-              ;; TODO - These are key dependent but relate to child views, can it be done elsewhere?
-              (update-in key assoc-in [:views :pagination]
-                         {:status :idle
-                          :offset (get-in metadata [:authorisations :next-offset])
-                          :exhausted? (get-in metadata [:authorisations :exhausted?])}))})))
+   {:db (-> db
+            (assoc :router
+                   {:routing? false
+                    :route :admin.authoirsations
+                    :route-params nil
+                    :query-params nil})
+            (assoc :session session)
+            (assoc :page {})
+            (assoc-in [:entities :users] users)
+            (assoc-in [:entities :authorisations] authorisations)
+            ;; TODO - These are key dependent but relate to child views, can it be done elsewhere?
+            (assoc-in [:page :views :pagination]
+                      {:status :idle
+                       :offset (get-in metadata [:authorisations :next-offset])
+                       :exhausted? (get-in metadata [:authorisations :exhausted?])}))}))
 
 
 
@@ -173,7 +170,7 @@
                     :route-params nil
                     :query-params nil})
             (assoc :session session)
-            (assoc-in [:views :app :views] {})
+            (assoc :page {})
             (assoc-in [:entities :users] users)
             (assoc-in [:entities :authorisations] authorisations))}))
 
@@ -299,6 +296,7 @@
               (assoc :session session)
               (assoc-in [:entities] {})
               (assoc-in key {:status :idle}))}
+     ;; TODO - nothing happens with this status
      {:db (update-in db key assoc :status :unsuccessful)})))
 
 

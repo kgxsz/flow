@@ -29,7 +29,7 @@
 
 
 (defn pagination [{:keys [key entity-type] :as properties} views behaviours]
-  (let [!ids (re-frame/subscribe [:pagination/ids entity-type])
+  (let [!ids (re-frame/subscribe [:pagination/ids key entity-type])
         !exhausted? (re-frame/subscribe [:pagination/exhausted? key])
         !pending? (re-frame/subscribe [:pagination/pending? key])]
     (fn [properties views behaviours]

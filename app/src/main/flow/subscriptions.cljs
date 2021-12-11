@@ -50,23 +50,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;; Pagination ;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(re-frame/reg-sub
- :pagination/ids
- (fn [db [_ entity-type]]
-   (let [entity-key (case entity-type
-                      :users :user/id
-                      :authorisations :authorisation/id)]
-     (->> (get-in db [:entities entity-type])
-          (vals)
-          (sort-by (comp str entity-key))
-          (map entity-key)))))
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;; Cards user ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -91,6 +74,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;; Pagination ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-sub
+ :pagination/ids
+ (fn [db [_ key entity-type]]
+   (let [entity-key (case entity-type
+                      :users :user/id
+                      :authorisations :authorisation/id)]
+     (->> (get-in db [:entities entity-type])
+          (vals)
+          (sort-by (comp str entity-key))
+          (map entity-key)))))
+
 
 (re-frame/reg-sub
  :pagination/exhausted?

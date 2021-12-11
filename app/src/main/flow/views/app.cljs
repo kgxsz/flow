@@ -38,7 +38,7 @@
         !admin? (re-frame/subscribe [:app/admin?])
         !authorised? (re-frame/subscribe [:app/authorised?])
         !current-user (re-frame/subscribe [:app/current-user])
-        !route (re-frame/subscribe [:app/route key])]
+        !route (re-frame/subscribe [:app/route])]
     (fn []
       [view
        {:routing? @!routing?
