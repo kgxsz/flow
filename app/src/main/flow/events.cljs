@@ -98,6 +98,7 @@
                       {:status :idle
                        :email-address ""
                        :roles #{:customer}})
+            ;; TODO - could the pagination be given the entity and the filtering approach as state?
             (assoc-in [:page :views :pagination]
                       {:status :idle
                        :offset (get-in metadata [:users :next-offset])
