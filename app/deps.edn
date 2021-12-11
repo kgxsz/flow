@@ -12,7 +12,7 @@
  :aliases {:dev/js {:extra-paths ["src/dev"]
                     :extra-deps {thheller/shadow-cljs {:mvn/version "2.11.7"}
                                  refactor-nrepl/refactor-nrepl {:mvn/version "2.5.0"}
-                                 cider/cider-nrepl {:mvn/version "0.26.0"}
+                                 cider/cider-nrepl {:mvn/version "0.27.2"}
                                  binaryage/devtools {:mvn/version "1.0.2"}}
                     :main-opts ["--main" "shadow.cljs.devtools.cli"
                                 "watch" "app"]}
