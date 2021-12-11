@@ -253,11 +253,9 @@
 (re-frame/reg-sub
  :user-deletion/disabled?
  (fn [db [_ id]]
-   (let [current-user-id (get-in db [:views :app :session :current-user-id])
-         user (get-in db [:entities :users id])]
-     (or
-      (= id (get-in db [:views :app :session :current-user-id]))
-      (some? (get-in db [:entities :users id :user/deleted-at]))))))
+   (or
+    (= id (get-in db [:session :current-user-id]))
+    (some? (get-in db [:entities :users id :user/deleted-at])))))
 
 
 (re-frame/reg-sub

@@ -16,11 +16,10 @@
 
 ;; Tasks:
 ;; - Address the repitition in page initialisation patterns
-;;   - Every eage initialisation start event:
-;;     - Sets the app status to :routing (why? only the router component in app cares)
+;;   - Every page initialisation start event:
+;;     - Sets the router status
 ;;     - Specific page and child view data is fetched
 ;;   - Every page initialisation end event:
-;;     - Sets the app status to :idle (why? nobody uses it)
 ;;     - All the routing information gets set
 ;;     - Session gets set
 ;;     - Entities gets reset to what just got returned

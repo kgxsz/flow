@@ -120,7 +120,7 @@
           :on-response [:pages.admin.authorisations/end-initialisation]
           :on-error [:app/error]
           :delay 1000}
-    :db (assoc-in db [:router :routing] true)}))
+    :db (assoc-in db [:router :routing?] true)}))
 
 
 (re-frame/reg-event-fx
@@ -130,7 +130,7 @@
    {:db (-> db
             (assoc :router
                    {:routing? false
-                    :route :admin.authoirsations
+                    :route :admin.authorisations
                     :route-params nil
                     :query-params nil})
             (assoc :session session)
