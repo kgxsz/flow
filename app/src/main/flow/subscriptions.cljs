@@ -12,13 +12,13 @@
 (re-frame/reg-sub
  :app/route
  (fn [db [_]]
-   (get-in db [:router :current-route])))
+   (get-in db [:routing :current-route])))
 
 
 (re-frame/reg-sub
  :app/routing?
  (fn [db [_]]
-   (some? (get-in db [:router :next-route]))))
+   (some? (get-in db [:routing :next-route]))))
 
 
 (re-frame/reg-sub

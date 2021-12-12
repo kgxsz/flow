@@ -21,8 +21,8 @@
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ route parameters]]
    {:db (-> db
-            (assoc-in [:router :next-route] route)
-            (assoc-in [:router :next-parameters] parameters))
+            (assoc-in [:routing :next-route] route)
+            (assoc-in [:routing :next-parameters] parameters))
     :dispatch [(case route
                  :home :pages.home/start-initialisation
                  :admin.users :pages.admin.users/start-initialisation
@@ -35,9 +35,9 @@
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ users authorisations session]]
    {:db (-> db
-            (assoc :router
-                   {:current-route (get-in db [:router :next-route])
-                    :current-parameters (get-in db [:router :next-parameters])})
+            (assoc :routing
+                   {:current-route (get-in db [:routing :next-route])
+                    :current-parameters (get-in db [:routing :next-parameters])})
             (assoc :session session)
             (assoc-in [:entities :users] users)
             (assoc-in [:entities :authorisations] authorisations))}))
@@ -151,8 +151,7 @@
    {:api {:query {:current-user {}}
           :on-response [:pages.unknown/end-initialisation]
           :on-error [:app/error]
-          :delay 1000}
-    :db (assoc-in db [:router :routing?] true)}))
+          :delay 1000}}))
 
 
 (re-frame/reg-event-fx
