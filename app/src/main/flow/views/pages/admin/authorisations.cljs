@@ -59,7 +59,7 @@
    {:route-to-home-link [link/link
                          {:label "Home"}
                          {}
-                         {:on-click #(re-frame/dispatch [:app/route :home])}]
+                         {:on-click #(re-frame/dispatch [:app/request-route-change :home])}]
     :pagination [pagination/pagination
                  {:key [:views :pagination]
                   :entity-type :authorisations}

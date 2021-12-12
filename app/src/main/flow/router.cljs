@@ -19,14 +19,11 @@
   (reset! !history
           (pushy/pushy
            #(re-frame/dispatch
-             [(case (::silk/name %)
-                :home :pages.home/start-initialisation
-                :admin.users :pages.admin.users/start-initialisation
-                :admin.authorisations :pages.admin.authorisations/start-initialisation
-                :unknown :pages.unknown/start-initialisation)
-              {:route-params (->> (medley.core/remove-keys namespace %)
-                                  (medley/map-vals string/lower-case))
-               :query-params (->> % ::silk/url :query (medley/map-keys keyword))}])
+             [:app/start-route-change
+              (::silk/name %)
+              {:route (->> (medley.core/remove-keys namespace %)
+                           (medley/map-vals string/lower-case))
+               :query (->> % ::silk/url :query (medley/map-keys keyword))}])
            #(or (silk/arrive routes %)
                 {::silk/name :unknown, ::silk/url {:query {}}}))))
 

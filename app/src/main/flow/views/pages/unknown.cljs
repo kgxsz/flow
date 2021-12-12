@@ -31,5 +31,5 @@
    {:route-to-home-link [link/link
                          {:label "Home"}
                          {}
-                         {:on-click #(re-frame/dispatch [:app/route :home])}]}
+                         {:on-click #(re-frame/dispatch [:app/request-route-change :home])}]}
    {}])

@@ -10,10 +10,37 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (re-frame/reg-event-fx
- :app/route
+ :app/request-route-change
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ route]]
    {:router {:route route}}))
+
+
+(re-frame/reg-event-fx
+ :app/start-route-change
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_ route parameters]]
+   {:db (-> db
+            (assoc-in [:router :next-route] route)
+            (assoc-in [:router :next-parameters] parameters))
+    :dispatch [(case route
+                 :home :pages.home/start-initialisation
+                 :admin.users :pages.admin.users/start-initialisation
+                 :admin.authorisations :pages.admin.authorisations/start-initialisation
+                 :unknown :pages.unknown/start-initialisation)]}))
+
+
+(re-frame/reg-event-fx
+ :app/end-route-change
+ [interceptors/validate-db]
+ (fn [{:keys [db]} [_ users authorisations session]]
+   {:db (-> db
+            (assoc :router
+                   {:current-route (get-in db [:router :next-route])
+                    :current-parameters (get-in db [:router :next-parameters])})
+            (assoc :session session)
+            (assoc-in [:entities :users] users)
+            (assoc-in [:entities :authorisations] authorisations))}))
 
 
 (re-frame/reg-event-fx
@@ -31,35 +58,25 @@
 (re-frame/reg-event-fx
  :pages.home/start-initialisation
  [interceptors/validate-db]
- (fn [{:keys [db]} [_ {:keys [route-params query-params]}]]
+ (fn [{:keys [db]} [_]]
    {:api {:query {:current-user {}}
           :on-response [:pages.home/end-initialisation]
           :on-error [:app/error]
-          :delay 1000}
-    :db (assoc-in db [:router :routing?] true)}))
+          :delay 1000}}))
 
 
 (re-frame/reg-event-fx
  :pages.home/end-initialisation
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ {:keys [users authorisations session]}]]
-   {:db (-> db
-            (assoc :router
-                   {:routing? false
-                    :route :home
-                    :route-params nil
-                    :query-params nil})
-            (assoc :session session)
-            (assoc :views {})
-            (assoc-in [:entities :users] users)
-            (assoc-in [:entities :authorisations] authorisations)
-            ;; TODO - These are key dependent but relate to child views, can it be done elsewhere?
-            (assoc-in [:views :authorisation]
-                      {:status :idle
-                       :email-address ""
-                       :phrase ""})
-            (assoc-in [:views :deauthorisation]
-                      {:status :idle}))}))
+   {:db (assoc db
+               :views
+               {:authorisation {:status :idle
+                                :email-address ""
+                                :phrase ""}
+                :deauthorisation {:status :idle}})
+    :dispatch [:app/end-route-change users authorisations session]}))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -69,40 +86,28 @@
 (re-frame/reg-event-fx
  :pages.admin.users/start-initialisation
  [interceptors/validate-db]
- (fn [{:keys [db]} [_ {:keys [route-params query-params]}]]
+ (fn [{:keys [db]} [_]]
    {:api {:query {:current-user {}
                   :users {}}
           :metadata {:users {:limit 2 :offset nil}}
           :on-response [:pages.admin.users/end-initialisation]
           :on-error [:app/error]
-          :delay 1000}
-    :db (assoc-in db [:router :routing?] true)}))
+          :delay 1000}}))
 
 
 (re-frame/reg-event-fx
  :pages.admin.users/end-initialisation
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ {:keys [users authorisations metadata session]}]]
-   {:db (-> db
-            (assoc :router
-                   {:routing? false
-                    :route :admin.users
-                    :route-params nil
-                    :query-params nil})
-            (assoc :session session)
-            (assoc :views {})
-            (assoc-in [:entities :users] users)
-            (assoc-in [:entities :authorisations] authorisations)
-            ;; TODO - These are key dependent but relate to child views, can it be done elsewhere?
-            (assoc-in [:views :user-addition]
-                      {:status :idle
-                       :email-address ""
-                       :roles #{:customer}})
-            ;; TODO - could the pagination be given the entity and the filtering approach as state?
-            (assoc-in [:views :pagination]
-                      {:status :idle
-                       :offset (get-in metadata [:users :next-offset])
-                       :exhausted? (get-in metadata [:users :exhausted?])}))}))
+   {:db (assoc db
+               :views
+               {:user-addition {:status :idle
+                                :email-address ""
+                                :roles #{:customer}}
+                :pagination {:status :idle
+                             :offset (get-in metadata [:users :next-offset])
+                             :exhausted? (get-in metadata [:users :exhausted?])}})
+    :dispatch [:app/end-route-change users authorisations session]}))
 
 
 
@@ -119,29 +124,19 @@
           :metadata {:authorisations {:limit 2 :offset nil}}
           :on-response [:pages.admin.authorisations/end-initialisation]
           :on-error [:app/error]
-          :delay 1000}
-    :db (assoc-in db [:router :routing?] true)}))
+          :delay 1000}}))
 
 
 (re-frame/reg-event-fx
  :pages.admin.authorisations/end-initialisation
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ {:keys [users authorisations metadata session]}]]
-   {:db (-> db
-            (assoc :router
-                   {:routing? false
-                    :route :admin.authorisations
-                    :route-params nil
-                    :query-params nil})
-            (assoc :session session)
-            (assoc :views {})
-            (assoc-in [:entities :users] users)
-            (assoc-in [:entities :authorisations] authorisations)
-            ;; TODO - These are key dependent but relate to child views, can it be done elsewhere?
-            (assoc-in [:views :pagination]
-                      {:status :idle
-                       :offset (get-in metadata [:authorisations :next-offset])
-                       :exhausted? (get-in metadata [:authorisations :exhausted?])}))}))
+   {:db (assoc db
+               :views
+               {:pagination {:status :idle
+                             :offset (get-in metadata [:users :next-offset])
+                             :exhausted? (get-in metadata [:users :exhausted?])}})
+    :dispatch [:app/end-route-change users authorisations session]}))
 
 
 
@@ -164,16 +159,7 @@
  :pages.unknown/end-initialisation
  [interceptors/validate-db]
  (fn [{:keys [db]} [_ {:keys [users authorisations session]}]]
-   {:db (-> db
-            (assoc :router
-                   {:routing? false
-                    :route :unknown
-                    :route-params nil
-                    :query-params nil})
-            (assoc :session session)
-            (assoc :veiws {})
-            (assoc-in [:entities :users] users)
-            (assoc-in [:entities :authorisations] authorisations))}))
+   {:dispatch [:app/end-route-change users authorisations session]}))
 
 
 
@@ -297,8 +283,7 @@
               (assoc :session session)
               (assoc-in [:entities] {})
               (assoc-in key {:status :idle}))}
-     ;; TODO - nothing happens with this status
-     {:db (update-in db key assoc :status :unsuccessful)})))
+     {:dispatch [:app/error]})))
 
 
 

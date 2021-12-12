@@ -62,11 +62,11 @@
     :route-to-users-link [link/link
                           {:label "Users"}
                           {}
-                          {:on-click #(re-frame/dispatch [:app/route :admin.users])}]
+                          {:on-click #(re-frame/dispatch [:app/request-route-change :admin.users])}]
     :route-to-authorisations-link [link/link
                                    {:label "Authorisations"}
                                    {}
-                                   {:on-click #(re-frame/dispatch [:app/route :admin.authorisations])}]
+                                   {:on-click #(re-frame/dispatch [:app/request-route-change :admin.authorisations])}]
     :deauthorisation [deauthorisation/deauthorisation
                       {:key [:views :deauthorisation]}
                       {}
