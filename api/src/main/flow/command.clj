@@ -47,11 +47,9 @@
 
 
 (defmethod handle :add-user
-  [_ {:user/keys [id email-address name roles]} _ {:keys [current-user]}]
-  "If the current user is an admin, and the given user doesn't
-   already exist, then the given user will be created."
-  (if (and (user-management/admin? current-user)
-           (nil? (user/fetch (user/id email-address))))
+  [_ {:user/keys [id email-address name roles]} _ _]
+  "If the given user doesn't already exist, then the given user will be created."
+  (if-not (user/fetch (user/id email-address))
     {:metadata
      {:id-resolution
       {id (user/create! email-address name roles)}}}
@@ -59,14 +57,10 @@
 
 
 (defmethod handle :delete-user
-  [_ {:keys [user/id]} _ {:keys [current-user]}]
-  "If the current user is an admin, and the given user exists,
-   then that user will be deleted."
-  (if (and (user-management/admin? current-user)
-           (user/fetch id))
-    (do
-      (user/mutate! id user-management/delete)
-      {})
+  [_ {:keys [user/id]} _ _]
+  "If the given user exists, then that user will be deleted."
+  (when (user/fetch id)
+    (user/mutate! id user-management/delete)
     {}))
 
 

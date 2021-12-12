@@ -122,6 +122,53 @@
                (handler' request)))))))
 
 
+(deftest test-wrap-metadata
+
+  (testing "The wrapped handler returns a response with irrelevant keys stripped from metadata."
+    (let [handler' (wrap-metadata (constantly (assoc-in response [:body :metadata] {:hello "world"})))]
+      (is (= {:status 200
+              :headers {}
+              :body {:users {}
+                     :authorisations {}
+                     :metadata {}
+                     :session {}}}
+             (handler' request)))))
+
+  (testing "The wrapped handler returns a response with the ID resolution passed through with metadata."
+    (let [handler' (wrap-metadata (constantly
+                                   (assoc-in
+                                    response
+                                    [:body :metadata]
+                                    {:id-resolution {"some-id" "some-other-id"}})))]
+      (is (= {:status 200
+              :headers {}
+              :body {:users {}
+                     :authorisations {}
+                     :metadata {:id-resolution {"some-id" "some-other-id"}}
+                     :session {}}}
+             (handler' request)))))
+
+  (testing "The wrapped handler returns a response with the relevant pagination fields passed through with metadata."
+    (let [handler' (wrap-metadata (constantly
+                                   (assoc-in
+                                    response
+                                    [:body :metadata]
+                                    {:users {:next-offset 1
+                                             :exhausted? true
+                                             :hi :there}
+                                     :authorisations {:limit 1
+                                                      :exhausted? false}})))]
+      (is (= {:status 200
+              :headers {}
+              :body {:users {}
+                     :authorisations {}
+                     :metadata {:users {:next-offset 1
+                                        :exhausted? true}
+                                :authorisations {:exhausted? false}}
+                     :session {}}}
+             (handler' request))))))
+
+
 (deftest test-wrap-session
 
   (testing "The wrapped handler returns a response with a session when the body includes a non empty session."
@@ -181,7 +228,17 @@
                                                            :query {}
                                                            :metadata {}
                                                            :session {}
-                                                           :hello "world"}))))))
+                                                           :hello "world"}))))
+      (is (thrown+? [:type :flow/unsupported-request]
+                    (handler' (assoc request :body-params {:command {}
+                                                           :query {:user {:user/id 1}}
+                                                           :metadata {}
+                                                           :session {}}))))
+      (is (thrown+? [:type :flow/unsupported-request]
+                    (handler' (assoc request :body-params {:command {}
+                                                           :query {:users {}}
+                                                           :metadata {:users {:limit "hi"}}
+                                                           :session {}}))))))
 
   (testing "The wrapped handler throws an exception when the response's content is invalid."
     (let [handler' (wrap-content-validation handler)]

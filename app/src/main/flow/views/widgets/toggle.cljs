@@ -1,10 +1,11 @@
-(ns flow.views.toggle
+(ns flow.views.widgets.toggle
   (:require [re-frame.core :as re-frame]
             [flow.utils :as u]))
 
 
-(defn view [{:keys [value
-                    label]}
+(defn view [{:keys [label
+                    value
+                    disabled?]}
             _
             {:keys [on-toggle]}]
   [:div
@@ -12,7 +13,7 @@
                   [:cell :row :justify-start])}
    [:div
     {:class (u/bem [:toggle__body (when value :active)])
-     :on-click on-toggle}
+     :on-click (when-not disabled? on-toggle)}
     [:div
      {:class (u/bem [:toggle__body__knob (when value :active)])}]]
    [:div
@@ -20,11 +21,8 @@
     label]])
 
 
-(defn toggle [properties behaviours]
-  (let [!value (re-frame/subscribe [(get-in properties [:subscriptions :value])])]
-    (fn [properties behaviours]
-      [view
-       (assoc properties
-              :value @!value)
-       {}
-       behaviours])))
+(defn toggle [properties views behaviours]
+  [view
+   properties
+   views
+   behaviours])

@@ -12,9 +12,3 @@
   (cond-> user
     (nil? deleted-at)
     (assoc :user/deleted-at (t.coerce/to-date (t/now)))))
-
-
-(defn admin?
-  "Given a user, determines if it is an admin."
-  [{:keys [user/roles]}]
-  (contains? roles :admin))

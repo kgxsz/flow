@@ -1,4 +1,4 @@
-(ns flow.styles.components.toggle
+(ns flow.styles.blocks.toggle
   (:require [flow.styles.constants :as c]
             [flow.styles.utils :as u]
             [garden.def :refer [defstyles]]

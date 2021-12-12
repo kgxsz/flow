@@ -17,7 +17,7 @@
                   :extra-deps {ring/ring-jetty-adapter {:mvn/version "1.8.0"}
                                lambdaisland/kaocha {:mvn/version "1.0.829"}
                                refactor-nrepl/refactor-nrepl {:mvn/version "2.5.0"}
-                               cider/cider-nrepl {:mvn/version "0.26.0"}}
+                               cider/cider-nrepl {:mvn/version "0.27.2"}}
                   :main-opts ["--main"
                               "nrepl.cmdline"
                               "--middleware"

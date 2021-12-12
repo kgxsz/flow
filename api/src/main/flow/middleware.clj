@@ -3,6 +3,7 @@
             [flow.entity.authorisation :as authorisation]
             [flow.entity.utils :as entity.u]
             [flow.query :as query]
+            [flow.access-control :as access-control]
             [flow.utils :as u]
             [medley.core :as medley]
             [ring.middleware.cors :as cors.middleware]
@@ -14,31 +15,36 @@
 
 
 (defn wrap-access-control
-  "For inbound requests does nothing. For outbound responses, works through each entity
-   in the response's body and selects the keys that correspond to the correct level of access:
+  "For inbound requests, ensures that only the queries and commands that correspond to the appropriate
+   level of access are passed through. For outbound responses, works through each entity in the response's
+   body and selects the keys that correspond to the correct level of access:
    - The default accessible keys, which are visible to anybody.
    - The owner accessible keys, which are visible when the current user owns the entity.
    - The role accessible keys, which are visible when the current user has the corresponding role.
    If an entity has had all its keys removed then the entity itself will be removed from the response."
   [handler]
   (fn [request]
-    (let [response (handler request)
-          ;; NOTE - the current user may be stale during the outbound portion
-          ;; of this middleware. This is okay though since the fields used
-          ;; to determine access control aren't mutable by commands.
+    (let [current-user (get-in request [:body-params :session :current-user])
+          response (-> request
+                       (update-in [:body-params :query]
+                                  access-control/select-accessible-queries
+                                  current-user)
+                       (update-in [:body-params :command]
+                                  access-control/select-accessible-commands
+                                  current-user)
+                       (handler))
+          ;; NOTE - some of the current user's fields may be stale during the
+          ;; outbound portion of this middleware. This is okay though since the
+          ;;fields used to determine access control aren't mutable by commands.
           current-user (get-in response [:body :session :current-user])]
       (-> response
           (update-in [:body :users]
-           #(medley/deep-merge
-             (medley/map-vals user/select-default-accessible-keys %)
-             (medley/map-vals (partial user/select-owner-accessible-keys current-user) %)
-             (medley/map-vals (partial user/select-role-accessible-keys current-user) %)))
+                     (partial medley/map-vals
+                              #(access-control/select-accessible-user-keys % current-user)))
           (update-in [:body :users] (partial medley/remove-vals empty?))
           (update-in [:body :authorisations]
-           #(medley/deep-merge
-             (medley/map-vals authorisation/select-default-accessible-keys %)
-             (medley/map-vals (partial authorisation/select-owner-accessible-keys current-user) %)
-             (medley/map-vals (partial authorisation/select-role-accessible-keys current-user) %)))
+                     (partial medley/map-vals
+                              #(access-control/select-accessible-authorisation-keys % current-user)))
           (update-in [:body :authorisations] (partial medley/remove-vals empty?))))))
 
 
@@ -60,6 +66,19 @@
         (-> response
             (assoc-in [:body :session :current-user-id] id)
             (update-in [:body :session] dissoc :current-user))))))
+
+
+(defn wrap-metadata
+  "For the inbound requests does nothing, for outbound responses, filters
+   the metadata such that only the appropriate fields are returned."
+  [handler]
+  (fn [request]
+    (let [response (handler request)
+          {:keys [users authorisations] :as metadata} (get-in response [:body :metadata])]
+      (cond-> response
+         metadata (update-in [:body :metadata] select-keys [:id-resolution :users :authorisations])
+         users (update-in [:body :metadata :users] select-keys [:next-offset :exhausted?])
+         authorisations (update-in [:body :metadata :authorisations] select-keys [:next-offset :exhausted?])))))
 
 
 (defn wrap-session

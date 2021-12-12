@@ -76,13 +76,22 @@
 (s/def :query/user (s/keys :req [:user/id]))
 (s/def :query/authorisations (s/and map? empty?))
 (s/def :query/method #{:current-user
-                      :users
-                      :user
-                      :authorisations})
+                       :users
+                       :user
+                       :authorisations})
 
 
 ;; Metadata
-(s/def :metadata/id-resolution (s/map-of :user/id :user/id))
+(s/def :metadata/id-resolution (s/map-of uuid? uuid?))
+(s/def :metadata/limit (s/and number? pos?))
+(s/def :metadata/offset (s/nilable uuid?))
+(s/def :metadata/next-offset (s/nilable uuid?))
+(s/def :metadata/users (s/keys :opt-un [:metadata/limit
+                                        :metadata/offset
+                                        :metadata/next-offset]))
+(s/def :metadata/authorisations (s/keys :opt-un [:metadata/limit
+                                                 :metadata/offset
+                                                 :metadata/next-offset]))
 
 
 ;; Session
@@ -101,7 +110,8 @@
                                               :query/users
                                               :query/user
                                               :query/authorisations])))
-(s/def :request/metadata (s/and map? empty?))
+(s/def :request/metadata (s/keys :opt-un [:metadata/users
+                                          :metadata/authorisations]))
 (s/def :request/session (s/and map? empty?))
 (s/def :request/body-params (s/and (s/map-of #{:command :query :metadata :session} any?)
                                    (s/keys :req-un [:request/command
@@ -124,7 +134,9 @@
                                                         :authorisation/phrase
                                                         :authorisation/created-at
                                                         :authorisation/granted-at])))
-(s/def :response/metadata (s/keys :opt-un [:metadata/id-resolution]))
+(s/def :response/metadata (s/keys :opt-un [:metadata/id-resolution
+                                           :metadata/users
+                                           :metadata/authorisations]))
 (s/def :response/session (s/keys :req-un [:session/current-user-id]))
 (s/def :response/body (s/and (s/map-of #{:users :authorisations :metadata :session} any?)
                              (s/keys :req-un [:response/users

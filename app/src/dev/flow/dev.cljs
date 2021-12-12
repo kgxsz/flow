@@ -1,0 +1,19 @@
+(ns flow.dev)
+
+
+(defn ^:export db
+  []
+  (cljs.pprint/pprint
+   (deref re-frame.db/app-db)))
+
+
+(comment
+
+  (db)
+
+  )
+
+
+;; Tasks:
+;; - Style authorisation card
+;; - Style user card

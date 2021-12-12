@@ -38,16 +38,26 @@
 
 
 (defn fetch-entities
-  "Fetches all entities of the given entity type."
-  [entity-type]
-  (let [result (slingshot/try+
+  "Fetches all entities of the given entity type, sorted by the
+   entity's id, with a maximum number of items given by the limit,
+   starting from after the item identified by the offset."
+  [entity-type limit offset]
+  (let [entity-id-key (keyword (name entity-type) "id")
+        result (slingshot/try+
                 (faraday/scan
                  config
                  :flow
                  {:attr-conds {:partition [:begins-with (name entity-type)]}})
                 (catch Object _
                   (u/generate :external-error "Unable to scan DynamoDB.")))]
-    (mapv :entity result)))
+    (->> result
+         (map :entity)
+         (sort-by (comp str entity-id-key))
+         (partition-by #(= offset (get % entity-id-key)))
+         (last)
+         (remove #(= offset (get % entity-id-key)))
+         (take limit)
+         (into []))))
 
 
 (defn create-entity!

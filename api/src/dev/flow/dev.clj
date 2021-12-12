@@ -21,31 +21,33 @@
    (jetty/run-jetty #'core/handler options)))
 
 
-(defn seed []
-  (let [table-index [:partition :s]
-        table-options {:throughput {:read 1
-                                    :write 1}
-                       :block? true}
-        users [["k.suzukawa@gmail.com" "Keigo" #{:admin :customer}]
+(defn create-table
+  []
+  (let [table-description (faraday/describe-table db/config :flow)
+        table-index [:partition :s]
+        table-options {:throughput {:read 1 :write 1} :block? true}]
+    (when (some? table-description)
+      (faraday/delete-table db/config :flow))
+    (faraday/create-table db/config :flow table-index table-options)))
+
+
+(defn seed-table []
+  (let [users [["k.suzukawa@gmail.com" "Keigo" #{:admin :customer}]
                ["ksarnecka50@gmail.com" "Kasia" #{:customer}]]]
-    (faraday/create-table db/config :flow table-index table-options)
     (doall (map (partial apply user/create!) users))))
 
 
 (comment
 
-
   (server)
 
-  (seed)
+  (create-table)
+
+  (seed-table)
 
   (kaocha/run :unit)
 
   (kaocha/run :feature)
-
-  (kaocha/run 'flow.query.authorisations-test)
-
-  (kaocha/run 'flow.query.users-test)
 
   (user/create! "success+9@simulator.amazonses.com" "Test" #{:customer})
 
@@ -55,8 +57,8 @@
 
   (user/fetch (user/id "k.suzukawa@gmail.com"))
 
-  (user/fetch-all)
+  (user/fetch-all 3 nil)
 
-  (authorisation/fetch-all)
+  (authorisation/fetch-all 10 nil)
 
 )

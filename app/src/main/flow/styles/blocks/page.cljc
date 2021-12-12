@@ -1,4 +1,4 @@
-(ns flow.styles.components.page
+(ns flow.styles.blocks.page
   (:require [flow.styles.constants :as c]
             [flow.styles.utils :as u]
             [garden.def :refer [defstyles]]
@@ -9,7 +9,6 @@
   [:.page
    {:display :none
     :overflow :auto
-    :background-color (:white-one c/colour)
     :color (:black-two c/colour)}
 
    (u/tiny-width
@@ -29,7 +28,8 @@
 
    [:&__body
     {:margin :auto
-     :padding (-> c/spacing :medium px)
+     :padding-left (-> c/spacing :medium px)
+     :padding-right (-> c/spacing :medium px)
      :display :flex
      :flex-direction :column
      :align-items :center}

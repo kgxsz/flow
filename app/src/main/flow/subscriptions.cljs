@@ -1,120 +1,265 @@
 (ns flow.subscriptions
   (:require [re-frame.core :as re-frame]
             [flow.utils :as u]
+            [cljs.spec.alpha :as s]
             [clojure.string :as string]))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;; App ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (re-frame/reg-sub
- :initialising?
+ :app/route
  (fn [db [_]]
-   (let [routing-not-initialised? (not (contains? db :route))
-         current-user-id-not-received? (not (contains? db :current-user-id))
-         current-user-expected? (some? (:current-user-id db))
-         current-user-not-received? (not (contains? (:user db) (:current-user-id db)))]
-     (or routing-not-initialised?
-         current-user-id-not-received?
-         (and current-user-expected?
-              current-user-not-received?)))))
+   (get-in db [:routing :current-route])))
 
 
 (re-frame/reg-sub
- :route
+ :app/routing?
  (fn [db [_]]
-   (:route db)))
+   (some? (get-in db [:routing :next-route]))))
 
 
 (re-frame/reg-sub
- :authorised?
+ :app/error?
  (fn [db [_]]
-   (and
-    (contains? db :current-user-id)
-    (some? (:current-user-id db)))))
+   (true? (get-in db [:notifier :error?]))))
 
 
 (re-frame/reg-sub
- :authorisation-email-address
+ :app/authorised?
  (fn [db [_]]
-   (:authorisation-email-address db)))
+   (some? (get-in db [:session :current-user-id]))))
 
 
 (re-frame/reg-sub
- :authorisation-phrase
+ :app/admin?
  (fn [db [_]]
-   (:authorisation-phrase db)))
+   (let [current-user-id (get-in db [:session :current-user-id])
+         roles (get-in db [:entities :users current-user-id :user/roles])]
+     (contains? roles :admin))))
 
 
 (re-frame/reg-sub
- :authorisation-initialised?
+ :app/current-user
  (fn [db [_]]
-   (:authorisation-initialised? db)))
+   (let [current-user-id (get-in db [:session :current-user-id])]
+     (get-in db [:entities :users current-user-id]))))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; Cards user ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-sub
+ :cards.user/user
+ (fn [db [_ id]]
+   (get-in db [:entities :users id])))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;; Cards authorisation ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-sub
+ :cards.authorisation/authorisation
+ (fn [db [_ id]]
+   (get-in db [:entities :authorisations id])))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;; Pagination ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-sub
+ :pagination/ids
+ (fn [db [_ key entity-type]]
+   (let [entity-key (case entity-type
+                      :users :user/id
+                      :authorisations :authorisation/id)]
+     (->> (get-in db [:entities entity-type])
+          (vals)
+          (sort-by (comp str entity-key))
+          (map entity-key)))))
 
 
 (re-frame/reg-sub
- :authorisation-finalised?
- (fn [db [_]]
-   (:authorisation-finalised? db)))
+ :pagination/exhausted?
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
+     (:exhausted? context))))
 
 
 (re-frame/reg-sub
- :authorisation-initialisation-disabled?
- (fn [db [_]]
-   (not (u/valid-email-address? (:authorisation-email-address db)))))
+ :pagination/pending?
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
+     (contains? #{:pending} (:status context)))))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;; Authorisation ;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-sub
+ :authorisation/status
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
+     (:status context))))
 
 
 (re-frame/reg-sub
- :authorisation-finalisation-disabled?
- (fn [db [_]]
-   (let [{:keys [authorisation-phrase]} db]
-     (or (string/blank? authorisation-phrase)
-         (< (count authorisation-phrase) 3)))))
+ :authorisation/email-address-update-disabled?
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
+     (not (contains? #{:idle} (:status context))))))
 
 
 (re-frame/reg-sub
- :authorisation-failed?
- (fn [db [_]]
-   (true? (:authorisation-failed? db))))
+ :authorisation/email-address
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
+     (:email-address context))))
 
 
 (re-frame/reg-sub
- :current-user
- (fn [db [_]]
-   (get-in db [:user (:current-user-id db)])))
+ :authorisation/initialisation-disabled?
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
+     (not
+      (and
+       (contains? #{:idle :initialisation-pending} (:status context))
+       (s/valid? :user/email-address (:email-address context)))))))
 
 
 (re-frame/reg-sub
- :users
- (fn [db [_]]
-   (vals (:user db))))
+ :authorisation/initialisation-pending?
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
+     (contains? #{:initialisation-pending} (:status context)))))
 
 
 (re-frame/reg-sub
- :authorisations
- (fn [db [_]]
-   (vals (:authorisation db))))
+ :authorisation/phrase-update-disabled?
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
+     (not
+      (contains?
+       #{:initialisation-successful
+         :finalisation-unsuccessful}
+       (:status context))))))
 
 
 (re-frame/reg-sub
- :user-addition-name
- (fn [db [_]]
-   (:user-addition-name db)))
+ :authorisation/phrase
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
+     (:phrase context))))
 
 
 (re-frame/reg-sub
- :user-addition-email-address
- (fn [db [_]]
-   (:user-addition-email-address db)))
+ :authorisation/finalisation-disabled?
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
+     (not
+      (and
+       (contains?
+        #{:initialisation-successful
+          :finalisation-pending
+          :finalisation-unsuccessful}
+        (:status context))
+       (s/valid? :authorisation/phrase (:phrase context)))))))
 
 
 (re-frame/reg-sub
- :user-addition-admin-role?
- (fn [db [_]]
-   ;; TODO - if the key doesn't exist, what should be done here?
-   (:user-addition-admin-role? db)))
+ :authorisation/finalisation-pending?
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
+     (contains? #{:finalisation-pending} (:status context)))))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;; Deauthorisation ;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-sub
+ :deauthorisation/pending?
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
+     (contains? #{:pending} (:status context)))))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;; User addition ;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-sub
+ :user-addition/status
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
+     (:status context))))
 
 
 (re-frame/reg-sub
- :user-addition-disabled?
- (fn [db [_]]
+ :user-addition/email-address
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
+     (:email-address context))))
+
+
+(re-frame/reg-sub
+ :user-addition/name
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
+     (:name context))))
+
+
+(re-frame/reg-sub
+ :user-addition/admin-role?
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
+     (contains? (:roles context) :admin))))
+
+
+(re-frame/reg-sub
+ :user-addition/disabled?
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
+     (or
+      (not (s/valid? :user/name (:name context)))
+      (not (s/valid? :user/email-address (:email-address context)))
+      (not (s/valid? :user/roles (:roles context)))))))
+
+
+(re-frame/reg-sub
+ :user-addition/pending?
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
+     (contains? #{:pending} (:status context)))))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;; User deletion ;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(re-frame/reg-sub
+ :user-deletion/disabled?
+ (fn [db [_ id]]
    (or
-    (not (u/valid-email-address? (:user-addition-email-address db)))
-    (string/blank? (:user-addition-name db)))))
+    (= id (get-in db [:session :current-user-id]))
+    (some? (get-in db [:entities :users id :user/deleted-at])))))
+
+
+(re-frame/reg-sub
+ :user-deletion/pending?
+ (fn [db [_ key]]
+   (let [context (get-in db key)]
+     (contains? #{:pending} (:status context)))))
