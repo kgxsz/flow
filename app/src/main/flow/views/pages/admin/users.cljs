@@ -68,11 +68,11 @@
                          {}
                          {:on-click #(re-frame/dispatch [:app/route :home])}]
     :user-addition [user-addition/user-addition
-                    {:key [:page :views :user-addition]}
+                    {:key [:views :user-addition]}
                     {}
                     {}]
     :pagination [pagination/pagination
-                 {:key [:page :views :pagination]
+                 {:key [:views :pagination]
                   :entity-type :users}
                  {}
                  {}]}

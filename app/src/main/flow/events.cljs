@@ -50,15 +50,15 @@
                     :route-params nil
                     :query-params nil})
             (assoc :session session)
-            (assoc :page {})
+            (assoc :views {})
             (assoc-in [:entities :users] users)
             (assoc-in [:entities :authorisations] authorisations)
             ;; TODO - These are key dependent but relate to child views, can it be done elsewhere?
-            (assoc-in [:page :views :authorisation]
+            (assoc-in [:views :authorisation]
                       {:status :idle
                        :email-address ""
                        :phrase ""})
-            (assoc-in [:page :views :deauthorisation]
+            (assoc-in [:views :deauthorisation]
                       {:status :idle}))}))
 
 
@@ -90,16 +90,16 @@
                     :route-params nil
                     :query-params nil})
             (assoc :session session)
-            (assoc :page {})
+            (assoc :views {})
             (assoc-in [:entities :users] users)
             (assoc-in [:entities :authorisations] authorisations)
             ;; TODO - These are key dependent but relate to child views, can it be done elsewhere?
-            (assoc-in [:page :views :user-addition]
+            (assoc-in [:views :user-addition]
                       {:status :idle
                        :email-address ""
                        :roles #{:customer}})
             ;; TODO - could the pagination be given the entity and the filtering approach as state?
-            (assoc-in [:page :views :pagination]
+            (assoc-in [:views :pagination]
                       {:status :idle
                        :offset (get-in metadata [:users :next-offset])
                        :exhausted? (get-in metadata [:users :exhausted?])}))}))
@@ -134,11 +134,11 @@
                     :route-params nil
                     :query-params nil})
             (assoc :session session)
-            (assoc :page {})
+            (assoc :views {})
             (assoc-in [:entities :users] users)
             (assoc-in [:entities :authorisations] authorisations)
             ;; TODO - These are key dependent but relate to child views, can it be done elsewhere?
-            (assoc-in [:page :views :pagination]
+            (assoc-in [:views :pagination]
                       {:status :idle
                        :offset (get-in metadata [:authorisations :next-offset])
                        :exhausted? (get-in metadata [:authorisations :exhausted?])}))}))
@@ -171,7 +171,7 @@
                     :route-params nil
                     :query-params nil})
             (assoc :session session)
-            (assoc :page {})
+            (assoc :veiws {})
             (assoc-in [:entities :users] users)
             (assoc-in [:entities :authorisations] authorisations))}))
 

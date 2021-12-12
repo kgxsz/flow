@@ -18,12 +18,11 @@
 ;; - Address the repitition in page initialisation patterns
 ;;   - Every page initialisation start event:
 ;;     - Sets the router status
-;;     - Specific page and child view data is fetched
+;;     - Specific page data is fetched
 ;;   - Every page initialisation end event:
 ;;     - All the routing information gets set
-;;     - Session gets set
+;;     - The page gets cleared down
 ;;     - Entities gets reset to what just got returned
-;;     - All views get reset
 ;;     - Specific page and child view state is set up
 ;; - Shore up the DB specifications
 

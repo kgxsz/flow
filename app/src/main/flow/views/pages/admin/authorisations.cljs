@@ -61,7 +61,7 @@
                          {}
                          {:on-click #(re-frame/dispatch [:app/route :home])}]
     :pagination [pagination/pagination
-                 {:key [:page :views :pagination]
+                 {:key [:views :pagination]
                   :entity-type :authorisations}
                  {}
                  {}]}
