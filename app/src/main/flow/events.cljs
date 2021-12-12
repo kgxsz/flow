@@ -134,8 +134,8 @@
    {:db (assoc db
                :views
                {:pagination {:status :idle
-                             :offset (get-in metadata [:users :next-offset])
-                             :exhausted? (get-in metadata [:users :exhausted?])}})
+                             :offset (get-in metadata [:authorisations :next-offset])
+                             :exhausted? (get-in metadata [:authorisations :exhausted?])}})
     :dispatch [:app/end-route-change users authorisations session]}))
 
 
