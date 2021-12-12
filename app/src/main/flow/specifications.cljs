@@ -30,12 +30,18 @@
 
 ;; Routing
 (s/def :routing/route #{:home
-                        :admin
                         :admin.users
                         :admin.authorisations
                         :unknown})
-(s/def :routing/route-params (s/and map? empty?))
-(s/def :routing/query-params (s/and map? empty?))
+(s/def :routing/current-route :routing/route)
+(s/def :routing/next-route :routing/route)
+
+(s/def :routing.parameters/route map?)
+(s/def :routing.parameters/query map?)
+(s/def :routing/parameters (s/keys :req-un [:routing.parameters/route
+                                            :routing.parameters/query]))
+(s/def :routing/current-parameters :routing/parameters)
+(s/def :routing/next-parameters :routing/parameters)
 
 
 ;; Session
@@ -44,14 +50,14 @@
 
 ;; Entities
 (s/def :entities/users (s/map-of :user/id
-                                 (s/keys :opt [:user/id
+                                 (s/keys :req [:user/id
                                                :user/name
                                                :user/email-address
                                                :user/roles
                                                :user/created-at
                                                :user/deleted-at])))
 (s/def :entities/authorisations (s/map-of :authorisation/id
-                                          (s/keys :opt [:authorisation/id
+                                          (s/keys :req [:authorisation/id
                                                         :user/id
                                                         :authorisation/phrase
                                                         :authorisation/created-at
@@ -59,16 +65,16 @@
 
 
 ;; DB
-;; TODO - this has all changed now
-(s/def :db/routing (s/keys :req-un [:routing/route
-                                    :routing/route-params
-                                    :routing/query-params]))
+(s/def :db/routing (s/keys :opt-un [:routing/current-route
+                                    :routing/current-parameters
+                                    :routing/next-route
+                                    :routing/next-parameters]))
 (s/def :db/session (s/keys :req-un [:session/current-user-id]))
-(s/def :db/entities (s/keys :opt-un [:entities/users
+(s/def :db/entities (s/keys :req-un [:entities/users
                                      :entities/authorisations]))
 
 
 ;; App
-(s/def :app/db (s/keys :opt-un [:db/entities
-                                :db/routing
+(s/def :app/db (s/keys :req-un [:db/routing]
+                       :opt-un [:db/entities
                                 :db/session]))
