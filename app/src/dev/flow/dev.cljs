@@ -13,7 +13,8 @@
 
   )
 
-
 ;; Tasks:
 ;; - Style authorisation card
+;;   - Decide what properties to expose
 ;; - Style user card
+;;   - Decide what properties to expose
