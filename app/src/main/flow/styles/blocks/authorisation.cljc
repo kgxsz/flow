@@ -6,4 +6,5 @@
 
 
 (defstyles authorisation
-  [:.authorisation {:width (px (:xxx-huge c/filling))}])
+  [:.authorisation
+   {:width (px (:xxx-huge c/filling))}])

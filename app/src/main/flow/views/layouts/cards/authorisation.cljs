@@ -6,32 +6,86 @@
 
 
 (defn view [{:keys [authorisation]}
-            {:keys []}
-            {:keys []}]
+            _
+            _]
   [:div
-   {:class (u/bem [:authorisation]
-                  [:cell :column :align-start :padding-top-small])}
+   {:class (u/bem [:card]
+                  [:cell :column :align-start :margin-top-medium])}
    [:div
-    {:class (u/bem [:text :font-size-small :font-weight-bold :padding-left-tiny])}
-    (str (:authorisation/id authorisation))]
+    {:class (u/bem [:text :font-size-xx-small :colour-black-four])}
+    "Phrase"]
    [:div
-    {:class (u/bem [:text :font-size-x-small :padding-left-tiny])}
+    {:class (u/bem [:cell :width-cover]
+                   [:text :font-size-x-large :padding-top-tiny])}
     (str (:authorisation/phrase authorisation))]
+
    [:div
-    {:class (u/bem [:text :font-size-x-small :padding-left-tiny])}
-    (str (:user/id authorisation))]
+    {:class (u/bem [:text :font-size-xx-small :colour-black-four :padding-top-medium])}
+    "Created"]
+
    [:div
-    {:class (u/bem [:text :font-size-x-small :padding-left-tiny])}
-    (->> (:authorisation/created-at authorisation)
-         (t.coerce/from-date)
-         (t.format/unparse (t.format/formatter "MMM dd, yyyy 'at' HH:mm.ss")))]
+    {:class (u/bem [:cell :column :align-start :padding-top-xx-tiny])}
+    [:div
+     {:class (u/bem [:cell :row :align-end :height-medium])}
+     [:div
+      {:class (u/bem [:text :font-size-x-large])}
+      (->> (:authorisation/created-at authorisation)
+           (t.coerce/from-date)
+           (t.format/unparse (t.format/formatter "MMM dd")))]
+     [:div
+      {:class (u/bem [:text :font-size-xx-small :padding-left-x-tiny :padding-bottom-xx-tiny])}
+      (->> (:authorisation/created-at authorisation)
+           (t.coerce/from-date)
+           (t.format/unparse (t.format/formatter "/ yyyy")))]]
+    [:div
+     {:class (u/bem [:cell :row :align-end :height-medium])}
+     [:div
+      {:class (u/bem [:text :font-size-xx-large])}
+      (->> (:authorisation/created-at authorisation)
+           (t.coerce/from-date)
+           (t.format/unparse (t.format/formatter "HH:mm")))]
+     [:div
+      {:class (u/bem [:text :font-size-xx-small :padding-bottom-xx-tiny])}
+      (->> (:authorisation/created-at authorisation)
+           (t.coerce/from-date)
+           (t.format/unparse (t.format/formatter ".ss")))]]]
+
+
    [:div
-    {:class (u/bem [:text :font-size-x-small :padding-left-tiny])}
-    (or
-     (some->> (:authorisation/granted-at authorisation)
-              (t.coerce/from-date)
-              (t.format/unparse (t.format/formatter "MMM dd, yyyy 'at' HH:mm.ss")))
-     "n/a")]])
+    {:class (u/bem [:text :font-size-xx-small :colour-black-four :padding-top-medium])}
+    "Granted"]
+
+   (if (:authorisation/granted-at authorisation)
+     [:div
+      {:class (u/bem [:cell :column :align-start :padding-top-xx-tiny])}
+      [:div
+       {:class (u/bem [:cell :row :align-end :height-medium])}
+       [:div
+        {:class (u/bem [:text :font-size-x-large])}
+        (->> (:authorisation/granted-at authorisation)
+             (t.coerce/from-date)
+             (t.format/unparse (t.format/formatter "MMM dd")))]
+       [:div
+        {:class (u/bem [:text :font-size-xx-small :padding-left-x-tiny :padding-bottom-xx-tiny])}
+        (->> (:authorisation/granted-at authorisation)
+             (t.coerce/from-date)
+             (t.format/unparse (t.format/formatter "/ yyyy")))]]
+      [:div
+       {:class (u/bem [:cell :row :align-end :height-medium])}
+       [:div
+        {:class (u/bem [:text :font-size-xx-large])}
+        (->> (:authorisation/granted-at authorisation)
+             (t.coerce/from-date)
+             (t.format/unparse (t.format/formatter "HH:mm")))]
+       [:div
+        {:class (u/bem [:text :font-size-xx-small :padding-bottom-xx-tiny])}
+        (->> (:authorisation/granted-at authorisation)
+             (t.coerce/from-date)
+             (t.format/unparse (t.format/formatter ".ss")))]]]
+
+     [:div
+      {:class (u/bem [:text :font-size-x-large :padding-top-tiny])}
+      "n/a"])])
 
 
 (defn card [{:keys [key id] :as properties} views behaviours]

@@ -13,7 +13,7 @@
   [:div
    {:class (u/bem [:pagination])}
    [:div
-    {:class (u/bem [:cell :column :align-start :padding-top-medium])}
+    {:class (u/bem [:cell :column :align-start])}
     cards]
    [:div
     {:class (u/bem [:cell :row :padding-top-large])}

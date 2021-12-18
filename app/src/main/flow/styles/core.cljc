@@ -11,10 +11,9 @@
             [flow.styles.blocks.link :refer [link]]
             [flow.styles.blocks.button :refer [button]]
             [flow.styles.blocks.app :refer [app]]
-            [flow.styles.blocks.authorisation-attempt :refer [authorisation-attempt]]
-            [flow.styles.blocks.user-addition :refer [user-addition]]
-            [flow.styles.blocks.user :refer [user]]
             [flow.styles.blocks.authorisation :refer [authorisation]]
+            [flow.styles.blocks.user-addition :refer [user-addition]]
+            [flow.styles.blocks.card :refer [card]]
             [garden.def :refer [defstyles]]
             [garden.units :refer [px percent ms]]
             [normalize.core :refer [normalize]]))
@@ -70,7 +69,6 @@
   button
   app
   page
-  authorisation-attempt
+  authorisation
   user-addition
-  user
-  authorisation)
+  card)
