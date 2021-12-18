@@ -134,8 +134,8 @@
    {:db (assoc db
                :views
                {:pagination {:status :idle
-                             :offset (get-in metadata [:users :next-offset])
-                             :exhausted? (get-in metadata [:users :exhausted?])}})
+                             :offset (get-in metadata [:authorisations :next-offset])
+                             :exhausted? (get-in metadata [:authorisations :exhausted?])}})
     :dispatch [:app/end-route-change users authorisations session]}))
 
 
@@ -280,7 +280,7 @@
    (if (empty? users)
      {:db (-> db
               (assoc :session session)
-              (assoc-in [:entities] {})
+              (dissoc :entities)
               (assoc-in key {:status :idle}))}
      {:dispatch [:app/error]})))
 

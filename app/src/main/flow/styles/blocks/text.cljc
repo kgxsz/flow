@@ -14,7 +14,8 @@
            :text-transform :none
            :-webkit-font-smoothing :antialiased
            :-moz-osx-font-smoothing :grayscale
-           :text-decoration :none}
+           :text-decoration :none
+           :word-wrap :break-word}
 
    [:&--padding-top
     (u/make-modifiers c/spacing :padding-top px)]

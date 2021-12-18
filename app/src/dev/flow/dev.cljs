@@ -12,8 +12,3 @@
   (db)
 
   )
-
-
-;; Tasks:
-;; - Style authorisation card
-;; - Style user card

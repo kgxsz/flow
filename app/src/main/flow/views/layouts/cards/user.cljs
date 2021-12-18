@@ -2,44 +2,65 @@
   (:require [re-frame.core :as re-frame]
             [flow.views.processes.user-deletion :as user-deletion]
             [flow.utils :as u]
-            [cljs-time.coerce :as t.coerce]
-            [cljs-time.format :as t.format]))
+            [flow.views.widgets.moment :as moment]))
 
 
 (defn view [{:keys [user]}
-            {:keys [user-deletion]}
+            {:keys [created-moment
+                    deleted-moment
+                    user-deletion]}
             _]
   [:div
-   {:class (u/bem [:user]
-                  [:cell :column :align-start :padding-top-small])}
+   {:class (u/bem [:card]
+                  [:cell :column :align-start :margin-top-medium])}
    [:div
-    {:class (u/bem [:text :font-size-small :font-weight-bold :padding-left-tiny])}
-    (str (:user/id user))]
+    {:class (u/bem [:text :font-size-xx-small :colour-black-four])}
+    "Name"]
    [:div
-    {:class (u/bem [:text :font-size-x-small :padding-left-tiny])}
+    {:class (u/bem [:cell :width-cover]
+                   [:text :font-size-x-large :padding-top-tiny])}
     (str (:user/name user))]
    [:div
-    {:class (u/bem [:text :font-size-x-small :padding-left-tiny])}
+    {:class (u/bem [:text :font-size-xx-small :colour-black-four :padding-top-medium])}
+    "Email address"]
+   [:div
+    {:class (u/bem [:cell :width-cover]
+                   [:text :font-size-x-large :padding-top-tiny])}
     (str (:user/email-address user))]
    [:div
-    {:class (u/bem [:text :font-size-x-small :padding-left-tiny])}
-    (->> (:user/created-at user)
-         (t.coerce/from-date)
-         (t.format/unparse (t.format/formatter "MMM dd, yyyy - HH:mm.ss")))]
+    {:class (u/bem [:text :font-size-xx-small :colour-black-four :padding-top-medium])}
+    "Roles"]
+
    [:div
-    {:class (u/bem [:text :font-size-x-small :padding-left-tiny])}
-    (or
-     (some->> (:user/deleted-at user)
-              (t.coerce/from-date)
-              (t.format/unparse (t.format/formatter "MMM dd, yyyy - HH:mm.ss")))
-     "n/a")]
-   [:div
-    {:class (u/bem [:text :font-size-x-small :padding-left-tiny])}
+    {:class (u/bem [:text :font-size-x-large])}
     (->> (:user/roles user)
          (map name)
          (interpose ", ")
          (apply str))]
-   user-deletion])
+   [:div
+    {:class (u/bem [:text :font-size-xx-small :colour-black-four :padding-top-medium])}
+    "Created"]
+   [:div
+    {:class (u/bem [:cell :padding-top-xx-tiny])}
+    created-moment]
+
+   [:div
+    {:class (u/bem [:text :font-size-xx-small :colour-black-four :padding-top-medium])}
+    "Deleted"]
+   (if (:user/deleted-at user)
+     [:div
+      {:class (u/bem [:cell :padding-top-xx-tiny])}
+      deleted-moment]
+     [:div
+      {:class (u/bem [:text :font-size-x-large :padding-top-tiny])}
+      "n/a"]) 
+
+   [:div
+    {:class (u/bem [:cell :width-cover :height-xxx-tiny :margin-top-large :colour-grey-four])}]
+
+   [:div
+    {:class (u/bem [:cell :padding-top-tiny])}
+    user-deletion]])
 
 
 (defn card [{:keys [key id] :as properties} views behaviours]
@@ -48,7 +69,15 @@
       [view
        (assoc properties
               :user @!user)
-       {:user-deletion [user-deletion/user-deletion
+       {:created-moment [moment/moment
+                         {:value (:user/created-at @!user)}
+                         {}
+                         {}]
+        :deleted-moment [moment/moment
+                         {:value (:user/deleted-at @!user)}
+                         {}
+                         {}]
+        :user-deletion [user-deletion/user-deletion
                         {:key (concat key [:views :user-deletion])
                          :id id}
                         {}

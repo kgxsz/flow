@@ -18,11 +18,11 @@
    (when (contains? #{:primary :secondary} type)
      [:div
       {:class (u/bem [:button__label type]
-                     [:text])}
+                     [:text :padding-right-xxx-small])}
       label])
 
    [:div
-    {:class (u/bem [:cell :row :width-large :height-large])}
+    {:class (u/bem [:cell :row :height-large :width-small])}
     (if pending?
       [:div
        {:class (u/bem [:button__spinner type])}]
@@ -33,7 +33,7 @@
    (when (= :tertiary type)
      [:div
       {:class (u/bem [:button__label type]
-                     [:text])}
+                     [:text :padding-left-xxx-small])}
       label])])
 
 
