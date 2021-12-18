@@ -15,4 +15,3 @@
 
 ;; Tasks:
 ;; - Style user card
-;; - Extract date and time widgets
