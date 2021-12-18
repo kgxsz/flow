@@ -12,6 +12,3 @@
   (db)
 
   )
-
-;; Tasks:
-;; - Style user card
