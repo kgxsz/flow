@@ -280,7 +280,7 @@
    (if (empty? users)
      {:db (-> db
               (assoc :session session)
-              (assoc-in [:entities] {})
+              (dissoc :entities)
               (assoc-in key {:status :idle}))}
      {:dispatch [:app/error]})))
 
